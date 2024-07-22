@@ -14,6 +14,8 @@ class Poetry extends Model
         'TimeStart',
         'TimeEnd',
         'Status',
-
     ];
+    public function exam_subject(){
+        return $this->belongsTo(Exam_Subject::class);
+    }
 }

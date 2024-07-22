@@ -23,4 +23,7 @@ class Question extends Model
         'Level',
         'Status',
     ];
+    public function exam_content(){
+        return $this->belongsTo(Exam_content::class);
+    }
 }

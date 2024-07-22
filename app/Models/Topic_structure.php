@@ -13,4 +13,7 @@ class Topic_structure extends Model
         'Level',
         'Quality',
     ];
+    public function exam_content(){
+        return $this->belongsTo(Exam_content::class);
+    }
 }

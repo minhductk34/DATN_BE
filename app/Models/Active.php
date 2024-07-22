@@ -13,4 +13,11 @@ class Active extends Model
         'Idcode',
         'Active'
     ];
+    public function exam_subject(){
+        return $this->belongsTo(Exam_subject::class);
+    }
+    public function candidate()
+    {
+        return $this->belongsTo(Candidate::class);
+    }
 }

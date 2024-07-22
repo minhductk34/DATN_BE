@@ -18,4 +18,7 @@ class Reading_questions extends Model
         'Status',
         'Level',
     ];
+    public function reading(){
+        return $this->belongsTo(Readings::class);
+    }
 }
