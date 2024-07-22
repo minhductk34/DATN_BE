@@ -16,4 +16,11 @@ class Point extends Model
         'TimeStart',
         'TimeEnd',
     ];
+    public function exam_subject(){
+        return $this->belongsTo(Exam_subject::class);
+    }
+    public function candidate()
+    {
+        return $this->belongsTo(Candidate::class);
+    }
 }

@@ -11,6 +11,9 @@ class Password extends Model
     protected $fillable = [
         'Idcode',
         'Password',
-
     ];
+    public function candidate()
+    {
+        return $this->belongsTo(Candidate::class);
+    }
 }

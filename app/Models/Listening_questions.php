@@ -18,4 +18,7 @@ class Listening_questions extends Model
         'Status',
         'Level',
     ];
+    public function listening(){
+        return $this->belongsTo(Listening::class);
+    }
 }

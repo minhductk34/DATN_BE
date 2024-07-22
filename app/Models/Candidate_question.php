@@ -16,4 +16,11 @@ class Candidate_question extends Model
         'Answer_Pi',
         'Answer_Temp',
     ];
+    public function question(){
+        return $this->belongsTo(Question::class);
+    }
+    public function candidate()
+    {
+        return $this->belongsTo(Candidate::class);
+    }
 }

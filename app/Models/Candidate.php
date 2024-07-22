@@ -19,4 +19,7 @@ class Candidate extends Model
         'Email',
         'Status'
     ];
+    public function exam(){
+        return $this->belongsTo(Exam::class);
+    }
 }

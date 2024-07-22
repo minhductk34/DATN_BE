@@ -18,4 +18,17 @@ class Candidates_take_the_English_test extends Model
         'Answer_Pi',
         'Answer_Temp',
     ];
+    public function question(){
+        return $this->belongsTo(Question::class);
+    }
+    public function reading(){
+        return $this->belongsTo(Readings::class);
+    }
+    public function listening(){
+        return $this->belongsTo(Listening::class);
+    }
+    public function candidate()
+    {
+        return $this->belongsTo(Candidate::class);
+    }
 }

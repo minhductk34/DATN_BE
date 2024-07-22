@@ -14,6 +14,8 @@ class Exam_subject extends Model
         'Status',
         'TimeStart',
         'TimeEnd'
-
     ];
+    public function exam(){
+        return $this->belongsTo(Exam::class);
+    }
 }

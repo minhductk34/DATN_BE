@@ -14,4 +14,7 @@ class Listening extends Model
         'Status',
         'Level',
     ];
+    public function exam_content(){
+        return $this->belongsTo(Exam_content::class);
+    }
 }

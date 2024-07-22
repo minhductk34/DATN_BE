@@ -14,4 +14,11 @@ class History extends Model
         'Answer',
         'Time'
     ];
+    public function exam_subject(){
+        return $this->belongsTo(Exam_subject::class);
+    }
+    public function candidate()
+    {
+        return $this->belongsTo(Candidate::class);
+    }
 }
