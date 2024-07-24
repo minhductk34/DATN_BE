@@ -13,7 +13,8 @@ return new class extends Migration
     {
         Schema::create('points', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('exam_subject_id')->constrained('exam_subjects')->cascadeOnDelete()->cascadeOnUpdate();
+            $table->string('exam_subject_id');
+            $table->foreign('exam_subject_id')->references('id')->on('exam_subjects')->cascadeOnDelete()->cascadeOnUpdate();
             $table->string('Idcode');
             $table->foreign('Idcode')->references('Idcode')->on('candidates')->cascadeOnDelete()->cascadeOnUpdate();
             $table->float('Point', 5, 2);
