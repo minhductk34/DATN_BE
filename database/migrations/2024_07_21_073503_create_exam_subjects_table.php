@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('exam_subjects', function (Blueprint $table) {
-            $table->id();
+            $table->string('id')->primary();
             $table->foreignId('exam_id')->constrained('exams')->cascadeOnDelete()->cascadeOnUpdate();
             $table->string('Name');
             $table->enum('Status', ['true', 'false'])->default('true');
