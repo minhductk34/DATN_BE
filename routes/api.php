@@ -19,16 +19,19 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::prefix('exam-subjects')
-    ->as('exam_subjects.')
-    ->group(function () {
-        Route::get('/', [ExamSubjectController::class,'index'])->name('index');
-        Route::get('/exam/{id}', [ExamSubjectController::class,'getSubjectByExam']);
+Route::prefix('admin')->group(function(){
 
+    //Quản lý môn thi 
+    Route::prefix('exam-subjects')->group(function () {
+        Route::get('/', [ExamSubjectController::class,'index']);
+        Route::get('/exam/{id}', [ExamSubjectController::class,'getSubjectByExam']);
         Route::post('/', [ExamSubjectController::class,'store']);
-        Route::get('/{id}', [ExamSubjectController::class,'show'])->name('show');
+        Route::get('/{id}', [ExamSubjectController::class,'show']);
         Route::put('/{id}', [ExamSubjectController::class,'update']);
         Route::delete('/{id}', [ExamSubjectController::class,'destroy']);
-
         Route::put('/restore/{id}', [ExamSubjectController::class,'restore']);
     });
+
+    
+});
+
