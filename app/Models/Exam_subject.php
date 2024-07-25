@@ -23,6 +23,10 @@ class Exam_subject extends Model
         return $this->belongsTo(Exam::class);
     }
 
+    public function contents(){
+        return $this->hasMany(Exam_content::class);
+    }
+
     protected $keyType = 'string';
 
     protected $casts = [

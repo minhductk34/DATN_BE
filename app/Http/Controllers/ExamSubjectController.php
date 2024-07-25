@@ -8,21 +8,17 @@ use Illuminate\Http\Request;
 class ExamSubjectController extends Controller
 {
     /**
-     * Lấy tất cả môn thi
-     */
-    public function index()
-    {
-        $examSubjects = ExamSubject::all();
-        return response()->json($examSubjects, 200);
-    }
-
-    /**
      * Lấy môn thi theo kì thi
      */
-    public function getSubjectByExam($id){
-        $examSubjects = ExamSubject::query()->where('exam_id',$id)->get();
+    public function getSubjectByExam($id)
+    {
+        $examSubjects = ExamSubject::query()->where('exam_id', $id)->get();
 
-        return response()->json($examSubjects, 200);
+        return response()->json(
+            [
+                'data' => $examSubjects,
+                'status' => 'success'
+            ],200);
     }
 
     /**
@@ -30,35 +26,41 @@ class ExamSubjectController extends Controller
      */
     public function store(Request $request)
     {
-        $validatedData = $request->validate([
-            'id' => 'required|unique:exam_subjects,id',
-            'exam_id' => 'required|exists:exams,id',
-            'Name' => 'required|string|max:255',
-            'Status' => 'required|in:true,false',
-            'TimeStart' => 'required|date',
-            'TimeEnd' => 'required|date|after:TimeStart',
-        ],
-        [
-            'required' => ':attribute bắt buộc phải nhập',
-            'unique' => ':attribute đã tồn tại',
-            'exists' => ':attribute không tồn tại',
-            'string' => ':attribute phải là chuỗi',
-            'max' => ':attribute tối đa :max kí tự',
-            'in' => 'Trạng thái không hợp lệ',
-            'date' => ':attribute không đúng định dạng',
-            'after' => 'Thời gian kết thúc phải sau thời gian bắt đầu'
-        ],
-        [
-            'id' => 'Mã môn thi',
-            'exam_id' => 'ID kì thi',
-            'Name' => 'Tên môn thi',
-            'Status' => 'Trạng thái',
-            'TimeStart' => 'Thời gian bắt đầu',
-            'TimeEnd' => 'Thời gian kết thúc',
-        ]);
+        $validatedData = $request->validate(
+            [
+                'id' => 'required|unique:exam_subjects,id',
+                'exam_id' => 'required|exists:exams,id',
+                'Name' => 'required|string|max:255',
+                'Status' => 'required|in:true,false',
+                'TimeStart' => 'required|date',
+                'TimeEnd' => 'required|date|after:TimeStart',
+            ],
+            [
+                'required' => ':attribute bắt buộc phải nhập',
+                'unique' => ':attribute đã tồn tại',
+                'exists' => ':attribute không tồn tại',
+                'string' => ':attribute phải là chuỗi',
+                'max' => ':attribute tối đa :max kí tự',
+                'in' => 'Trạng thái không hợp lệ',
+                'date' => ':attribute không đúng định dạng',
+                'after' => 'Thời gian kết thúc phải sau thời gian bắt đầu'
+            ],
+            [
+                'id' => 'Mã môn thi',
+                'exam_id' => 'ID kì thi',
+                'Name' => 'Tên môn thi',
+                'Status' => 'Trạng thái',
+                'TimeStart' => 'Thời gian bắt đầu',
+                'TimeEnd' => 'Thời gian kết thúc',
+            ]
+        );
 
         $examSubject = ExamSubject::create($validatedData);
-        return response()->json($examSubject, 201);
+        return response()->json(
+            [
+                'data' => $examSubject,
+                'status' => 'success'
+            ],201);
     }
 
     /**
@@ -66,12 +68,13 @@ class ExamSubjectController extends Controller
      */
     public function show($id)
     {
-        $examSubject = ExamSubject::find($id);
+        $examSubject = ExamSubject::with('contents')->find($id);
 
-        if(!$examSubject){
-            return response()->json(['message' => 'Môn thi không tồn tại'],404);
+        if (!$examSubject) {
+            return response()->json(['message' => 'Môn thi không tồn tại'], 404);
         }
-        return response()->json($examSubject,200);
+
+        return response()->json($examSubject, 200);
     }
 
     /**
@@ -80,40 +83,46 @@ class ExamSubjectController extends Controller
     public function update(Request $request, $id)
     {
         $examSubject = ExamSubject::find($id);
-        
-        if(!$examSubject){
-            return response()->json(['message' => 'Môn thi không tồn tại'],404);
+
+        if (!$examSubject) {
+            return response()->json(['message' => 'Môn thi không tồn tại'], 404);
         }
 
-        $validatedData = $request->validate([
-            'id' => 'required|unique:exam_subjects,id,' . $id,
-            'exam_id' => 'required|exists:exams,id',
-            'Name' => 'required|string|max:255',
-            'Status' => 'required|in:true,false',
-            'TimeStart' => 'required|date',
-            'TimeEnd' => 'required|date|after:TimeStart',
-        ],
-        [
-            'required' => ':attribute bắt buộc phải nhập',
-            'unique' => ':attribute đã tồn tại',
-            'exists' => ':attribute không tồn tại',
-            'string' => ':attribute phải là chuỗi',
-            'max' => ':attribute tối đa :max kí tự',
-            'in' => 'Trạng thái không hợp lệ',
-            'date' => ':attribute không đúng định dạng',
-            'after' => 'Thời gian kết thúc phải sau thời gian bắt đầu'
-        ],
-        [
-            'id' => 'Mã môn thi',
-            'exam_id' => 'ID kì thi',
-            'Name' => 'Tên môn thi',
-            'Status' => 'Trạng thái',
-            'TimeStart' => 'Thời gian bắt đầu',
-            'TimeEnd' => 'Thời gian kết thúc',
-        ]);
+        $validatedData = $request->validate(
+            [
+                'id' => 'required|unique:exam_subjects,id,' . $id,
+                'exam_id' => 'required|exists:exams,id',
+                'Name' => 'required|string|max:255',
+                'Status' => 'required|in:true,false',
+                'TimeStart' => 'required|date',
+                'TimeEnd' => 'required|date|after:TimeStart',
+            ],
+            [
+                'required' => ':attribute bắt buộc phải nhập',
+                'unique' => ':attribute đã tồn tại',
+                'exists' => ':attribute không tồn tại',
+                'string' => ':attribute phải là chuỗi',
+                'max' => ':attribute tối đa :max kí tự',
+                'in' => 'Trạng thái không hợp lệ',
+                'date' => ':attribute không đúng định dạng',
+                'after' => 'Thời gian kết thúc phải sau thời gian bắt đầu'
+            ],
+            [
+                'id' => 'Mã môn thi',
+                'exam_id' => 'ID kì thi',
+                'Name' => 'Tên môn thi',
+                'Status' => 'Trạng thái',
+                'TimeStart' => 'Thời gian bắt đầu',
+                'TimeEnd' => 'Thời gian kết thúc',
+            ]
+        );
 
         $examSubject->update($validatedData);
-        return response()->json($examSubject,200);
+        return response()->json(
+            [
+                'data' => $examSubject,
+                'status' => 'success'
+            ], 200);
     }
 
     /**
@@ -123,12 +132,12 @@ class ExamSubjectController extends Controller
     {
         $examSubject = ExamSubject::query()->find($id);
 
-        if(!$examSubject){
+        if (!$examSubject) {
             return response()->json(['message' => 'Môn thi không tồn tại'], 404);
         }
 
         $examSubject->delete();
-        return response()->json(null, 204);
+        return response()->json([], 204);
     }
 
     /**
@@ -136,8 +145,8 @@ class ExamSubjectController extends Controller
      */
     public function restore($id)
     {
-        ExamSubject::withTrashed()->where('id',$id)->restore();
+        ExamSubject::withTrashed()->where('id', $id)->restore();
 
-        return response()->json(null, 204);
+        return response()->json([], 204);
     }
 }

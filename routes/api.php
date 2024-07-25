@@ -23,7 +23,6 @@ Route::prefix('admin')->group(function(){
 
     //Quản lý môn thi 
     Route::prefix('exam-subjects')->group(function () {
-        Route::get('/', [ExamSubjectController::class,'index']);
         Route::get('/exam/{id}', [ExamSubjectController::class,'getSubjectByExam']);
         Route::post('/', [ExamSubjectController::class,'store']);
         Route::get('/{id}', [ExamSubjectController::class,'show']);
@@ -31,7 +30,5 @@ Route::prefix('admin')->group(function(){
         Route::delete('/{id}', [ExamSubjectController::class,'destroy']);
         Route::put('/restore/{id}', [ExamSubjectController::class,'restore']);
     });
-
-    
 });
 
