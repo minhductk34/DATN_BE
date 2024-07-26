@@ -29,6 +29,7 @@ Route::prefix('admin')->group(function(){
         Route::put('/{id}', [ExamSubjectController::class,'update']);
         Route::delete('/{id}', [ExamSubjectController::class,'destroy']);
         Route::put('/restore/{id}', [ExamSubjectController::class,'restore']);
+        Route::post('/import', [ExamSubjectController::class, 'importExcel']);
     });
 });
 

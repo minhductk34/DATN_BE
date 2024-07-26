@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Exam_subject as ExamSubject;
 use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Imports\ExamSubjectImport;
+use Illuminate\Support\Facades\DB;
 
 class ExamSubjectController extends Controller
 {
@@ -18,7 +21,9 @@ class ExamSubjectController extends Controller
             [
                 'data' => $examSubjects,
                 'status' => 'success'
-            ],200);
+            ],
+            200
+        );
     }
 
     /**
@@ -60,7 +65,51 @@ class ExamSubjectController extends Controller
             [
                 'data' => $examSubject,
                 'status' => 'success'
-            ],201);
+            ],
+            201
+        );
+    }
+
+    /**
+     * Thêm môn thi bằng exel
+     */
+    public function importExcel(Request $request)
+    {
+        $request->validate(
+            [
+                'file' => 'required|mimes:xlsx,xls',
+            ],
+            [
+                'file.required' => 'Hãy chọn một file để tải lên',
+                'file.mimes' => 'File không đúng định dạng ( .xlsx, .xls )',
+            ]
+        );
+
+        DB::beginTransaction();
+
+        try {
+            Excel::import(new ExamSubjectImport, $request->file('file'));
+
+            DB::commit();
+
+            return response()->json(['message' => 'Nhập dữ liệu thành công.'], 200);
+        } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
+            DB::rollBack();
+
+            $failures = $e->failures();
+
+            $errorMessages = [];
+            foreach ($failures as $failure) {
+                $errorMessages[] = [
+                    'row' => $failure->row(),
+                    'attribute' => $failure->attribute(),
+                    'errors' => $failure->errors(),
+                    'values' => $failure->values(),
+                ];
+            }
+
+            return response()->json(['errors' => $errorMessages], 422);
+        }
     }
 
     /**
@@ -122,7 +171,9 @@ class ExamSubjectController extends Controller
             [
                 'data' => $examSubject,
                 'status' => 'success'
-            ], 200);
+            ],
+            200
+        );
     }
 
     /**
