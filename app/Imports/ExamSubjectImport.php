@@ -12,7 +12,7 @@ use Maatwebsite\Excel\Concerns\WithValidation;
 use Maatwebsite\Excel\Concerns\SkipsFailures;
 use Maatwebsite\Excel\Concerns\SkipsOnFailure;
 
-class ExamSubjectImport implements ToModel, WithHeadingRow, WithValidation
+class ExamSubjectImport implements ToModel, WithHeadingRow, WithValidation, SkipsOnFailure
 {
     use Importable, SkipsFailures;
 

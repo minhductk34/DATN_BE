@@ -87,29 +87,47 @@ class ExamSubjectController extends Controller
 
         DB::beginTransaction();
 
-        try {
-            Excel::import(new ExamSubjectImport, $request->file('file'));
+        // try {
+            $import = new ExamSubjectImport();
+            $import->import($request->file('file'));
+
+            if(count($import->failures()) > 0){
+                $failures = $import->failures();
+
+                foreach ($failures as $failure) {
+                    $errorMessages[] = [
+                        'row' => $failure->row(),
+                        'attribute' => $failure->attribute(),
+                        'errors' => $failure->errors(),
+                        'values' => $failure->values(),
+                    ];
+                }
+
+                DB::rollBack();
+    
+                return response()->json(['errors' => $errorMessages], 422);
+            }
 
             DB::commit();
 
             return response()->json(['message' => 'Nhập dữ liệu thành công.'], 200);
-        } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
-            DB::rollBack();
+        // } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
+        //     DB::rollBack();
 
-            $failures = $e->failures();
+        //     $failures = $e->failures();
 
-            $errorMessages = [];
-            foreach ($failures as $failure) {
-                $errorMessages[] = [
-                    'row' => $failure->row(),
-                    'attribute' => $failure->attribute(),
-                    'errors' => $failure->errors(),
-                    'values' => $failure->values(),
-                ];
-            }
+        //     $errorMessages = [];
+        //     foreach ($failures as $failure) {
+        //         $errorMessages[] = [
+        //             'row' => $failure->row(),
+        //             'attribute' => $failure->attribute(),
+        //             'errors' => $failure->errors(),
+        //             'values' => $failure->values(),
+        //         ];
+        //     }
 
-            return response()->json(['errors' => $errorMessages], 422);
-        }
+        //     return response()->json(['errors' => $errorMessages], 422);
+        // }
     }
 
     /**
