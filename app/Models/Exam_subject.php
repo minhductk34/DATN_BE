@@ -8,6 +8,9 @@ use Illuminate\Database\Eloquent\Model;
 class Exam_subject extends Model
 {
     use HasFactory;
+    public $incrementing = false;
+    protected $keyType = 'string';
+    protected $primaryKey = 'id';
     protected $fillable = [
         'exam_id',
         'Name',
