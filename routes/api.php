@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ExamContentController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -16,4 +17,19 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
+});
+
+Route::prefix('admin')->group(function () {
+    Route::prefix('exam-content')->group(function () {
+        //get data
+        Route::get('exam-subject/{id}', [ExamContentController::class, 'getContentBgExam'])->name('exam-content-byExamSubject_id');
+        Route::get('/{id}', [ExamContentController::class, 'show'])->name('exam-content-byid');
+        // create data
+        Route::post('/', [ExamContentController::class, 'store']);
+
+        //update data
+        Route::put('/{id}', [ExamContentController::class, 'update']);
+
+        //delete data
+    });
 });
