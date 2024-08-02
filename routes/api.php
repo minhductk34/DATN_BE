@@ -2,6 +2,7 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\ExamSubjectController;
 
 /*
 |--------------------------------------------------------------------------
@@ -17,3 +18,18 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
+
+Route::prefix('admin')->group(function(){
+
+    //Quản lý môn thi 
+    Route::prefix('exam-subjects')->group(function () {
+        Route::get('/exam/{id}', [ExamSubjectController::class,'getSubjectByExam']);
+        Route::post('/', [ExamSubjectController::class,'store']);
+        Route::get('/{id}', [ExamSubjectController::class,'show']);
+        Route::put('/{id}', [ExamSubjectController::class,'update']);
+        Route::delete('/{id}', [ExamSubjectController::class,'destroy']);
+        Route::put('/restore/{id}', [ExamSubjectController::class,'restore']);
+        Route::post('/import', [ExamSubjectController::class, 'importExcel']);
+    });
+});
+
