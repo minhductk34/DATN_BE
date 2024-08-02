@@ -2,11 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\ExamSubject\StoreExamSubjectRequest;
+use App\Http\Requests\ExamSubject\UpdateExamSubjectRequest;
 use App\Models\Exam_subject as ExamSubject;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Imports\ExamSubjectImport;
 use Illuminate\Support\Facades\DB;
+use Dotenv\Exception\ValidationException;
+use Illuminate\Support\Collection;
 
 class ExamSubjectController extends Controller
 {
@@ -15,66 +19,47 @@ class ExamSubjectController extends Controller
      */
     public function getSubjectByExam($id)
     {
-        $examSubjects = ExamSubject::query()->where('exam_id', $id)->get();
+        try {
+            if (!is_string($id) || empty(trim($id))) {
+                return $this->jsonResponse(false, null, 'Invalid exam_subject_id', 400);
+            }
 
-        return response()->json(
-            [
-                'data' => $examSubjects,
-                'status' => 'success'
-            ],
-            200
-        );
+            $examSubjects = ExamSubject::query()
+                ->select('id', 'exam_id', 'Name', 'Status', 'TimeStart', 'TimeEnd')
+                ->where('exam_id', $id)
+                ->get();
+
+            if ($examSubjects->isEmpty()) {
+                return $this->jsonResponse(false, null, 'No subject found for the given exam_id', 404);
+            }
+
+            return $this->jsonResponse(true, $examSubjects, '', 200);
+        } catch (\Exception $e) {
+            return $this->jsonResponse(false, null, $e->getMessage(), 500);
+        }
     }
 
     /**
      * Thêm môn thi
      */
-    public function store(Request $request)
+    public function store(StoreExamSubjectRequest $request)
     {
-        $validatedData = $request->validate(
-            [
-                'id' => 'required|unique:exam_subjects,id',
-                'exam_id' => 'required|exists:exams,id',
-                'Name' => 'required|string|max:255',
-                'Status' => 'required|in:true,false',
-                'TimeStart' => 'required|date',
-                'TimeEnd' => 'required|date|after:TimeStart',
-            ],
-            [
-                'required' => ':attribute bắt buộc phải nhập',
-                'unique' => ':attribute đã tồn tại',
-                'exists' => ':attribute không tồn tại',
-                'string' => ':attribute phải là chuỗi',
-                'max' => ':attribute tối đa :max kí tự',
-                'in' => 'Trạng thái không hợp lệ',
-                'date' => ':attribute không đúng định dạng',
-                'after' => 'Thời gian kết thúc phải sau thời gian bắt đầu'
-            ],
-            [
-                'id' => 'Mã môn thi',
-                'exam_id' => 'ID kì thi',
-                'Name' => 'Tên môn thi',
-                'Status' => 'Trạng thái',
-                'TimeStart' => 'Thời gian bắt đầu',
-                'TimeEnd' => 'Thời gian kết thúc',
-            ]
-        );
+        try {
+            $validatedData = $request->all();
 
-        $examSubject = ExamSubject::create($validatedData);
-        return response()->json(
-            [
-                'data' => $examSubject,
-                'status' => 'success'
-            ],
-            201
-        );
+            $examSubject = ExamSubject::create($validatedData);
+
+            return $this->jsonResponse(true, $examSubject, '', 201);
+        } catch (\Exception $e) {
+            return $this->jsonResponse(false, null, $e->getMessage(), 500);
+        }
     }
 
     /**
      * Thêm môn thi bằng exel
      */
     public function importExcel(Request $request)
-    {
+    {   
         $request->validate(
             [
                 'file' => 'required|mimes:xlsx,xls',
@@ -85,49 +70,33 @@ class ExamSubjectController extends Controller
             ]
         );
 
-        DB::beginTransaction();
+        try {
+            DB::beginTransaction();
 
-        // try {
             $import = new ExamSubjectImport();
             $import->import($request->file('file'));
 
-            if(count($import->failures()) > 0){
+            if (count($import->failures()) > 0) {
                 $failures = $import->failures();
 
                 foreach ($failures as $failure) {
                     $errorMessages[] = [
                         'row' => $failure->row(),
-                        'attribute' => $failure->attribute(),
                         'errors' => $failure->errors(),
-                        'values' => $failure->values(),
                     ];
                 }
 
                 DB::rollBack();
-    
-                return response()->json(['errors' => $errorMessages], 422);
+                return $this->jsonResponse(false, null, $errorMessages, 422);
             }
 
             DB::commit();
 
-            return response()->json(['message' => 'Nhập dữ liệu thành công.'], 200);
-        // } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
-        //     DB::rollBack();
+            return $this->jsonResponse(true, [], '', 200);
 
-        //     $failures = $e->failures();
-
-        //     $errorMessages = [];
-        //     foreach ($failures as $failure) {
-        //         $errorMessages[] = [
-        //             'row' => $failure->row(),
-        //             'attribute' => $failure->attribute(),
-        //             'errors' => $failure->errors(),
-        //             'values' => $failure->values(),
-        //         ];
-        //     }
-
-        //     return response()->json(['errors' => $errorMessages], 422);
-        // }
+        } catch (\Exception $e) {
+            return $this->jsonResponse(false, null, $e->getMessage(), 500);
+        }
     }
 
     /**
@@ -135,63 +104,45 @@ class ExamSubjectController extends Controller
      */
     public function show($id)
     {
-        $examSubject = ExamSubject::with('contents')->find($id);
+        try {
+            if (!is_string($id) || empty(trim($id))) {
+                return $this->jsonResponse(false, null, 'Invalid exam_subject_id', 400);
+            }
 
-        if (!$examSubject) {
-            return response()->json(['message' => 'Môn thi không tồn tại'], 404);
+            $examSubject = ExamSubject::with('contents')
+                ->select('id', 'exam_id', 'Name', 'Status', 'TimeStart', 'TimeEnd')
+                ->find($id);
+
+            if (!$examSubject) {
+                return $this->jsonResponse(false, null, 'No content found for the given exam_content_id', 404);
+            }
+
+            return $this->jsonResponse(true, $examSubject, '', 200);
+        } catch (\Exception $e) {
+            return $this->jsonResponse(false, null, $e->getMessage(), 500);
         }
-
-        return response()->json($examSubject, 200);
     }
 
     /**
      * Cập nhật thông tin môn thi
      */
-    public function update(Request $request, $id)
+    public function update(UpdateExamSubjectRequest $request, $id)
     {
-        $examSubject = ExamSubject::find($id);
+        try {
+            $validatedData = $request->all();
 
-        if (!$examSubject) {
-            return response()->json(['message' => 'Môn thi không tồn tại'], 404);
+            $examSubject = ExamSubject::select('id')->find($id);
+
+            if (!$examSubject) {
+                return $this->jsonResponse(false, null, 'No subject found for the given exam_subject_id', 404);
+            }
+
+            $examSubject->update($validatedData);
+
+            return $this->jsonResponse(true, $examSubject, '', 200);
+        } catch (\Exception $e) {
+            return $this->jsonResponse(false, null, $e->getMessage(), 500);
         }
-
-        $validatedData = $request->validate(
-            [
-                'id' => 'required|unique:exam_subjects,id,' . $id,
-                'exam_id' => 'required|exists:exams,id',
-                'Name' => 'required|string|max:255',
-                'Status' => 'required|in:true,false',
-                'TimeStart' => 'required|date',
-                'TimeEnd' => 'required|date|after:TimeStart',
-            ],
-            [
-                'required' => ':attribute bắt buộc phải nhập',
-                'unique' => ':attribute đã tồn tại',
-                'exists' => ':attribute không tồn tại',
-                'string' => ':attribute phải là chuỗi',
-                'max' => ':attribute tối đa :max kí tự',
-                'in' => 'Trạng thái không hợp lệ',
-                'date' => ':attribute không đúng định dạng',
-                'after' => 'Thời gian kết thúc phải sau thời gian bắt đầu'
-            ],
-            [
-                'id' => 'Mã môn thi',
-                'exam_id' => 'ID kì thi',
-                'Name' => 'Tên môn thi',
-                'Status' => 'Trạng thái',
-                'TimeStart' => 'Thời gian bắt đầu',
-                'TimeEnd' => 'Thời gian kết thúc',
-            ]
-        );
-
-        $examSubject->update($validatedData);
-        return response()->json(
-            [
-                'data' => $examSubject,
-                'status' => 'success'
-            ],
-            200
-        );
     }
 
     /**
@@ -199,14 +150,23 @@ class ExamSubjectController extends Controller
      */
     public function destroy($id)
     {
-        $examSubject = ExamSubject::query()->find($id);
+        try {
+            $examSubject = ExamSubject::query()->select('id')->find($id);
 
-        if (!$examSubject) {
-            return response()->json(['message' => 'Môn thi không tồn tại'], 404);
+            if (!$examSubject) {
+                return $this->jsonResponse(false, null, 'No subject found for the given exam_subject_id', 404);
+            }
+
+            $examSubject->delete();
+
+            return response()->json([
+                'success' => true,
+                'status' => '204',
+                'message' => 'Xóa thành công'
+            ], 204);
+        } catch (\Exception $e) {
+            return $this->jsonResponse(false, null, $e->getMessage(), 500);
         }
-
-        $examSubject->delete();
-        return response()->json([], 204);
     }
 
     /**
@@ -214,8 +174,34 @@ class ExamSubjectController extends Controller
      */
     public function restore($id)
     {
-        ExamSubject::withTrashed()->where('id', $id)->restore();
+        try {
+            $examSubject = ExamSubject::withTrashed()
+                ->select('id', 'exam_id', 'Name', 'Status', 'TimeStart', 'TimeEnd', 'deleted_at')
+                ->find($id);
 
-        return response()->json([], 204);
+            if (!$examSubject) {
+                return $this->jsonResponse(false, null, 'No subject found for the given exam_subject_id', 404);
+            }
+
+            if ($examSubject->deleted_at == null) {
+                return $this->jsonResponse(false, null, 'The exam has not been deleted', 409);
+            }
+
+            $examSubject->restore();
+
+            return $this->jsonResponse(true, $examSubject, 'Khôi phục thành công', 200);
+        } catch (\Exception $e) {
+            return $this->jsonResponse(false, null, $e->getMessage(), 500);
+        }
+    }
+
+    protected function jsonResponse($success = true, $data = null, $warning = '', $statusCode = 200)
+    {
+        return response()->json([
+            'success' => $success,
+            'status' => "$statusCode",
+            'data' => $data,
+            'warning' => $warning
+        ], $statusCode);
     }
 }

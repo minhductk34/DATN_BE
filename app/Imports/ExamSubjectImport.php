@@ -22,7 +22,6 @@ class ExamSubjectImport implements ToModel, WithHeadingRow, WithValidation, Skip
             'id' => $row['id'],
             'exam_id' => $row['exam_id'],
             'Name' => $row['name'],
-            'Status' => $row['status'],
             'TimeStart' => $row['time_start'],
             'TimeEnd' => $row['time_end'],
         ]);
@@ -30,10 +29,8 @@ class ExamSubjectImport implements ToModel, WithHeadingRow, WithValidation, Skip
 
     public function prepareForValidation(array $row)
     {
-        $row['status'] = $row['status'] == 0 ? 'false' : 'true';
         $row['time_start'] = $this->excelDateToPhpDate($row['time_start']);
         $row['time_end'] = $this->excelDateToPhpDate($row['time_end']);
-        
         return $row;
     }
 
@@ -43,7 +40,6 @@ class ExamSubjectImport implements ToModel, WithHeadingRow, WithValidation, Skip
             '*.id' => 'required|unique:exam_subjects,id',
             '*.exam_id' => 'required|exists:exams,id',
             '*.name' => 'required|string|max:255',
-            '*.status' => 'required',
             '*.time_start' => 'required|date',
             '*.time_end' => 'required|date|after:*.time_start',
         ];
@@ -52,14 +48,18 @@ class ExamSubjectImport implements ToModel, WithHeadingRow, WithValidation, Skip
     public function customValidationMessages()
     {
         return [
-            '*.required' => ':attribute bắt buộc phải nhập',
-            '*.unique' => ':attribute đã tồn tại',
-            '*.exists' => ':attribute không tồn tại',
-            '*.string' => ':attribute phải là chuỗi',
-            '*.max' => ':attribute tối đa :max kí tự',
-            '*.in' => 'Trạng thái không hợp lệ',
-            '*.date' => ':attribute không đúng định dạng',
-            '*.after' => 'Thời gian kết thúc phải sau thời gian bắt đầu'
+            '*.id.required' => ':attribute bắt buộc phải nhập',
+            '*.exam_id.required' => ':attribute bắt buộc phải nhập',
+            '*.name.required' => ':attribute bắt buộc phải nhập',
+            '*.time_start.required' => ':attribute bắt buộc phải nhập',
+            '*.time_end.required' => ':attribute bắt buộc phải nhập',
+            '*.id.unique' => ':attribute đã tồn tại',
+            '*.exam_id.exists' => ':attribute không tồn tại',
+            '*.name.string' => ':attribute phải là chuỗi',
+            '*.name.max' => ':attribute tối đa :max kí tự',
+            '*.time_start.date' => ':attribute không đúng định dạng',
+            '*.time_end.date' => ':attribute không đúng định dạng',
+            '*.time_end.after' => 'Thời gian kết thúc phải sau thời gian bắt đầu'
         ];
     }
 
@@ -69,7 +69,6 @@ class ExamSubjectImport implements ToModel, WithHeadingRow, WithValidation, Skip
             '*.id' => 'Mã môn thi',
             '*.exam_id' => 'ID kì thi',
             '*.name' => 'Tên môn thi',
-            '*.status' => 'Trạng thái',
             '*.time_start' => 'Thời gian bắt đầu',
             '*.time_end' => 'Thời gian kết thúc',
         ];

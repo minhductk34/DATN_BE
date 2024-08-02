@@ -26,14 +26,4 @@ class Exam_subject extends Model
     public function contents(){
         return $this->hasMany(Exam_content::class);
     }
-
-    protected $keyType = 'string';
-
-    protected $casts = [
-        'id' => 'string',
-    ];
-
-    public $incrementing = false;
-
-    protected $dates = ['updated_at','deleted_at'];
 }
