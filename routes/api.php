@@ -1,7 +1,9 @@
 <?php
 
+use App\Http\Controllers\ExamContentController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\ExamSubjectController;
 
 /*
 |--------------------------------------------------------------------------
@@ -16,4 +18,32 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
+});
+
+
+Route::prefix('admin')->group(function(){
+
+    //Quản lý môn thi 
+    Route::prefix('exam-subjects')->group(function () {
+        Route::get('/exam/{id}', [ExamSubjectController::class,'getSubjectByExam']);
+        Route::post('/', [ExamSubjectController::class,'store']);
+        Route::get('/{id}', [ExamSubjectController::class,'show']);
+        Route::put('/{id}', [ExamSubjectController::class,'update']);
+        Route::delete('/{id}', [ExamSubjectController::class,'destroy']);
+        Route::put('/restore/{id}', [ExamSubjectController::class,'restore']);
+        Route::post('/import', [ExamSubjectController::class, 'importExcel']);
+    });
+    Route::prefix('exam-content')->group(function () {
+        //get data
+        Route::get('exam-subject/{id}', [ExamContentController::class, 'getContentByExam'])->name('exam-content-byExamSubject_id');
+        Route::get('/{id}', [ExamContentController::class, 'show'])->name('exam-content-byid');
+        // create data
+        Route::post('/', [ExamContentController::class, 'store']);
+        Route::post('/import-excel-exam-content', [ExamContentController::class, 'importExcel']);
+        //update data
+        Route::put('/{id}', [ExamContentController::class, 'update']);
+
+        //delete data
+        Route::delete('/delete/{id}', [ExamContentController::class, 'destroy']);
+    });
 });
