@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Imports\ExamContentImport;
 use App\Models\Exam_content;
 use Dotenv\Exception\ValidationException;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class ExamContentController extends Controller
 {
@@ -81,28 +83,108 @@ class ExamContentController extends Controller
             $examSubject = Exam_content::create($validatedData);
 
             return response()->json([
-                'status' => 'success',
+                'success' => true,
+                'status' => 201,
                 'data' => $examSubject,
                 'warning' => ''
             ], 201);
         } catch (ValidationException $e) {
             return response()->json([
-                'status' => 'error',
+                'success' => false,
+                'status' => 422,
                 'data' => null,
                 'warning' => $e->getMessage()
             ], 422);
         } catch (\Exception $e) {
             return response()->json([
-                'status' => 'error',
+                'success' => false,
+                'status' => 500,
                 'data' => null,
-                'warning' => $e->getMessage() // Use getMessage() for a readable error message
+                'warning' => $e->getMessage()
             ], 500);
         }
     }
 
-    public function importFile(Request $request)
+    public function importExcel(Request $request)
     {
+        $request->validate([
+            'file' => 'required|mimes:xlsx,xls',
+        ], [
+            'file.required' => 'Hãy chọn một file để tải lên.',
+            'file.mimes' => 'File không đúng định dạng ( .xlsx, .xls ).',
+        ]);
+
+        DB::beginTransaction();
+
+        try {
+            $import = new ExamContentImport();
+            $import->import($request->file('file'));
+
+            if (count($import->failures()) > 0) {
+                $failures = $import->failures();
+                $errorMessages = [];
+
+                foreach ($failures as $failure) {
+                    $errorMessages[] = [
+                        'row' => $failure->row(),
+                        'attribute' => $failure->attribute(),
+                        'errors' => $failure->errors(),
+                        'values' => $failure->values(),
+                    ];
+                }
+
+                DB::rollBack();
+
+                return response()->json([
+                    'success' => false,
+                    'status' => '422',
+                    'data' => $errorMessages,
+                    'warning' => 'Có lỗi xảy ra trong quá trình nhập dữ liệu. Vui lòng kiểm tra lại file và thử lại.',
+                ], 422);
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'status' => '200',
+                'data' => [],
+                'warning' => 'Nhập dữ liệu thành công.',
+            ], 200);
+        } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
+            DB::rollBack();
+
+            $failures = $e->failures();
+            $errorMessages = [];
+
+            foreach ($failures as $failure) {
+                $errorMessages[] = [
+                    'row' => $failure->row(),
+                    'attribute' => $failure->attribute(),
+                    'errors' => $failure->errors(),
+                    'values' => $failure->values(),
+                ];
+            }
+
+            return response()->json([
+                'success' => false,
+                'status' => '422',
+                'data' => $errorMessages,
+                'warning' => 'Có lỗi xảy ra trong quá trình nhập dữ liệu. Vui lòng kiểm tra lại file và thử lại.',
+            ], 422);
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'success' => false,
+                'status' => '500',
+                'data' => [],
+                'warning' => 'Đã xảy ra lỗi, vui lòng thử lại sau.',
+            ], 500);
+        }
     }
+
+
     /**
      * Display the specified resource.
      */
@@ -113,7 +195,7 @@ class ExamContentController extends Controller
             if (!is_string($id) || empty(trim($id))) {
                 return response()->json([
                     'success' => false,
-                    'status' => '400',
+                    'status' => 400,
                     'data' => [],
                     'warning' => 'Invalid exam_content_id',
                 ], 400);
@@ -126,7 +208,7 @@ class ExamContentController extends Controller
             if ($content->isEmpty()) {
                 return response()->json([
                     'success' => false,
-                    'status' => '404',
+                    'status' => 404,
                     'data' => [],
                     'warning' => 'No content found for the given exam_content_id',
                 ], 404);
@@ -135,7 +217,7 @@ class ExamContentController extends Controller
 
             return response()->json([
                 'success' => true,
-                'status' => '200',
+                'status' => 200,
                 'data' => $content,
                 'warning' => '',
             ], 200);
@@ -174,7 +256,8 @@ class ExamContentController extends Controller
             $examSubject->update($validatedData);
 
             $response = [
-                'status' => 'success',
+                'success' => true,
+                'status' => 200,
                 'data' => $examSubject,
                 'warning' => ''
             ];
@@ -182,13 +265,15 @@ class ExamContentController extends Controller
             return response()->json($response, 200);
         } catch (ValidationException $e) {
             return response()->json([
-                'status' => 'error',
+                'success' => false,
+                'status' => 422,
                 'data' => null,
                 'warning' => $e->getMessage()
             ], 422);
         } catch (\Exception $e) {
             return response()->json([
-                'status' => 'error',
+                'success' => false,
+                'status' => 422,
                 'data' => null,
                 'warning' => $e
             ], 500);
