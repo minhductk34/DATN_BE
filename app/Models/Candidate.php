@@ -8,6 +8,11 @@ use Illuminate\Database\Eloquent\Model;
 class Candidate extends Model
 {
     use HasFactory;
+
+    public $incrementing = false;
+    protected $primaryKey = 'Idcode';
+    protected $keyType = 'string';
+
     protected $fillable = [
         'exam_id',
         'Fullname',
