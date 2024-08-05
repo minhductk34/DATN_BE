@@ -20,7 +20,7 @@ class StoreExcleExamContent extends FormRequest
     {
         return [
             // 'id' => 'required|unique:exam_contents,id',
-            'exam_subject_id' => 'required|unique:exam_subjects,id',
+            'exam_subject_id' => 'required|exists:exam_subjects,id',
             'title' => 'required|string|max:255',
         ];
     }

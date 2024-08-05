@@ -4,29 +4,30 @@ namespace App\Http\Controllers;
 
 use App\Imports\ExamContentImport;
 use App\Models\Exam_content;
-use Dotenv\Exception\ValidationException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\ValidationException;
 
 class ExamContentController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    
     public function index()
     {
         //
     }
-    public function getContentBgExam($id)
-    {
-        try {
 
+    public function getContentByExam($id)
+    {
+         
+        try {
             if (!is_string($id) || empty(trim($id))) {
                 return response()->json([
                     'success' => false,
                     'status' => '400',
                     'data' => [],
-                    'warning' => 'Invalid exam_subject_id',
+                    'warning' => 'Mã môn thi không hợp lệ',
                 ], 400);
             }
 
@@ -39,10 +40,9 @@ class ExamContentController extends Controller
                     'success' => false,
                     'status' => '404',
                     'data' => [],
-                    'warning' => 'No content found for the given exam_subject_id',
+                    'warning' => 'Không tìm thấy nội dung cho mã môn thi đã cho',
                 ], 404);
             }
-
 
             return response()->json([
                 'success' => true,
@@ -51,104 +51,129 @@ class ExamContentController extends Controller
                 'warning' => '',
             ], 200);
         } catch (\Exception $e) {
-
             return response()->json([
                 'success' => false,
                 'status' => '500',
                 'data' => [],
-                'warning' => 'An unexpected error occurred: ' . $e->getMessage(),
+                'warning' => 'Đã xảy ra lỗi không mong muốn: ' . $e->getMessage(),
             ], 500);
         }
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
         try {
-            $validatedData = $request->validate([
+            $validator = Validator::make($request->all(), [
                 'exam_subject_id' => 'required|string',
                 'title' => 'required|string|max:255',
+            ], [
+                'exam_subject_id.required' => 'Mã môn thi là bắt buộc.',
+                'exam_subject_id.string' => 'Mã môn thi phải là một chuỗi ký tự.',
+                'title.required' => 'Tiêu đề là bắt buộc.',
+                'title.string' => 'Tiêu đề phải là một chuỗi ký tự.',
+                'title.max' => 'Tiêu đề không được vượt quá 255 ký tự.',
             ]);
 
-            $examSubject = Exam_content::create($validatedData);
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'status' => '422',
+                    'data' => null,
+                    'warning' => $validator->errors(),
+                ], 422);
+            }
+
+            $examSubject = Exam_content::create($validator->validated());
 
             return response()->json([
                 'success' => true,
-                'status' => 201,
+                'status' => '201',
                 'data' => $examSubject,
                 'warning' => ''
             ], 201);
         } catch (ValidationException $e) {
             return response()->json([
                 'success' => false,
-                'status' => 422,
+                'status' => '422',
                 'data' => null,
-                'warning' => $e->getMessage()
+                'warning' => 'Lỗi xác thực: ' . $e->getMessage()
             ], 422);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'status' => 500,
+                'status' => '500',
                 'data' => null,
-                'warning' => $e->getMessage()
+                'warning' => 'Đã xảy ra lỗi: ' . $e->getMessage()
             ], 500);
         }
     }
 
     public function importExcel(Request $request)
     {
-        $request->validate([
+        $validator = Validator::make($request->all(), [
             'file' => 'required|mimes:xlsx,xls',
         ], [
             'file.required' => 'Hãy chọn một file để tải lên.',
-            'file.mimes' => 'File không đúng định dạng ( .xlsx, .xls ).',
+            'file.mimes' => 'File không đúng định dạng (.xlsx, .xls).',
         ]);
 
-        DB::beginTransaction();
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'status' => '422',
+                'data' => [],
+                'warning' => $validator->errors(),
+            ], 422);
+        }
+
+        $import = new ExamContentImport();
 
         try {
-            $import = new ExamContentImport();
+            DB::beginTransaction();
+
+            // Import dữ liệu từ file.
             $import->import($request->file('file'));
 
-            if (count($import->failures()) > 0) {
-                $failures = $import->failures();
-                $errorMessages = [];
+            // Lấy danh sách các lỗi nếu có.
+            $failures = $import->failures();
+            $errorMessages = [];
 
-                foreach ($failures as $failure) {
-                    $errorMessages[] = [
-                        'row' => $failure->row(),
-                        'attribute' => $failure->attribute(),
-                        'errors' => $failure->errors(),
-                        'values' => $failure->values(),
+            foreach ($failures as $failure) {
+                $row = $failure->row();
+                $errors = $failure->errors();
+                
+               
+                if (!isset($errorMessages[$row])) {
+                    $errorMessages[$row] = [
+                        'row' => $row,
+                        'errors' => $errors,
                     ];
+                } else {
+                    
+                    $errorMessages[$row]['errors'] = array_merge($errorMessages[$row]['errors'], $errors);
                 }
+                
+            }
+            $errorMessages = array_values($errorMessages);
 
+            if (count($failures) > 0) {
                 DB::rollBack();
-
                 return response()->json([
                     'success' => false,
                     'status' => '422',
-                    'data' => $errorMessages,
-                    'warning' => 'Có lỗi xảy ra trong quá trình nhập dữ liệu. Vui lòng kiểm tra lại file và thử lại.',
+                    'data' => [],
+                    'warning' => $errorMessages,
                 ], 422);
             }
 
             DB::commit();
 
+            $importedData = $import->getImportedData();
+
             return response()->json([
                 'success' => true,
                 'status' => '200',
-                'data' => [],
+                'data' => $importedData,
                 'warning' => 'Nhập dữ liệu thành công.',
             ], 200);
         } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
@@ -160,20 +185,20 @@ class ExamContentController extends Controller
             foreach ($failures as $failure) {
                 $errorMessages[] = [
                     'row' => $failure->row(),
-                    'attribute' => $failure->attribute(),
                     'errors' => $failure->errors(),
-                    'values' => $failure->values(),
                 ];
             }
 
             return response()->json([
                 'success' => false,
                 'status' => '422',
-                'data' => $errorMessages,
-                'warning' => 'Có lỗi xảy ra trong quá trình nhập dữ liệu. Vui lòng kiểm tra lại file và thử lại.',
+                'data' => [],
+                'warning' => $errorMessages,
             ], 422);
         } catch (\Exception $e) {
             DB::rollBack();
+
+            Log::error('General Error: ' . $e->getMessage());
 
             return response()->json([
                 'success' => false,
@@ -184,20 +209,16 @@ class ExamContentController extends Controller
         }
     }
 
-
-    /**
-     * Display the specified resource.
-     */
+   
     public function show($id)
     {
         try {
-
             if (!is_string($id) || empty(trim($id))) {
                 return response()->json([
                     'success' => false,
-                    'status' => 400,
+                    'status' => '400',
                     'data' => [],
-                    'warning' => 'Invalid exam_content_id',
+                    'warning' => 'Mã nội dung không hợp lệ',
                 ], 400);
             }
 
@@ -208,82 +229,80 @@ class ExamContentController extends Controller
             if ($content->isEmpty()) {
                 return response()->json([
                     'success' => false,
-                    'status' => 404,
+                    'status' => '404',
                     'data' => [],
-                    'warning' => 'No content found for the given exam_content_id',
+                    'warning' => 'Không tìm thấy nội dung cho mã nội dung đã cho',
                 ], 404);
             }
 
-
             return response()->json([
                 'success' => true,
-                'status' => 200,
+                'status' => '200',
                 'data' => $content,
                 'warning' => '',
             ], 200);
         } catch (\Exception $e) {
-
             return response()->json([
                 'success' => false,
                 'status' => '500',
                 'data' => [],
-                'warning' => 'An unexpected error occurred: ' . $e->getMessage(),
+                'warning' => 'Đã xảy ra lỗi không mong muốn: ' . $e->getMessage(),
             ], 500);
         }
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Exam_content $exam_content)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
+   
     public function update($id, Request $request)
     {
         try {
-            $validatedData = $request->validate([
+            $validator = Validator::make($request->all(), [
                 'exam_subject_id' => 'required|string',
                 'title' => 'required|string|max:255',
+            ], [
+                'exam_subject_id.required' => 'Mã môn thi là bắt buộc.',
+                'exam_subject_id.string' => 'Mã môn thi phải là một chuỗi ký tự.',
+                'title.required' => 'Tiêu đề là bắt buộc.',
+                'title.string' => 'Tiêu đề phải là một chuỗi ký tự.',
+                'title.max' => 'Tiêu đề không được vượt quá 255 ký tự.',
             ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'status' => '422',
+                    'data' => null,
+                    'warning' => $validator->errors(),
+                ], 422);
+            }
 
             $examSubject = Exam_content::findOrFail($id);
 
-            $examSubject->update($validatedData);
+            $examSubject->update($validator->validated());
 
-            $response = [
+            return response()->json([
                 'success' => true,
-                'status' => 200,
+                'status' => '200',
                 'data' => $examSubject,
                 'warning' => ''
-            ];
-
-            return response()->json($response, 200);
+            ], 200);
         } catch (ValidationException $e) {
             return response()->json([
                 'success' => false,
-                'status' => 422,
+                'status' => '422',
                 'data' => null,
-                'warning' => $e->getMessage()
+                'warning' => 'Lỗi xác thực: ' . $e->getMessage()
             ], 422);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'status' => 422,
+                'status' => '500',
                 'data' => null,
-                'warning' => $e
+                'warning' => 'Đã xảy ra lỗi: ' . $e->getMessage()
             ], 500);
         }
     }
 
-
-    /**
-     * Remove the specified resource from storage.
-     */
+   
     public function destroy(Exam_content $exam_content)
     {
         //
