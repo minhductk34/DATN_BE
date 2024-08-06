@@ -12,7 +12,7 @@ use Illuminate\Validation\ValidationException;
 
 class ExamContentController extends Controller
 {
-    
+
     public function index()
     {
         //
@@ -20,14 +20,14 @@ class ExamContentController extends Controller
 
     public function getContentByExam($id)
     {
-         
+
         try {
             if (!is_string($id) || empty(trim($id))) {
                 return response()->json([
                     'success' => false,
                     'status' => '400',
                     'data' => [],
-                    'warning' => 'Mã môn thi không hợp lệ',
+                    'warning' => 'Mã môn thi không hợp lệ.',
                 ], 400);
             }
 
@@ -40,7 +40,7 @@ class ExamContentController extends Controller
                     'success' => false,
                     'status' => '404',
                     'data' => [],
-                    'warning' => 'Không tìm thấy nội dung cho mã môn thi đã cho',
+                    'warning' => 'Không tìm thấy nội dung cho mã môn thi đã cho.',
                 ], 404);
             }
 
@@ -141,18 +141,17 @@ class ExamContentController extends Controller
             foreach ($failures as $failure) {
                 $row = $failure->row();
                 $errors = $failure->errors();
-                
-               
+
+
                 if (!isset($errorMessages[$row])) {
                     $errorMessages[$row] = [
                         'row' => $row,
                         'errors' => $errors,
                     ];
                 } else {
-                    
+
                     $errorMessages[$row]['errors'] = array_merge($errorMessages[$row]['errors'], $errors);
                 }
-                
             }
             $errorMessages = array_values($errorMessages);
 
@@ -209,7 +208,7 @@ class ExamContentController extends Controller
         }
     }
 
-   
+
     public function show($id)
     {
         try {
@@ -218,7 +217,7 @@ class ExamContentController extends Controller
                     'success' => false,
                     'status' => '400',
                     'data' => [],
-                    'warning' => 'Mã nội dung không hợp lệ',
+                    'warning' => 'Mã nội dung không hợp lệ.',
                 ], 400);
             }
 
@@ -231,7 +230,7 @@ class ExamContentController extends Controller
                     'success' => false,
                     'status' => '404',
                     'data' => [],
-                    'warning' => 'Không tìm thấy nội dung cho mã nội dung đã cho',
+                    'warning' => 'Không tìm thấy nội dung cho mã nội dung đã cho.',
                 ], 404);
             }
 
@@ -251,7 +250,7 @@ class ExamContentController extends Controller
         }
     }
 
-   
+
     public function update($id, Request $request)
     {
         try {
@@ -302,9 +301,36 @@ class ExamContentController extends Controller
         }
     }
 
-   
-    public function destroy(Exam_content $exam_content)
+
+    public function destroy($id)
     {
-        //
+        try {
+            $content = Exam_content::find($id);
+
+            if (!$content) {
+                return response()->json([
+                    'success' => false,
+                    'status' => '404',
+                    'data' => [],
+                    'warning' => 'Không tìm thấy nội dung cho mã nội dung đã cho.',
+                ], 404);
+            }
+
+            $content->delete();
+
+            return response()->json([
+                'success' => true,
+                'status' => '200',
+                'data' => [],
+                'message' => 'Xóa nội dung thi thành công',
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'status' => '500',
+                'data' => null,
+                'warning' => 'Đã xảy ra lỗi: ' . $e->getMessage(),
+            ], 500);
+        }
     }
 }
