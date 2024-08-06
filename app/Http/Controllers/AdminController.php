@@ -52,14 +52,30 @@ class AdminController extends Controller
             ], 401);
         }
 
+        // Kiểm tra xem người dùng đã có token hợp lệ chưa
+        $existingToken = Redis::get('auth_token_' . $admin->id);
+        if ($existingToken) {
+            return response()->json([
+                'success' => false,
+                'status' => '403',
+                'data' => [],
+                'warning' => 'Tài khoản này đã đăng nhập từ nơi khác'
+            ], 403);
+        }
+
+        // Tạo khóa lưu trữ token và thông tin người dùng
         $token = Str::random(60);
         $expiresAt = now()->addHours(1)->timestamp;
         $ttl = now()->addHours(1)->diffInSeconds(now());
 
-        Redis::setex('auth_token_' . $token, $ttl, json_encode([
+        // Lưu token mới vào Redis
+        Redis::setex($token, $ttl, json_encode([
             'user_id' => $admin->id,
             'expires_at' => $expiresAt,
         ]));
+
+        // Lưu thông tin token vào Redis với khóa riêng cho từng tài khoản
+        Redis::setex('auth_token_' . $admin->id, $ttl, $token);
 
         return response()->json([
             'success' => true,
