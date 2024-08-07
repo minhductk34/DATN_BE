@@ -20,71 +20,75 @@ class AdminController extends Controller
     }
 
     public function login(Request $request)
-    {
-        $credentials = $request->only('username', 'password');
+{
+    $credentials = $request->only('username', 'password');
 
-        if (empty($credentials['username']) || empty($credentials['password'])) {
-            return response()->json([
-                'success' => false,
-                'status' => '400',
-                'data' => [],
-                'warning' => 'Username và password là bắt buộc'
-            ], 400);
-        }
-
-        $admin = Admin::where('name', $credentials['username'])->first();
-
-        if (!$admin) {
-            return response()->json([
-                'success' => false,
-                'status' => '404',
-                'data' => [],
-                'warning' => 'Tài khoản không tồn tại'
-            ], 404);
-        }
-
-        if (!Hash::check($credentials['password'], $admin->password)) {
-            return response()->json([
-                'success' => false,
-                'status' => '401',
-                'data' => [],
-                'warning' => 'Mật khẩu không chính xác'
-            ], 401);
-        }
-
-        // Kiểm tra xem người dùng đã có token hợp lệ chưa
-        $existingToken = Redis::get('auth_token_' . $admin->id);
-        if ($existingToken) {
-            return response()->json([
-                'success' => false,
-                'status' => '403',
-                'data' => [],
-                'warning' => 'Tài khoản này đã đăng nhập từ nơi khác'
-            ], 403);
-        }
-
-        // Tạo khóa lưu trữ token và thông tin người dùng
-        $token = Str::random(60);
-        $expiresAt = now()->addHours(1)->timestamp;
-        $ttl = now()->addHours(1)->diffInSeconds(now());
-
-        // Lưu token mới vào Redis
-        Redis::setex($token, $ttl, json_encode([
-            'user_id' => $admin->id,
-            'expires_at' => $expiresAt,
-        ]));
-
-        // Lưu thông tin token vào Redis với khóa riêng cho từng tài khoản
-        Redis::setex('auth_token_' . $admin->id, $ttl, $token);
-
+    if (empty($credentials['username']) || empty($credentials['password'])) {
         return response()->json([
-            'success' => true,
-            'status' => '200',
-            'expires_at' => $expiresAt,
-            'token' => $token,
-            'data' => $admin,
-        ], 200);
+            'success' => false,
+            'status' => '400',
+            'data' => [],
+            'warning' => 'Username và password là bắt buộc'
+        ], 400);
     }
+
+    $admin = Admin::where('name', $credentials['username'])->first();
+
+    if (!$admin) {
+        return response()->json([
+            'success' => false,
+            'status' => '404',
+            'data' => [],
+            'warning' => 'Tài khoản không tồn tại'
+        ], 404);
+    }
+
+    if (!Hash::check($credentials['password'], $admin->password)) {
+        return response()->json([
+            'success' => false,
+            'status' => '401',
+            'data' => [],
+            'warning' => 'Mật khẩu không chính xác'
+        ], 401);
+    }
+
+    // Kiểm tra xem người dùng đã có token hợp lệ chưa
+    $existingToken = Redis::hget('auth:' . $admin->id, 'token');
+    if ($existingToken) {
+        return response()->json([
+            'success' => false,
+            'status' => '403',
+            'data' => [],
+            'warning' => 'Tài khoản này đã đăng nhập từ nơi khác'
+        ], 403);
+    }
+
+    // Tạo khóa lưu trữ token và thông tin người dùng
+    $token = Str::random(60);
+    $expiresAt = now()->addHours(1)->timestamp;
+    $ttl = now()->addHours(1)->diffInSeconds(now());
+
+    // Lưu thông tin token vào Redis hash
+    Redis::hset('tokens:' . $token, 'user_id', $admin->id);
+    Redis::hset('tokens:' . $token, 'expires_at', $expiresAt);
+
+    // Lưu token vào Redis hash với TTL
+    Redis::hset('auth:' . $admin->id, 'token', $token);
+    Redis::hset('auth:' . $admin->id, 'expires_at', $expiresAt);
+
+    // Đặt TTL cho các hash
+    Redis::expire('tokens:' . $token, $ttl);
+    Redis::expire('auth:' . $admin->id, $ttl);
+
+    return response()->json([
+        'success' => true,
+        'status' => '200',
+        'expires_at' => $expiresAt,
+        'token' => $token,
+        'data' => $admin,
+    ], 200);
+}
+
 
 
     /**
