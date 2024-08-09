@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\AutherResource;
 use App\Models\Admin;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -79,13 +80,17 @@ class AdminController extends Controller
     // Đặt TTL cho các hash
     Redis::expire('tokens:' . $token, $ttl);
     Redis::expire('auth:' . $admin->id, $ttl);
-
+    $data = [
+        'id' => $admin->id,
+        'username' => $admin->Name,
+    ];
+    
     return response()->json([
         'success' => true,
         'status' => '200',
         'expires_at' => $expiresAt,
         'token' => $token,
-        'data' => $admin,
+        'data' =>$data,
     ], 200);
 }
 
