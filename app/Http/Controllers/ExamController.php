@@ -12,7 +12,20 @@ class ExamController extends Controller
      */
     public function index()
     {
-        //
+        try {
+
+            $exam = Exam::query()
+                ->select()
+                ->get();
+
+            if ($exam->isEmpty()) {
+                return $this->jsonResponse(false, null, 'No subject found for the given exam_id', 404);
+            }
+
+            return $this->jsonResponse(true, $exam, '', 200);
+        } catch (\Exception $e) {
+            return $this->jsonResponse(false, null, $e->getMessage(), 500);
+        }
     }
 
     /**
@@ -61,5 +74,14 @@ class ExamController extends Controller
     public function destroy(Exam $exam)
     {
         //
+    }
+    protected function jsonResponse($success = true, $data = null, $warning = '', $statusCode = 200)
+    {
+        return response()->json([
+            'success' => $success,
+            'status' => "$statusCode",
+            'data' => $data,
+            'warning' => $warning
+        ], $statusCode);
     }
 }
