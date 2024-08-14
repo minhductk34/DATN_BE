@@ -23,26 +23,26 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 
-Route::prefix('admin')->group(function(){
+Route::prefix('admin')->group(function () {
 
     Route::post('/login', [AdminController::class, 'login']);
     // Quản lý kỳ thi
-    Route::prefix('exam')->group(function () {
-        Route::get('/', [ExamController::class,'index']);
-        Route::post('/', [ExamController::class,'store']);
-        Route::get('/{id}', [ExamController::class,'show']);
-        Route::put('/{id}', [ExamController::class,'update']);
-        Route::delete('/{id}', [ExamController::class,'destroy']);
-        Route::put('/restore/{id}', [ExamController::class,'restore']);
+    Route::prefix('exams')->group(function () {
+        Route::get('/', [ExamController::class, 'index']);
+        Route::post('/', [ExamController::class, 'store']);
+        Route::get('/{id}', [ExamController::class, 'show']);
+        Route::put('/{id}', [ExamController::class, 'update']);
+        Route::delete('/{id}', [ExamController::class, 'destroy']);
+        Route::put('/restore/{id}', [ExamController::class, 'restore']);
     });
     //Quản lý môn thi 
     Route::prefix('exam-subjects')->group(function () {
-        Route::get('/exam/{id}', [ExamSubjectController::class,'getSubjectByExam']);
-        Route::post('/', [ExamSubjectController::class,'store']);
-        Route::get('/{id}', [ExamSubjectController::class,'show']);
-        Route::put('/{id}', [ExamSubjectController::class,'update']);
-        Route::delete('/{id}', [ExamSubjectController::class,'destroy']);
-        Route::put('/restore/{id}', [ExamSubjectController::class,'restore']);
+        Route::get('/exam/{id}', [ExamSubjectController::class, 'getSubjectByExam']);
+        Route::post('/', [ExamSubjectController::class, 'store']);
+        Route::get('/{id}', [ExamSubjectController::class, 'show']);
+        Route::put('/{id}', [ExamSubjectController::class, 'update']);
+        Route::delete('/{id}', [ExamSubjectController::class, 'destroy']);
+        Route::put('/restore/{id}', [ExamSubjectController::class, 'restore']);
         Route::post('/import', [ExamSubjectController::class, 'importExcel']);
     });
     //Quản lý nội dung thi

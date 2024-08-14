@@ -17,7 +17,7 @@ class ExamContentController extends Controller
     {
         //
     }
-    public function getContentBgExam($id)
+    public function getContentByExam($id)
     {
         try {
 
