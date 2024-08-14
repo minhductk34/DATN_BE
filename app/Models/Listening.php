@@ -7,8 +7,12 @@ use Illuminate\Database\Eloquent\Model;
 
 class Listening extends Model
 {
+    public $incrementing = false;
+    protected $keyType = 'string';
+    protected $primaryKey = 'id';
     use HasFactory;
     protected $fillable = [
+        'id',
         'exam_content_id',
         'url_listenning',
         'Status',

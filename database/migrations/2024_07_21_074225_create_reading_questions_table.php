@@ -12,8 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('reading_questions', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('reading_id')->constrained('readings')->cascadeOnDelete()->cascadeOnUpdate();
+            $table->string('id')->primary();
+            $table->string('reading_id');
+            $table->foreign('reading_id')->references('id')->on('readings')->cascadeOnDelete()->cascadeOnUpdate();
             $table->string('Title');
             $table->string('Answer_P');
             $table->string('Answer_F1');
