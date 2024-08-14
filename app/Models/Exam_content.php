@@ -17,7 +17,8 @@ class Exam_content extends Model
         'title',
         'Status',
     ];
-    public function exam_subject(){
+    public function exam_subject()
+    {
         return $this->belongsTo(Exam_subject::class);
     }
 }

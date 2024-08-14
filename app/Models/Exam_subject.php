@@ -4,13 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Exam_subject extends Model
 {
-    use HasFactory;
-    public $incrementing = false;
-    protected $keyType = 'string';
-    protected $primaryKey = 'id';
+    use HasFactory,SoftDeletes;
+
     protected $fillable = [
         'id',
         'exam_id',
@@ -19,7 +18,12 @@ class Exam_subject extends Model
         'TimeStart',
         'TimeEnd'
     ];
+
     public function exam(){
         return $this->belongsTo(Exam::class);
+    }
+
+    public function contents(){
+        return $this->hasMany(Exam_content::class);
     }
 }
