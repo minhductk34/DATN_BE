@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('exam_contents', function (Blueprint $table) {
-            $table->id();
+            $table->string('id')->primary();
             $table->string('exam_subject_id');
             $table->foreign('exam_subject_id')->references('id')->on('exam_subjects')->cascadeOnDelete()->cascadeOnUpdate();
             $table->string('title');

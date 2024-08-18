@@ -12,9 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('listening_questions', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('listening_id')->constrained('listenings')->cascadeOnDelete()->cascadeOnUpdate();
-            $table->string('Title');
+            $table->string('id')->primary();
+            $table->string('listening_id');
+            $table->foreign('listening_id')->references('id')->on('listenings')->cascadeOnDelete()->cascadeOnUpdate();            $table->string('Title');
             $table->string('Answer_P')->nullable();
             $table->string('Answer_F1')->nullable();
             $table->string('Answer_F2')->nullable();

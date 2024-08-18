@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('topic_structures', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('exam_content_id')->constrained('exam_contents')->cascadeOnDelete()->cascadeOnUpdate();
-            $table->enum('Level',['Easy','Medium','Difficult'])->default('Easy');
+            $table->string('exam_content_id');
+            $table->foreign('exam_content_id')->references('id')->on('exam_contents')->cascadeOnDelete()->cascadeOnUpdate();            $table->enum('Level',['Easy','Medium','Difficult'])->default('Easy');
             $table->smallInteger('Quality');
             $table->timestamps();
         });
