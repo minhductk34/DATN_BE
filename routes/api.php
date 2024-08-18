@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AdminController;
 use App\Http\Controllers\ExamContentController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -20,6 +21,7 @@ use App\Http\Controllers\ExamSubjectController;
 
 Route::prefix('admin')->group(function () {
 
+    Route::post('/login', [AdminController::class, 'login']);
     //Quản lý môn thi 
     Route::prefix('exam-subjects')->group(function () {
         Route::get('/exam/{id}', [ExamSubjectController::class, 'getSubjectByExam']);

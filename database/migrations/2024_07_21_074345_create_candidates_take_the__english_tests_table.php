@@ -13,9 +13,12 @@ return new class extends Migration
     {
         Schema::create('candidates_take_the__english_tests', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('question_id')->constrained('questions')->cascadeOnDelete()->cascadeOnUpdate();
-            $table->foreignId('reading_id')->constrained('readings')->cascadeOnDelete()->cascadeOnUpdate();
-            $table->foreignId('listening_id')->constrained('listenings')->cascadeOnDelete()->cascadeOnUpdate();
+            $table->string('question_id');
+            $table->foreign('question_id')->references('id')->on('questions')->cascadeOnDelete()->cascadeOnUpdate();
+            $table->string('reading_id');
+            $table->foreign('reading_id')->references('id')->on('readings')->cascadeOnDelete()->cascadeOnUpdate();
+            $table->string('listening_id');
+            $table->foreign('listening_id')->references('id')->on('listenings')->cascadeOnDelete()->cascadeOnUpdate();
             $table->string('Idcode');
             $table->foreign('Idcode')->references('Idcode')->on('candidates')->cascadeOnDelete()->cascadeOnUpdate();
             $table->integer('Numerical_order');

@@ -13,7 +13,8 @@ return new class extends Migration
     {
         Schema::create('exam_subjects', function (Blueprint $table) {
             $table->string('id')->primary();
-            $table->foreignId('exam_id')->constrained('exams')->cascadeOnDelete()->cascadeOnUpdate();
+            $table->string('exam_id');
+            $table->foreign('exam_id')->references('id')->on('exams')->cascadeOnDelete()->cascadeOnUpdate();
             $table->string('Name');
             $table->enum('Status', ['true', 'false'])->default('true');
             $table->dateTime('TimeStart');

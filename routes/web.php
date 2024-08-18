@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -15,4 +16,12 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('welcome');
+});
+Route::get('/add-admin', function () {
+    $admin = App\Models\Admin::create([
+        'Name' => 'admin',
+        'Password' => Hash::make('12345678'),
+    ]);
+
+    return 'Admin account created successfully!';
 });

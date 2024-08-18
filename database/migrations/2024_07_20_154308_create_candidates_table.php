@@ -13,7 +13,8 @@ return new class extends Migration
     {
         Schema::create('candidates', function (Blueprint $table) {
             $table->string('Idcode')->primary();
-            $table->foreignId('exam_id')->constrained('exams')->cascadeOnDelete()->cascadeOnUpdate();
+            $table->string('exam_id');
+            $table->foreign('exam_id')->references('id')->on('exams')->cascadeOnDelete()->cascadeOnUpdate();
             $table->string('Fullname');
             $table->string('Image')->default('storage/default/user.png');
             $table->date('DOB');
