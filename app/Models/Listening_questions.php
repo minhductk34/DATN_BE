@@ -7,8 +7,12 @@ use Illuminate\Database\Eloquent\Model;
 
 class Listening_questions extends Model
 {
+    public $incrementing = false;
+    protected $keyType = 'string';
+    protected $primaryKey = 'id';
     use HasFactory;
     protected $fillable = [
+        'id',
         'listening_id',
         'Title',
         'Answer_P',

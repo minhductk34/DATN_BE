@@ -13,7 +13,8 @@ return new class extends Migration
     {
         Schema::create('candidate_questions', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('question_id')->constrained('questions')->cascadeOnDelete()->cascadeOnUpdate();
+            $table->string('question_id');
+            $table->foreign('question_id')->references('id')->on('questions')->cascadeOnDelete()->cascadeOnUpdate();
             $table->string('Idcode');
             $table->foreign('Idcode')->references('Idcode')->on('candidates')->cascadeOnDelete()->cascadeOnUpdate();
             $table->integer('Numerical_order');
