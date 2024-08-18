@@ -13,6 +13,7 @@ class Lecturers extends Model
     protected $keyType = 'string';
 
     protected $fillable = [
+        'Idcode',
         'Fullname',
         'Profile',
         'Email',

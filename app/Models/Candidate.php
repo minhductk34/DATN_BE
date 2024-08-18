@@ -14,6 +14,7 @@ class Candidate extends Model
     protected $keyType = 'string';
 
     protected $fillable = [
+        'Idcode',
         'exam_id',
         'Fullname',
         'Image',
