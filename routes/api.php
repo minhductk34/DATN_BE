@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\CandidateController;
 use App\Http\Controllers\ExamContentController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -47,5 +48,14 @@ Route::prefix('admin')->group(function(){
 
         //delete data
         Route::delete('/delete/{id}', [ExamContentController::class, 'destroy']);
+    });
+    Route::prefix('candidate')->group(function () {
+        Route::get('/', [CandidateController::class, 'index']);
+        Route::get('/{id}', [CandidateController::class, 'show']);
+        Route::post('/export-excel-password-candidate', [CandidateController::class, 'exportExcel']);
+        Route::post('/', [CandidateController::class, 'store']);
+        Route::post('/import-excel-candidate', [CandidateController::class, 'importExcel']);
+        Route::put('/{id}', [CandidateController::class, 'update']);
+        Route::delete('/delete/{id}', [CandidateController::class, 'destroy']);
     });
 });
