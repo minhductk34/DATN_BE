@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\ExamContentController;
+use App\Http\Controllers\ExamRoomController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ExamSubjectController;
@@ -25,7 +26,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 Route::prefix('admin')->group(function(){
 
     Route::post('/login', [AdminController::class, 'login']);
-    //Quản lý môn thi 
+    //Quản lý môn thi
     Route::prefix('exam-subjects')->group(function () {
         Route::get('/exam/{id}', [ExamSubjectController::class,'getSubjectByExam']);
         Route::post('/', [ExamSubjectController::class,'store']);
@@ -48,4 +49,5 @@ Route::prefix('admin')->group(function(){
         //delete data
         Route::delete('/delete/{id}', [ExamContentController::class, 'destroy']);
     });
+    Route::resource('exam-room', ExamRoomController::class);
 });

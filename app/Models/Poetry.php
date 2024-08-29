@@ -18,4 +18,9 @@ class Poetry extends Model
     public function exam_subject(){
         return $this->belongsTo(Exam_Subject::class);
     }
+    public function examRooms()
+    {
+        return $this->hasMany(ExamRoom::class);
+    }
+
 }
