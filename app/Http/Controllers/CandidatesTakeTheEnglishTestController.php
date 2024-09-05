@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Candidates_take_the_English_test;
+use App\Models\CandidatesTakeTheEnglishTest;
 use Illuminate\Http\Request;
 
 class CandidatesTakeTheEnglishTestController extends Controller
@@ -34,7 +34,7 @@ class CandidatesTakeTheEnglishTestController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Candidates_take_the_English_test $candidates_take_the_English_test)
+    public function show(CandidatesTakeTheEnglishTest $candidates_take_the_English_test)
     {
         //
     }
@@ -42,7 +42,7 @@ class CandidatesTakeTheEnglishTestController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Candidates_take_the_English_test $candidates_take_the_English_test)
+    public function edit(CandidatesTakeTheEnglishTest $candidates_take_the_English_test)
     {
         //
     }
@@ -50,7 +50,7 @@ class CandidatesTakeTheEnglishTestController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Candidates_take_the_English_test $candidates_take_the_English_test)
+    public function update(Request $request, CandidatesTakeTheEnglishTest $candidates_take_the_English_test)
     {
         //
     }
@@ -58,7 +58,7 @@ class CandidatesTakeTheEnglishTestController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Candidates_take_the_English_test $candidates_take_the_English_test)
+    public function destroy(CandidatesTakeTheEnglishTest $candidates_take_the_English_test)
     {
         //
     }

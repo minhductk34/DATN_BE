@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Reading_questions;
+use App\Models\ReadingQuestions;
 use Illuminate\Http\Request;
 
 class ReadingQuestionsController extends Controller
@@ -34,7 +34,7 @@ class ReadingQuestionsController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Reading_questions $reading_questions)
+    public function show(ReadingQuestions $reading_questions)
     {
         //
     }
@@ -42,7 +42,7 @@ class ReadingQuestionsController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Reading_questions $reading_questions)
+    public function edit(ReadingQuestions $reading_questions)
     {
         //
     }
@@ -50,7 +50,7 @@ class ReadingQuestionsController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Reading_questions $reading_questions)
+    public function update(Request $request, ReadingQuestions $reading_questions)
     {
         //
     }
@@ -58,7 +58,7 @@ class ReadingQuestionsController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Reading_questions $reading_questions)
+    public function destroy(ReadingQuestions $reading_questions)
     {
         //
     }

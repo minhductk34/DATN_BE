@@ -2,7 +2,7 @@
 
 namespace App\Imports;
 
-use App\Models\Exam_subject;
+use App\Models\ExamSubject;
 use Illuminate\Support\Carbon;
 use Illuminate\Validation\Rule;
 use Maatwebsite\Excel\Concerns\ToModel;
@@ -18,7 +18,7 @@ class ExamSubjectImport implements ToModel, WithHeadingRow, WithValidation, Skip
 
     public function model(array $row)
     {
-        return new Exam_subject([
+        return new ExamSubject([
             'id' => $row['id'],
             'exam_id' => $row['exam_id'],
             'Name' => $row['name'],

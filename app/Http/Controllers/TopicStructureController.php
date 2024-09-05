@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Topic_structure;
+use App\Models\TopicStructure;
 use Illuminate\Http\Request;
 
 class TopicStructureController extends Controller
@@ -34,7 +34,7 @@ class TopicStructureController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Topic_structure $topic_structure)
+    public function show(TopicStructure $topic_structure)
     {
         //
     }
@@ -42,7 +42,7 @@ class TopicStructureController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Topic_structure $topic_structure)
+    public function edit(TopicStructure $topic_structure)
     {
         //
     }
@@ -50,7 +50,7 @@ class TopicStructureController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Topic_structure $topic_structure)
+    public function update(Request $request, TopicStructure $topic_structure)
     {
         //
     }
@@ -58,7 +58,7 @@ class TopicStructureController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Topic_structure $topic_structure)
+    public function destroy(TopicStructure $topic_structure)
     {
         //
     }
