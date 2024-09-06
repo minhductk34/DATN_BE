@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\ExamSubject\StoreExamSubjectRequest;
 use App\Http\Requests\ExamSubject\UpdateExamSubjectRequest;
-use App\Models\Exam_subject as ExamSubject;
+use App\Models\ExamSubject as ExamSubject;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Imports\ExamSubjectImport;
@@ -59,7 +59,7 @@ class ExamSubjectController extends Controller
      * Thêm môn thi bằng exel
      */
     public function importExcel(Request $request)
-    {   
+    {
         $request->validate(
             [
                 'file' => 'required|mimes:xlsx,xls',
