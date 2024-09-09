@@ -3,6 +3,7 @@
 namespace App\Imports;
 
 use App\Models\Question;
+use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Concerns\Importable;
 use Maatwebsite\Excel\Concerns\SkipsFailures;
 use Maatwebsite\Excel\Concerns\SkipsOnFailure;
@@ -10,8 +11,8 @@ use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithValidation;
 use Illuminate\Support\Facades\Storage;
-use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
 use PhpOffice\PhpSpreadsheet\IOFactory;
+use App\Models\QuestionVersion;
 
 class QuestionImport implements ToModel, WithHeadingRow, WithValidation, SkipsOnFailure
 {
@@ -32,23 +33,38 @@ class QuestionImport implements ToModel, WithHeadingRow, WithValidation, SkipsOn
 
         $this->currentRow++;
 
-        return new Question([
-            'id' => $row['id'],
-            'exam_content_id' => $row['content_id'],
-            'Title' => $row['question'],
-            'Image_Title' => $image,
-            'Answer_P' => $row['correct_answer'],
-            'Image_P' => $image1,
+        return DB::transaction(function () use ($row, $image, $image1, $image2, $image3, $image4) {
+            // Tạo câu hỏi
+            $question = Question::create(
+                [
+                    'id' => $row['id'],
+                    'exam_content_id' => $row['content_id'],
+                ]
+            );
 
-            'Answer_F1' => $row['option2'],
-            'Image_F1' => $image2,
-            'Answer_F2' => $row['option3'],
-            'Image_F2' => $image3,
-            'Answer_F3' => $row['option4'],
-            'Image_F3' => $image4,
+            // Tạo QuestionVersion mới
+            $version = new QuestionVersion([
+                'Title' => $row['question'],
+                'Image_Title' => $image,
+                'Answer_P' => $row['correct_answer'],
+                'Image_P' => $image1,
+                'Answer_F1' => $row['option2'],
+                'Image_F1' => $image2,
+                'Answer_F2' => $row['option3'],
+                'Image_F2' => $image3,
+                'Answer_F3' => $row['option4'],
+                'Image_F3' => $image4,
+                'Level' => $row['level'],
+                'version' => $question->versions()->max('version') + 1,
+            ]);
 
-            'Level' => $row['level']
-        ]);
+            $question->versions()->save($version);
+
+            // Cập nhật current_version_id
+            $question->update(['current_version_id' => $version->id]);
+
+            return $question;
+        });
     }
 
     public function rules(): array

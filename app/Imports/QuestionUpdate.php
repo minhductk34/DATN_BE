@@ -8,12 +8,13 @@ use Maatwebsite\Excel\Concerns\SkipsFailures;
 use Maatwebsite\Excel\Concerns\SkipsOnFailure;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
-use Maatwebsite\Excel\Concerns\WithUpserts;
 use Maatwebsite\Excel\Concerns\WithValidation;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
+use App\Models\QuestionVersion;
 
-class QuestionUpdate implements ToModel, WithHeadingRow, WithValidation, SkipsOnFailure, WithUpserts
+class QuestionUpdate implements ToModel, WithHeadingRow, WithValidation, SkipsOnFailure
 {
     use Importable, SkipsFailures;
 
@@ -32,45 +33,43 @@ class QuestionUpdate implements ToModel, WithHeadingRow, WithValidation, SkipsOn
 
         $this->currentRow++;
 
-        $existingQuestion = Question::find($row['id']);
+        $existingQuestion = Question::with(['currentVersion','versions'])->find($row['id']);
 
-        // Xóa ảnh cũ nếu có ảnh mới
-        if ($existingQuestion) {
-            $this->deleteOldImage($existingQuestion->Image_Title, $image);
-            $this->deleteOldImage($existingQuestion->Image_P, $image1);
-            $this->deleteOldImage($existingQuestion->Image_F1, $image2);
-            $this->deleteOldImage($existingQuestion->Image_F2, $image3);
-            $this->deleteOldImage($existingQuestion->Image_F3, $image4);
-        }
+        return DB::transaction(function () use ($row, $image, $image1, $image2, $image3, $image4, $existingQuestion) {
+            $existingQuestion->currentVersion->update(['is_active' => false]);
 
-        return new Question([
-            'id' => $row['id'],
-            'exam_content_id' => $row['content_id'],
-            'Title' => $row['question'],
-            'Image_Title' => $image,
-            'Answer_P' => $row['correct_answer'],
-            'Image_P' => $image1,
+            $newVersion = new QuestionVersion([
+                'question_id' => $existingQuestion->id,
+                'Title' => $row['question'],
+                'Image_Title' => $image,
+                'Answer_P' => $row['correct_answer'],
+                'Image_P' => $image1,
+                'Answer_F1' => $row['option2'],
+                'Image_F1' => $image2,
+                'Answer_F2' => $row['option3'],
+                'Image_F2' => $image3,
+                'Answer_F3' => $row['option4'],
+                'Image_F3' => $image4,
+                'Level' => $row['level'],
+                'version' => $existingQuestion->versions()->max('version') + 1,
+            ]);
 
-            'Answer_F1' => $row['option2'],
-            'Image_F1' => $image2,
-            'Answer_F2' => $row['option3'],
-            'Image_F2' => $image3,
-            'Answer_F3' => $row['option4'],
-            'Image_F3' => $image4,
+            $newVersion->save();
 
-            'Level' => $row['level']
-        ]);
-    }
+            $existingQuestion->update([
+                'id' => $row['id'],
+                'current_version_id' => $newVersion->id,
+                'exam_content_id' => $row['content_id']
+            ]);
 
-    public function uniqueBy()
-    {
-        return 'id';
+            return $newVersion;
+        });
     }
 
     public function rules(): array
     {
         return [
-            '*.id' => 'required|max:255',
+            '*.id' => 'required|exists:questions,id|max:255',
             '*.content_id' => 'required|exists:exam_contents,id|max:255',
             '*.question' => 'required|string|max:255',
             '*.image' => 'nullable|file|mimes:jpeg,jpg,png,gif,webp',
@@ -100,6 +99,7 @@ class QuestionUpdate implements ToModel, WithHeadingRow, WithValidation, SkipsOn
             '*.option4.required' => ':attribute bắt buộc phải nhập',
             '*.level.required' => ':attribute bắt buộc phải nhập',
 
+            '*.id.exists' => ':attribute không tồn tại',
             '*.content_id.exists' => ':attribute không tồn tại',
 
             '*.question.string' => ':attribute phải là chuỗi',
@@ -192,12 +192,5 @@ class QuestionUpdate implements ToModel, WithHeadingRow, WithValidation, SkipsOn
         }
 
         return $imageContents;
-    }
-
-    private function deleteOldImage($oldImage, $newImage)
-    {
-        if ($newImage && $oldImage) {
-            Storage::disk('public')->delete($oldImage);
-        }
     }
 }

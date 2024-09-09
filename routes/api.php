@@ -53,9 +53,8 @@ Route::prefix('admin')->group(function(){
     Route::prefix('questions')->group(function () {
         //get data
         Route::get('/', [QuestionController::class,'index']);
-        Route::get('/english-questions', [QuestionController::class,'englishQuestion']);
         Route::get('/{id}', [QuestionController::class,'show']);
-        Route::get('/content/{examContentId}/{section}', [QuestionController::class, 'getQuestionsBySection']);
+        Route::get('/{id}/versions', [QuestionController::class, 'versions']);
 
         // create data
         Route::post('/', [QuestionController::class,'store']);
@@ -63,7 +62,7 @@ Route::prefix('admin')->group(function(){
 
         // update data
         Route::put('/{id}', [QuestionController::class,'update']);
-        Route::post('/update/exel', [QuestionController::class, 'updateExcel']);
+        Route::put('/update/exel', [QuestionController::class, 'updateExcel']);
         Route::patch('/restore/{id}', [QuestionController::class,'restore']);
 
         //delete data

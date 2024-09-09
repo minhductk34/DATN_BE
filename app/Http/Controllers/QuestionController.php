@@ -25,8 +25,12 @@ class QuestionController extends Controller
             }
 
             $questions = Question::query()
-                ->select('id', 'Title', 'Status')
-                ->where('exam_content_id', $exam_content_id)
+                ->join('question_versions', function ($join) {
+                    $join->on('questions.id', '=', 'question_versions.question_id')
+                        ->on('questions.current_version_id', '=', 'question_versions.id');
+                })
+                ->where('questions.exam_content_id', $exam_content_id)
+                ->select('questions.id', 'question_versions.Title', 'questions.Status')
                 ->get();
 
             if ($questions->isEmpty()) {
@@ -39,23 +43,28 @@ class QuestionController extends Controller
         }
     }
 
-    //Quản lý câu hỏi tiếng anh
-    public function englishQuestion($examContentId, $section)
+    public function versions($id)
     {
         try {
-            
+            $question = Question::with('versions')->find($id);
+
+            if (! $question) {
+                return $this->jsonResponse(true, [], 'Không tìm thấy câu hỏi', 404);
+            }
+
+            return $this->jsonResponse(true, $question, '', 200);
         } catch (\Exception $e) {
             return $this->jsonResponse(false, null, $e->getMessage(), 500);
         }
     }
 
-    public function store(StoreQuestionRequest $request)
+    public function store(Request $request)
     {
         $validatedData = $request->except(['Image_Title', 'Image_P', 'Image_F1', 'Image_F2', 'Image_F3']);
         $imagePaths = [];
 
         try {
-            $imageFields = ['Image_title', 'Image_P', 'Image_F1', 'Image_F2', 'Image_F3'];
+            $imageFields = ['Image_Title', 'Image_P', 'Image_F1', 'Image_F2', 'Image_F3'];
 
             foreach ($imageFields as $field) {
                 if ($request->hasFile($field)) {
@@ -64,9 +73,19 @@ class QuestionController extends Controller
             }
 
             $validatedData = array_merge($validatedData, $imagePaths);
-            $examSubject = Question::create($validatedData);
 
-            return $this->jsonResponse(true, $examSubject, '', 201);
+            return DB::transaction(function () use ($validatedData) {
+                $question = Question::create(
+                    [
+                        'id' => $validatedData['id'],
+                        'exam_content_id' => $validatedData['exam_content_id'],
+                    ]
+                );
+                $version = $this->createQuestionVersion($question, $validatedData, 1);
+                $question->update(['current_version_id' => $version->id]);
+
+                return $this->jsonResponse(true, $question->load('currentVersion'), '', 201);
+            });
         } catch (\Exception $e) {
             // xóa ảnh đã tải lên nếu có lỗi
             foreach ($imagePaths as $path) {
@@ -79,7 +98,7 @@ class QuestionController extends Controller
         }
     }
 
-    // Thêm/sửa câu hỏi bằng exel
+    // Thêm câu hỏi bằng exel
     public function importExcel(ImportExelRequest $request)
     {
         try {
@@ -99,7 +118,7 @@ class QuestionController extends Controller
                 }
 
                 foreach ($import->imageTmp as $img) {
-                    if(Storage::disk('public')->exists($img)){
+                    if (Storage::disk('public')->exists($img)) {
                         Storage::disk('public')->delete($img);
                     }
                 }
@@ -123,7 +142,7 @@ class QuestionController extends Controller
                 return $this->jsonResponse(false, null, 'ID câu hỏi không hợp lệ', 400);
             }
 
-            $question = Question::find($id);
+            $question = Question::with('currentVersion')->find($id);
 
             if (!$question) {
                 return $this->jsonResponse(false, null, 'Không tìm thấy câu hỏi', 404);
@@ -138,32 +157,45 @@ class QuestionController extends Controller
     public function update(UpdateQuestionRequest $request, $id)
     {
         $question  = Question::find($id);
-        $validatedData = $request->except(['Image_title', 'Image_P', 'Image_F1', 'Image_F2', 'Image_F3']);
-        $imagePaths = [];
 
         if (!$question) {
             return $this->jsonResponse(false, null, 'Không tìm thấy câu hỏi', 404);
         }
+
+        $validatedData = $request->except(['Image_Title', 'Image_P', 'Image_F1', 'Image_F2', 'Image_F3']);
+        $imagePaths = [];
 
         try {
             $imageFields = ['Image_Title', 'Image_P', 'Image_F1', 'Image_F2', 'Image_F3'];
 
             foreach ($imageFields as $field) {
                 if ($request->hasFile($field)) {
-                    // Xóa ảnh cũ nếu có
-                    if ($question->$field && Storage::disk('public')->exists($question->$field)) {
-                        Storage::disk('public')->delete($question->$field);
-                    }
-                    // Lưu ảnh mới
                     $imagePaths[$field] = $request->file($field)->store('questions', 'public');
                 }
             }
 
             $validatedData = array_merge($validatedData, $imagePaths);
 
-            $question->update($validatedData);
+            return DB::transaction(function () use ($question, $validatedData) {
+                // Đánh dấu phiên bản cũ là không hoạt động
+                $question->currentVersion->update(['is_active' => false]);
 
-            return $this->jsonResponse(true, $question, '', 200);
+                // Tạo phiên bản mới
+                $newVersion = $this->createQuestionVersion(
+                    $question,
+                    $validatedData,
+                    $question->versions()->max('version') + 1
+                );
+
+                // Cập nhật question
+                $question->update([
+                    'id' => $validatedData['id'],
+                    'current_version_id' => $newVersion->id,
+                    'exam_content_id' => $validatedData['exam_content_id']
+                ]);
+
+                return $this->jsonResponse(true, $question->load('currentVersion'), '', 200);
+            });
         } catch (\Exception $e) {
             foreach ($imagePaths as $path) {
                 if (Storage::disk('public')->exists($path)) {
@@ -194,7 +226,7 @@ class QuestionController extends Controller
                 }
 
                 foreach ($import->imageTmp as $img) {
-                    if(Storage::disk('public')->exists($img)){
+                    if (Storage::disk('public')->exists($img)) {
                         Storage::disk('public')->delete($img);
                     }
                 }
@@ -249,6 +281,25 @@ class QuestionController extends Controller
         } catch (\Exception $e) {
             return $this->jsonResponse(false, null, $e->getMessage(), 500);
         }
+    }
+
+    private function createQuestionVersion(Question $question, array $data, int $version)
+    {
+        return $question->versions()->create([
+            'Title' => $data['Title'],
+            'Image_Title' => $data['Image_Title'] ?? null,
+            'Answer_P' => $data['Answer_P'],
+            'Image_P' => $data['Image_P'] ?? null,
+            'Answer_F1' => $data['Answer_F1'],
+            'Image_F1' => $data['Image_F1'] ?? null,
+            'Answer_F2' => $data['Answer_F2'],
+            'Image_F2' => $data['Image_F2'] ?? null,
+            'Answer_F3' => $data['Answer_F3'],
+            'Image_F3' => $data['Image_F3'] ?? null,
+            'Level' => $data['Level'],
+            'version' => $version,
+            'is_active' => true,
+        ]);
     }
 
     protected function jsonResponse($success = true, $data = null, $warning = '', $statusCode = 200)
