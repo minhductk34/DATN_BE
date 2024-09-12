@@ -45,17 +45,16 @@ Route::prefix('admin')->group(function(){
         Route::post('/import-excel-exam-content', [ExamContentController::class, 'importExcel']);
         //update data
         Route::put('/{id}', [ExamContentController::class, 'update']);
-
         //delete data
         Route::delete('/delete/{id}', [ExamContentController::class, 'destroy']);
     });
     Route::prefix('candidate')->group(function () {
-        Route::get('/', [CandidateController::class, 'index']);
-        Route::get('/{id}', [CandidateController::class, 'show']);
+        Route::get('/getAll', [CandidateController::class, 'index']);
+        Route::get('/getById/{id}', [CandidateController::class, 'show']);
         Route::post('/export-excel-password-candidate', [CandidateController::class, 'exportExcel']);
-        Route::post('/', [CandidateController::class, 'store']);
+        Route::post('/create', [CandidateController::class, 'store']);
         Route::post('/import-excel-candidate', [CandidateController::class, 'importExcel']);
-        Route::put('/{id}', [CandidateController::class, 'update']);
+        Route::put('/update/{id}', [CandidateController::class, 'update']);
         Route::delete('/delete/{id}', [CandidateController::class, 'destroy']);
     });
 });

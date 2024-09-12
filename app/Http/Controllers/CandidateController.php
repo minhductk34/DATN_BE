@@ -28,7 +28,7 @@ class CandidateController extends Controller
         // Validate dữ liệu từ request
         $validated = $request->validate([
             'Idcode' => 'required|string|max:255|unique:candidates',
-            'exam_id' => 'required|integer',
+            'exam_id' => 'required|string|exists:exams,id',
             'Fullname' => 'required|string|max:255',
             'Image' => 'nullable|string',
             'DOB' => 'required|date',
@@ -36,9 +36,8 @@ class CandidateController extends Controller
             'Examination_room' => 'required|string|max:255',
             'Password' => 'required|string|min:8',
             'Email' => 'required|string|email|max:255|unique:candidates',
-            'Status' => 'required|string|max:50',
         ], $this->validationMessages());
-
+        
         $candidate = Candidate::create($validated);
         return $this->jsonResponse(true, $candidate, 'Thêm ứng viên thành công.', 201);
     }
@@ -63,12 +62,15 @@ class CandidateController extends Controller
      */
     public function update($id, Request $request)
     {
+
         try {
-            $candidate = Candidate::findOrFail($id);
+            $candidate = Candidate::query()
+            ->where('Idcode', $id)
+            ->first();
 
             // Validate dữ liệu từ request
             $validated = $request->validate([
-                'Idcode' => "sometimes|required|string|max:255|unique:candidates,Idcode,{$candidate->id}",
+                'Idcode' => "sometimes|required|string|max:255|unique:candidates,Idcode,{$candidate->Idcode}",
                 'exam_id' => 'sometimes|required|integer',
                 'Fullname' => 'sometimes|required|string|max:255',
                 'Image' => 'sometimes|nullable|string',
@@ -76,7 +78,7 @@ class CandidateController extends Controller
                 'Address' => 'sometimes|required|string|max:255',
                 'Examination_room' => 'sometimes|required|string|max:255',
                 'Password' => 'sometimes|required|string|min:8',
-                'Email' => "sometimes|required|string|email|max:255|unique:candidates,Email,{$candidate->id}",
+                'Email' => "sometimes|required|string|email|max:255|unique:candidates,Email,{$candidate->Idcode}",
                 'Status' => 'sometimes|required|string|max:50',
             ], $this->validationMessages());
 
@@ -158,19 +160,6 @@ class CandidateController extends Controller
     }
 
     /**
-     * Custom JSON response method.
-     */
-    protected function jsonResponse($success = true, $data = null, $message = '', $statusCode = 200)
-    {
-        return response()->json([
-            'success' => $success,
-            'status' => $statusCode,
-            'data' => $data,
-            'message' => $message
-        ], $statusCode);
-    }
-
-    /**
      * Validation messages in Vietnamese.
      */
     protected function validationMessages()
@@ -179,6 +168,7 @@ class CandidateController extends Controller
             'Idcode.required' => 'Mã ID là bắt buộc.',
             'Idcode.unique' => 'Mã ID đã tồn tại.',
             'exam_id.required' => 'Mã kỳ thi là bắt buộc.',
+            'exam_id.exists' => 'Mã kỳ thi không tồn tại.',
             'Fullname.required' => 'Họ tên là bắt buộc.',
             'DOB.required' => 'Ngày sinh là bắt buộc.',
             'Address.required' => 'Địa chỉ là bắt buộc.',
@@ -190,5 +180,6 @@ class CandidateController extends Controller
             'Email.unique' => 'Email đã tồn tại.',
             'Status.required' => 'Trạng thái là bắt buộc.',
         ];
+        
     }
 }
