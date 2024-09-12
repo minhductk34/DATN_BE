@@ -6,7 +6,7 @@ use App\Http\Controllers\ExamController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ExamSubjectController;
-
+use App\Http\Controllers\TopicStructureController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -42,7 +42,7 @@ Route::prefix('admin')->group(function () {
         Route::get('/{id}', [ExamContentController::class, 'show'])->name('exam-content-byid');
         // create data
         Route::post('/', [ExamContentController::class, 'store']);
-//        Route::post('/import-excel-exam-content', [ExamContentController::class, 'importExcel']);
+        //        Route::post('/import-excel-exam-content', [ExamContentController::class, 'importExcel']);
         //update data
         Route::put('/{id}', [ExamContentController::class, 'update']);
 
@@ -59,5 +59,13 @@ Route::prefix('admin')->group(function () {
         Route::delete('/{id}', [ExamController::class, 'destroy']);
         Route::put('/restore/{id}', [ExamController::class, 'restore']);
         Route::post('/import', [ExamController::class, 'importExcel']);
+    });
+
+
+    Route::prefix('topic-structures')->group(function () {
+        //add topic structure
+        Route::post('/', [TopicStructureController::class, 'store']);
+        //Update topic structure
+        Route::put('{id}', [TopicStructureController::class, 'update']);
     });
 });
