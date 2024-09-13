@@ -58,7 +58,7 @@ class QuestionController extends Controller
         }
     }
 
-    public function store(Request $request)
+    public function store(StoreQuestionRequest $request)
     {
         $validatedData = $request->except(['Image_Title', 'Image_P', 'Image_F1', 'Image_F2', 'Image_F3']);
         $imagePaths = [];

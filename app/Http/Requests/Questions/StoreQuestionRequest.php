@@ -3,7 +3,8 @@
 namespace App\Http\Requests\Questions;
 
 use Illuminate\Foundation\Http\FormRequest;
-
+use Illuminate\Contracts\Validation\Validator;
+use Illuminate\Http\Exceptions\HttpResponseException;
 class StoreQuestionRequest extends FormRequest
 {
     /**
@@ -68,5 +69,17 @@ class StoreQuestionRequest extends FormRequest
 
             'Level' => 'Mức độ'
         ];
+    }
+
+    protected function failedValidation(Validator $validator)
+    {
+        $errors = $validator->errors();
+        
+        throw new HttpResponseException(response()->json([
+            'success' => false,
+            'status' => '422',
+            'data' => null,
+            'warning' => $errors
+        ], 422));
     }
 }

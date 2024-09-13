@@ -3,6 +3,8 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Contracts\Validation\Validator;
+use Illuminate\Http\Exceptions\HttpResponseException;
 
 class ImportExelRequest extends FormRequest
 {
@@ -33,5 +35,17 @@ class ImportExelRequest extends FormRequest
             'file.file' => 'Hãy chọn một file để tải lên',
             'file.mimes' => 'File không đúng định dạng ( .xlsx, .xls )',
         ];
+    }
+
+    protected function failedValidation(Validator $validator)
+    {
+        $errors = $validator->errors();
+        
+        throw new HttpResponseException(response()->json([
+            'success' => false,
+            'status' => '422',
+            'data' => null,
+            'warning' => $errors
+        ], 422));
     }
 }

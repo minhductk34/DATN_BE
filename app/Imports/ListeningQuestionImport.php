@@ -2,33 +2,20 @@
 
 namespace App\Imports;
 
-use App\Models\Question;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\Importable;
 use Maatwebsite\Excel\Concerns\SkipsFailures;
 use Maatwebsite\Excel\Concerns\SkipsOnFailure;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithValidation;
-use Illuminate\Support\Facades\Storage;
-use PhpOffice\PhpSpreadsheet\IOFactory;
-use App\Models\QuestionVersion;
+use App\Models\ListeningQuestion;
+use App\Models\ListeningQuestionVersion;
 use Maatwebsite\Excel\Concerns\ToCollection;
-use Maatwebsite\Excel\Concerns\WithChunkReading;
+use Illuminate\Support\Collection;
 
-class QuestionImport implements ToCollection, WithHeadingRow, WithValidation, SkipsOnFailure, WithChunkReading
+class ListeningQuestionImport implements ToCollection, WithHeadingRow, WithValidation, SkipsOnFailure
 {
     use Importable, SkipsFailures;
-
-    private $spreadsheet;
-    private $worksheet;
-    public $imageTmp = [];
-
-    public function __construct()
-    {
-        $this->spreadsheet = IOFactory::load(request()->file('file')->getPathname());
-        $this->worksheet = $this->spreadsheet->getActiveSheet();
-    }
 
     public function collection(Collection $rows)
     {
@@ -36,13 +23,11 @@ class QuestionImport implements ToCollection, WithHeadingRow, WithValidation, Sk
             $questions = [];
             $versions = [];
 
-            foreach ($rows as $index => $row) {
-                $rowNumber = $index + 2;
-
+            foreach ($rows as $row) {
                 $questionId = $row['id'];
                 $questions[] = [
                     'id' => $questionId,
-                    'exam_content_id' => $row['content_id'],
+                    'listening_id' => $row['listening_id'],
                     'created_at' => now(),
                     'updated_at' => now(),
                 ];
@@ -50,15 +35,10 @@ class QuestionImport implements ToCollection, WithHeadingRow, WithValidation, Sk
                 $versions[] = [
                     'question_id' => $questionId,
                     'Title' => $row['question'],
-                    'Image_Title' => $this->saveImageFromExcel($rowNumber, 'D'),
                     'Answer_P' => $row['correct_answer'],
-                    'Image_P' => $this->saveImageFromExcel($rowNumber, 'F'),
                     'Answer_F1' => $row['option2'],
-                    'Image_F1' => $this->saveImageFromExcel($rowNumber, 'H'),
                     'Answer_F2' => $row['option3'],
-                    'Image_F2' => $this->saveImageFromExcel($rowNumber, 'J'),
                     'Answer_F3' => $row['option4'],
-                    'Image_F3' => $this->saveImageFromExcel($rowNumber, 'K'),
                     'Level' => $row['level'],
                     'version' => 1,
                     'created_at' => now(),
@@ -66,10 +46,10 @@ class QuestionImport implements ToCollection, WithHeadingRow, WithValidation, Sk
                 ];
             }
 
-            Question::insert($questions);
-            QuestionVersion::insert($versions);
+            ListeningQuestion::insert($questions);
+            ListeningQuestionVersion::insert($versions);
 
-            $versionIds = QuestionVersion::whereIn('question_id', array_column($questions, 'id'))
+            $versionIds = ListeningQuestionVersion::whereIn('question_id', array_column($questions, 'id'))
                 ->pluck('id', 'question_id');
 
             $updates = [];
@@ -82,7 +62,7 @@ class QuestionImport implements ToCollection, WithHeadingRow, WithValidation, Sk
             }
 
             foreach ($updates as $update) {
-                Question::where('id', $update['id'])->update([
+                ListeningQuestion::where('id', $update['id'])->update([
                     'current_version_id' => $update['current_version_id'],
                     'updated_at' => $update['updated_at']
                 ]);
@@ -93,8 +73,8 @@ class QuestionImport implements ToCollection, WithHeadingRow, WithValidation, Sk
     public function rules(): array
     {
         return [
-            '*.id' => ['required', 'unique:questions,id', 'max:255'],
-            '*.content_id' => ['required', 'exists:exam_contents,id', 'max:255'],
+            '*.id' => ['required', 'unique:listening_questions,id', 'max:255'],
+            '*.listening_id' => ['required', 'exists:listenings,id', 'max:255'],
             '*.question' => ['required', 'string', 'max:255'],
             '*.correct_answer' => ['required', 'string', 'max:255'],
             '*.option2' => ['required', 'string', 'max:255'],
@@ -108,7 +88,7 @@ class QuestionImport implements ToCollection, WithHeadingRow, WithValidation, Sk
     {
         return [
             '*.*.required' => ':attribute bắt buộc phải nhập',
-            '*.content_id.exists' => ':attribute không tồn tại',
+            '*.listening_id.exists' => ':attribute không tồn tại',
             '*.*.string' => ':attribute phải là chuỗi',
             '*.id.unique' => ':attribute đã tồn tại',
             '*.*.max' => ':attribute tối đa :max kí tự',
@@ -120,7 +100,7 @@ class QuestionImport implements ToCollection, WithHeadingRow, WithValidation, Sk
     {
         return [
             'id' => 'Mã câu hỏi',
-            'content_id' => 'Mã nội dung thi',
+            'listening_id' => 'ID bài nghe',
             'question' => 'Nội dung câu hỏi',
             'correct_answer' => 'Đáp án đúng',
             'option2' => 'Đáp án sai 1',
@@ -128,42 +108,5 @@ class QuestionImport implements ToCollection, WithHeadingRow, WithValidation, Sk
             'option4' => 'Đáp án sai 3',
             'level' => 'Mức độ'
         ];
-    }
-
-    public function chunkSize(): int
-    {
-        return 100;
-    }
-
-    private function saveImageFromExcel($rowNumber, $column)
-    {
-        foreach ($this->worksheet->getDrawingCollection() as $drawing) {
-            if ($drawing->getCoordinates() === $column . $rowNumber) {
-                $imageContents = $this->getImageContents($drawing);
-                $imageName = time() . '-' . uniqid() . '.' . $drawing->getExtension();
-                $imagePath = 'questions/' . $imageName;
-                $this->imageTmp[] = $imagePath;
-
-                Storage::disk('public')->put($imagePath, $imageContents);
-
-                return $imagePath;
-            }
-        }
-
-        return null;
-    }
-
-    private function getImageContents($drawing)
-    {
-        if ($drawing instanceof \PhpOffice\PhpSpreadsheet\Worksheet\MemoryDrawing) {
-            ob_start();
-            call_user_func($drawing->getRenderingFunction(), $drawing->getImageResource());
-            $imageContents = ob_get_contents();
-            ob_end_clean();
-        } else {
-            $imageContents = file_get_contents($drawing->getPath());
-        }
-
-        return $imageContents;
     }
 }
