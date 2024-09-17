@@ -30,17 +30,17 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 Route::prefix('admin')->group(function () {
 
     Route::post('/login', [AdminController::class, 'login']);
-    //Quản lý môn thi 
-    Route::prefix('exam-subjects')->group(function () {
-        Route::get('/exam/{id}', [ExamSubjectController::class, 'getSubjectByExam']);
-        Route::post('/', [ExamSubjectController::class, 'store']);
-        Route::get('/{id}', [ExamSubjectController::class, 'show']);
-        Route::put('/{id}', [ExamSubjectController::class, 'update']);
-        Route::delete('/{id}', [ExamSubjectController::class, 'destroy']);
-        Route::put('/restore/{id}', [ExamSubjectController::class, 'restore']);
+    //Quản lý môn thi
+    Route::middleware('checkToken')->prefix('exam-subjects')->group(function () {
+        Route::get('/exam/{id}', [ExamSubjectController::class,'getSubjectByExam']);
+        Route::post('/', [ExamSubjectController::class,'store']);
+        Route::get('/{id}', [ExamSubjectController::class,'show']);
+        Route::put('/{id}', [ExamSubjectController::class,'update']);
+        Route::delete('/{id}', [ExamSubjectController::class,'destroy']);
+        Route::put('/restore/{id}', [ExamSubjectController::class,'restore']);
         Route::post('/import', [ExamSubjectController::class, 'importExcel']);
     });
-    Route::prefix('exam-content')->group(function () {
+    Route::middleware('checkToken')->prefix('exam-content')->group(function () {
         //get data
         Route::get('exam-subject/{id}', [ExamContentController::class, 'getContentByExam'])->name('exam-content-byExamSubject_id');
         Route::get('/{id}', [ExamContentController::class, 'show'])->name('exam-content-byid');
