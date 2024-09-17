@@ -10,13 +10,15 @@ class ExamSubject extends Model
 {
     use HasFactory,SoftDeletes;
 
+    public $incrementing = false;
+    protected $keyType = 'string';
+    protected $primaryKey = 'id';
+
     protected $fillable = [
         'id',
         'exam_id',
         'Name',
         'Status',
-        'TimeStart',
-        'TimeEnd'
     ];
 
     public function exam(): \Illuminate\Database\Eloquent\Relations\BelongsTo

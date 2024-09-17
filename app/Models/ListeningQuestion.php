@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Question extends Model
+class ListeningQuestion extends Model
 {
     public $incrementing = false;
     protected $keyType = 'string';
@@ -15,23 +15,23 @@ class Question extends Model
 
     protected $fillable = [
         'id',
-        'current_version_id',
-        'exam_content_id',
+        'listening_id',
         'Status',
+        'current_version_id'
     ];
 
-    public function exam_content(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function listening()
     {
-        return $this->belongsTo(ExamContent::class);
+        return $this->belongsTo(Listening::class);
     }
 
     public function versions()
     {
-        return $this->hasMany(QuestionVersion::class);
+        return $this->hasMany(ListeningQuestionVersion::class,'question_id');
     }
 
     public function currentVersion()
     {
-        return $this->belongsTo(QuestionVersion::class, 'current_version_id');
+        return $this->belongsTo(ListeningQuestionVersion::class, 'current_version_id');
     }
 }

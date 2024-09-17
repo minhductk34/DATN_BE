@@ -1,33 +1,29 @@
 <?php
 
-namespace App\Http\Requests\ExamSubject;
+namespace App\Http\Requests\Questions;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Http\Exceptions\HttpResponseException;
 
-class StoreExamSubjectRequest extends FormRequest
+class StoreReadingQuestionRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
     public function authorize(): bool
     {
         return true;
     }
 
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
-     */
     public function rules(): array
     {
         return [
-            'id' => 'required|unique:exam_subjects,id',
-            'exam_id' => 'required|exists:exams,id',
-            'Name' => 'required|string|max:255',
-            'Status' => 'required|in:true,false',
+            'id' => 'required|unique:reading_questions,id|max:255',
+            'reading_id' => 'required|exists:readings,id|max:255',
+            'Title' => 'required|string|max:255',
+            'Answer_P' => 'required|string|max:255',
+            'Answer_F1' => 'required|string|max:255',
+            'Answer_F2' => 'required|string|max:255',
+            'Answer_F3' => 'required|string|max:255',
+            'Level' => 'required|in:Easy,Medium,Difficult',
         ];
     }
 
@@ -39,17 +35,23 @@ class StoreExamSubjectRequest extends FormRequest
             'exists' => ':attribute không tồn tại',
             'string' => ':attribute phải là chuỗi',
             'max' => ':attribute tối đa :max kí tự',
-            'in' => 'Trạng thái không hợp lệ',
+            'in' => ':attribute không hợp lệ',
         ];
     }
 
     public function attributes()
     {
         return [
-            'id' => 'Mã môn thi',
-            'exam_id' => 'ID kì thi',
-            'Name' => 'Tên môn thi',
-            'Status' => 'Trạng thái',
+            'id' => 'Mã câu hỏi',
+            'reading_id' => 'Mã bài đọc',
+            'Title' => 'Nội dung câu hỏi',
+            'Answer_P' => 'Đáp án đúng',
+
+            'Answer_F1' => 'Đáp án sai 1',
+            'Answer_F2' => 'Đáp án sai 2',
+            'Answer_F3' => 'Đáp án sai 3',
+
+            'Level' => 'Mức độ'
         ];
     }
 

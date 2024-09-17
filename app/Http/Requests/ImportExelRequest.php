@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Http\Requests\ExamSubject;
+namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Http\Exceptions\HttpResponseException;
 
-class StoreExamSubjectRequest extends FormRequest
+class ImportExelRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -24,32 +24,16 @@ class StoreExamSubjectRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'id' => 'required|unique:exam_subjects,id',
-            'exam_id' => 'required|exists:exams,id',
-            'Name' => 'required|string|max:255',
-            'Status' => 'required|in:true,false',
+            'file' => 'required|file|mimes:xlsx,xls'
         ];
     }
 
     public function messages()
     {
         return [
-            'required' => ':attribute bắt buộc phải nhập',
-            'unique' => ':attribute đã tồn tại',
-            'exists' => ':attribute không tồn tại',
-            'string' => ':attribute phải là chuỗi',
-            'max' => ':attribute tối đa :max kí tự',
-            'in' => 'Trạng thái không hợp lệ',
-        ];
-    }
-
-    public function attributes()
-    {
-        return [
-            'id' => 'Mã môn thi',
-            'exam_id' => 'ID kì thi',
-            'Name' => 'Tên môn thi',
-            'Status' => 'Trạng thái',
+            'file.required' => 'Hãy chọn một file để tải lên',
+            'file.file' => 'Hãy chọn một file để tải lên',
+            'file.mimes' => 'File không đúng định dạng ( .xlsx, .xls )',
         ];
     }
 
