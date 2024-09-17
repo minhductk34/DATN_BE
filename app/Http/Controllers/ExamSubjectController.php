@@ -17,6 +17,34 @@ class ExamSubjectController extends Controller
     /**
      * Lấy môn thi theo kì thi
      */
+    public function index()
+    {
+        $examSubjects = ExamSubject::all();
+
+        return $examSubjects;
+    }
+    function  getDataShow()
+    {
+        try {
+            $examSubjects = ExamSubject::query()
+                ->select('id', 'name', 'exam_id')
+                ->get();
+
+            return response()->json([
+                'success' => true,
+                'status' => '200',
+                'data' => $examSubjects,
+                'warning' => '',
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'status' => '422',
+                'data' => [],
+                'warning' => $e->errors(),
+            ], 422);
+        }
+    }
     public function getSubjectByExam($id)
     {
         try {

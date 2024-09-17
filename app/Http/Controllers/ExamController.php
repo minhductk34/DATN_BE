@@ -62,4 +62,27 @@ class ExamController extends Controller
     {
         //
     }
+    public function getDataShow()
+    {
+        try {
+            $exams = Exam::query()
+                ->select('id', 'name')
+                ->get();
+
+            return response()->json([
+                'success' => true,
+                'status' => '200',
+                'data' => $exams,
+                'warning' => '',
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'status' => '422',
+                'data' => [],
+                'warning' => $e->getMessage(),
+            ], 422);
+        }
+    }
+
 }
