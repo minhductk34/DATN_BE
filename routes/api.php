@@ -63,9 +63,9 @@ Route::prefix('admin')->group(function () {
 
 
     Route::prefix('topic-structures')->group(function () {
-        //add topic structure
+
         Route::post('/', [TopicStructureController::class, 'store']);
-        //Update topic structure
+
         Route::put('{id}', [TopicStructureController::class, 'update']);
     });
 });

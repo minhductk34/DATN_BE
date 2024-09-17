@@ -11,8 +11,8 @@ class TopicStructure extends Model
     use HasFactory, SoftDeletes;
     protected $fillable = [
         'exam_content_id',
-        'Level',
-        'Quality',
+        'level',
+        'quality',
     ];
     public function exam_content(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
