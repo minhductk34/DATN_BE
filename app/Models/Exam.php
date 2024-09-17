@@ -20,4 +20,5 @@ class Exam extends Model
         'TimeEnd',
         'Status'
     ];
+
 }
