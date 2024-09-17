@@ -5,15 +5,14 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Listening_questions extends Model
+class ListeningQuestionVersion extends Model
 {
-    public $incrementing = false;
-    protected $keyType = 'string';
-    protected $primaryKey = 'id';
     use HasFactory;
+
     protected $fillable = [
         'id',
-        'listening_id',
+        'question_id',
+        'version',
         'Title',
         'Answer_P',
         'Answer_F1',
@@ -22,7 +21,9 @@ class Listening_questions extends Model
         'Status',
         'Level',
     ];
-    public function listening(){
-        return $this->belongsTo(Listening::class);
+
+    public function question()
+    {
+        return $this->belongsTo(ListeningQuestion::class);
     }
 }

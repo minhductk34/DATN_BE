@@ -3,6 +3,8 @@
 namespace App\Http\Requests\ExamSubject;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Contracts\Validation\Validator;
+use Illuminate\Http\Exceptions\HttpResponseException;
 
 class StoreExamSubjectRequest extends FormRequest
 {
@@ -26,8 +28,6 @@ class StoreExamSubjectRequest extends FormRequest
             'exam_id' => 'required|exists:exams,id',
             'Name' => 'required|string|max:255',
             'Status' => 'required|in:true,false',
-            'TimeStart' => 'required|date',
-            'TimeEnd' => 'required|date|after:TimeStart',
         ];
     }
 
@@ -40,8 +40,6 @@ class StoreExamSubjectRequest extends FormRequest
             'string' => ':attribute phải là chuỗi',
             'max' => ':attribute tối đa :max kí tự',
             'in' => 'Trạng thái không hợp lệ',
-            'date' => ':attribute không đúng định dạng',
-            'after' => 'Thời gian kết thúc phải sau thời gian bắt đầu'
         ];
     }
 
@@ -52,8 +50,18 @@ class StoreExamSubjectRequest extends FormRequest
             'exam_id' => 'ID kì thi',
             'Name' => 'Tên môn thi',
             'Status' => 'Trạng thái',
-            'TimeStart' => 'Thời gian bắt đầu',
-            'TimeEnd' => 'Thời gian kết thúc',
         ];
+    }
+
+    protected function failedValidation(Validator $validator)
+    {
+        $errors = $validator->errors();
+        
+        throw new HttpResponseException(response()->json([
+            'success' => false,
+            'status' => '422',
+            'data' => null,
+            'warning' => $errors
+        ], 422));
     }
 }

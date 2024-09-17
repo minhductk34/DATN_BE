@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Imports\ExamContentImport;
-use App\Models\Exam_content;
+use App\Models\ExamContent;
 use Dotenv\Exception\ValidationException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -30,7 +30,7 @@ class ExamContentController extends Controller
                 ], 400);
             }
 
-            $content = Exam_content::query()
+            $content = ExamContent::query()
                 ->where('exam_subject_id', $id)
                 ->get();
 
@@ -80,7 +80,7 @@ class ExamContentController extends Controller
                 'title' => 'required|string|max:255',
             ]);
 
-            $examSubject = Exam_content::create($validatedData);
+            $examSubject = ExamContent::create($validatedData);
 
             return response()->json([
                 'success' => true,
@@ -201,7 +201,7 @@ class ExamContentController extends Controller
                 ], 400);
             }
 
-            $content = Exam_content::query()
+            $content = ExamContent::query()
                 ->where('id', $id)
                 ->get();
 
@@ -235,7 +235,7 @@ class ExamContentController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Exam_content $exam_content)
+    public function edit(ExamContent $exam_content)
     {
         //
     }
@@ -251,7 +251,7 @@ class ExamContentController extends Controller
                 'title' => 'required|string|max:255',
             ]);
 
-            $examSubject = Exam_content::findOrFail($id);
+            $examSubject = ExamContent::findOrFail($id);
 
             $examSubject->update($validatedData);
 
@@ -284,7 +284,7 @@ class ExamContentController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Exam_content $exam_content)
+    public function destroy(ExamContent $exam_content)
     {
         //
     }

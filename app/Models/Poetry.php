@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Poetry extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
     protected $fillable = [
         'exam_subject_id',
         'Name',
@@ -15,8 +16,9 @@ class Poetry extends Model
         'TimeEnd',
         'Status',
     ];
-    public function exam_subject(){
-        return $this->belongsTo(Exam_Subject::class);
+    public function exam_subject(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(ExamSubject::class);
     }
     public function examRooms()
     {

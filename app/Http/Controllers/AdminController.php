@@ -44,7 +44,7 @@ class AdminController extends Controller
         ], 404);
     }
 
-    if (!Hash::check($credentials['password'], $admin->password)) {
+    if (!Hash::check($credentials['password'], $admin->Password)) {
         return response()->json([
             'success' => false,
             'status' => '401',
@@ -84,7 +84,7 @@ class AdminController extends Controller
         'id' => $admin->id,
         'username' => $admin->Name,
     ];
-    
+
     return response()->json([
         'success' => true,
         'status' => '200',

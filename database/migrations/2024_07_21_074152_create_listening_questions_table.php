@@ -14,7 +14,8 @@ return new class extends Migration
         Schema::create('listening_questions', function (Blueprint $table) {
             $table->string('id')->primary();
             $table->string('listening_id');
-            $table->foreign('listening_id')->references('id')->on('listenings')->cascadeOnDelete()->cascadeOnUpdate();            $table->string('Title');
+            $table->foreign('listening_id')->references('id')->on('listenings')->cascadeOnDelete()->cascadeOnUpdate();
+            $table->string('Title');
             $table->string('Answer_P')->nullable();
             $table->string('Answer_F1')->nullable();
             $table->string('Answer_F2')->nullable();

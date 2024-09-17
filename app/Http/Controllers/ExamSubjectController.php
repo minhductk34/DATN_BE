@@ -4,13 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\ExamSubject\StoreExamSubjectRequest;
 use App\Http\Requests\ExamSubject\UpdateExamSubjectRequest;
-use App\Models\Exam_subject as ExamSubject;
+use App\Models\ExamSubject;
 use Illuminate\Http\Request;
-use Maatwebsite\Excel\Facades\Excel;
 use App\Imports\ExamSubjectImport;
 use Illuminate\Support\Facades\DB;
-use Dotenv\Exception\ValidationException;
-use Illuminate\Support\Collection;
 
 class ExamSubjectController extends Controller
 {
@@ -21,16 +18,16 @@ class ExamSubjectController extends Controller
     {
         try {
             if (!is_string($id) || empty(trim($id))) {
-                return $this->jsonResponse(false, null, 'Invalid exam_subject_id', 400);
+                return $this->jsonResponse(false, null, 'ID không hợp lệ', 400);
             }
 
             $examSubjects = ExamSubject::query()
-                ->select('id', 'exam_id', 'Name', 'Status', 'TimeStart', 'TimeEnd')
+                ->select('id', 'exam_id', 'Name', 'Status')
                 ->where('exam_id', $id)
                 ->get();
 
             if ($examSubjects->isEmpty()) {
-                return $this->jsonResponse(false, null, 'No subject found for the given exam_id', 404);
+                return $this->jsonResponse(false, null, 'Không tìm thấy môn thi', 404);
             }
 
             return $this->jsonResponse(true, $examSubjects, '', 200);
@@ -59,7 +56,7 @@ class ExamSubjectController extends Controller
      * Thêm môn thi bằng exel
      */
     public function importExcel(Request $request)
-    {   
+    {
         $request->validate(
             [
                 'file' => 'required|mimes:xlsx,xls',
@@ -106,15 +103,15 @@ class ExamSubjectController extends Controller
     {
         try {
             if (!is_string($id) || empty(trim($id))) {
-                return $this->jsonResponse(false, null, 'Invalid exam_subject_id', 400);
+                return $this->jsonResponse(false, null, 'ID không hợp lệ', 400);
             }
 
             $examSubject = ExamSubject::with('contents')
-                ->select('id', 'exam_id', 'Name', 'Status', 'TimeStart', 'TimeEnd')
+                ->select('id', 'exam_id', 'Name', 'Status')
                 ->find($id);
 
             if (!$examSubject) {
-                return $this->jsonResponse(false, null, 'No content found for the given exam_content_id', 404);
+                return $this->jsonResponse(false, null, 'Không tìm thấy môn thi', 404);
             }
 
             return $this->jsonResponse(true, $examSubject, '', 200);
@@ -134,7 +131,7 @@ class ExamSubjectController extends Controller
             $examSubject = ExamSubject::select('id')->find($id);
 
             if (!$examSubject) {
-                return $this->jsonResponse(false, null, 'No subject found for the given exam_subject_id', 404);
+                return $this->jsonResponse(false, null, 'Không tìm thấy môn thi', 404);
             }
 
             $examSubject->update($validatedData);
@@ -154,16 +151,12 @@ class ExamSubjectController extends Controller
             $examSubject = ExamSubject::query()->select('id')->find($id);
 
             if (!$examSubject) {
-                return $this->jsonResponse(false, null, 'No subject found for the given exam_subject_id', 404);
+                return $this->jsonResponse(false, null, 'Không tìm thấy môn thi', 404);
             }
 
             $examSubject->delete();
 
-            return response()->json([
-                'success' => true,
-                'status' => '204',
-                'message' => 'Xóa thành công'
-            ], 204);
+            return $this->jsonResponse(true, null, '', 200);
         } catch (\Exception $e) {
             return $this->jsonResponse(false, null, $e->getMessage(), 500);
         }
@@ -176,20 +169,20 @@ class ExamSubjectController extends Controller
     {
         try {
             $examSubject = ExamSubject::withTrashed()
-                ->select('id', 'exam_id', 'Name', 'Status', 'TimeStart', 'TimeEnd', 'deleted_at')
+                ->select('id', 'exam_id', 'Name', 'Status')
                 ->find($id);
 
             if (!$examSubject) {
-                return $this->jsonResponse(false, null, 'No subject found for the given exam_subject_id', 404);
+                return $this->jsonResponse(false, null, 'Không tìm thấy môn thi', 404);
             }
 
             if ($examSubject->deleted_at == null) {
-                return $this->jsonResponse(false, null, 'The exam has not been deleted', 409);
+                return $this->jsonResponse(false, null, 'Môn thi chưa bị xóa', 409);
             }
 
             $examSubject->restore();
 
-            return $this->jsonResponse(true, $examSubject, 'Khôi phục thành công', 200);
+            return $this->jsonResponse(true, $examSubject, '', 200);
         } catch (\Exception $e) {
             return $this->jsonResponse(false, null, $e->getMessage(), 500);
         }

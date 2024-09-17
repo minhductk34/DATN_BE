@@ -2,7 +2,7 @@
 
 namespace App\Imports;
 
-use App\Models\Exam_content;
+use App\Models\ExamContent;
 use Carbon\Carbon;
 use Maatwebsite\Excel\Concerns\Importable;
 use Maatwebsite\Excel\Concerns\SkipsFailures;
@@ -23,7 +23,7 @@ class ExamContentImport implements ToModel, WithHeadingRow, WithValidation, Skip
 
     public function model(array $row)
     {
-        return new Exam_content([
+        return new ExamContent([
             'id' => $row['id'],
             'exam_subject_id' => $row['exam_subject_id'],
             'title' => $row['title'],
