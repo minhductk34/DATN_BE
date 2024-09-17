@@ -35,9 +35,7 @@ class ExamSubjectImport implements ToModel, WithHeadingRow, WithValidation, Skip
     public function customValidationMessages()
     {
         return [
-            '*.id.required' => ':attribute bắt buộc phải nhập',
-            '*.exam_id.required' => ':attribute bắt buộc phải nhập',
-            '*.name.required' => ':attribute bắt buộc phải nhập',
+            '*.*.required' => ':attribute bắt buộc phải nhập',
             '*.id.unique' => ':attribute đã tồn tại',
             '*.exam_id.exists' => ':attribute không tồn tại',
             '*.name.string' => ':attribute phải là chuỗi',
@@ -48,9 +46,9 @@ class ExamSubjectImport implements ToModel, WithHeadingRow, WithValidation, Skip
     public function customValidationAttributes()
     {
         return [
-            '*.id' => 'Mã môn thi',
-            '*.exam_id' => 'ID kì thi',
-            '*.name' => 'Tên môn thi',
+            'id' => 'Mã môn thi',
+            'exam_id' => 'ID kì thi',
+            'name' => 'Tên môn thi',
         ];
     }
 }
