@@ -41,7 +41,7 @@ class ExamSubjectController extends Controller
                 'success' => false,
                 'status' => '422',
                 'data' => [],
-                'warning' => $e->errors(),
+                'warning' => $e->getMessage(),
             ], 422);
         }
     }

@@ -75,6 +75,7 @@ class ExamController extends Controller
                 'data' => $exams,
                 'warning' => '',
             ], 200);
+
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,

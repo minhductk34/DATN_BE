@@ -147,5 +147,6 @@ Route::prefix('client')->group(function () {
         Route::get('manageQuestions', [QuestionController::class, 'dataOptions']);
         Route::post('manageQuestions/{examId}/{examSubjectId}', [QuestionController::class, 'dataQuestion']);
 
+
     });
 });

@@ -374,7 +374,7 @@ class QuestionController extends Controller
             }
 
             $examContent = ExamContent::where('exam_subject_id', $examSubjectId)
-                ->get(); // Lấy tất cả các exam content
+                ->get();
 
             if ($examContent->isEmpty()) {
                 return response()->json([
@@ -414,5 +414,6 @@ class QuestionController extends Controller
             ], 500);
         }
     }
+
 
 }
