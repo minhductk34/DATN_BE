@@ -3,6 +3,8 @@
 namespace App\Http\Requests\ExamSubject;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Contracts\Validation\Validator;
+use Illuminate\Http\Exceptions\HttpResponseException;
 
 class StoreExamSubjectRequest extends FormRequest
 {
@@ -55,5 +57,17 @@ class StoreExamSubjectRequest extends FormRequest
             'TimeStart' => 'Thời gian bắt đầu',
             'TimeEnd' => 'Thời gian kết thúc',
         ];
+    }
+
+    protected function failedValidation(Validator $validator)
+    {
+        $errors = $validator->errors();
+        
+        throw new HttpResponseException(response()->json([
+            'success' => false,
+            'status' => '422',
+            'data' => null,
+            'warning' => $errors
+        ], 422));
     }
 }
