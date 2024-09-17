@@ -3,6 +3,7 @@
 use App\Http\Controllers\QuestionController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\ExamContentController;
+use App\Http\Controllers\ExamRoomController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ExamSubjectController;
@@ -53,6 +54,8 @@ Route::prefix('admin')->group(function () {
         //delete data
         Route::delete('/delete/{id}', [ExamContentController::class, 'destroy']);
     });
+    Route::resource('exam-room', ExamRoomController::class);
+
 
     Route::prefix('questions')->group(function () {
         //get data
