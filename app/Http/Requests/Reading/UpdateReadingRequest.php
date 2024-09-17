@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Http\Requests\ExamSubject;
+namespace App\Http\Requests\Reading;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Http\Exceptions\HttpResponseException;
 
-class StoreExamSubjectRequest extends FormRequest
+class UpdateReadingRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -16,20 +16,17 @@ class StoreExamSubjectRequest extends FormRequest
         return true;
     }
 
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
-     */
     public function rules(): array
     {
+        $id = $this->route('id');
+
         return [
-            'id' => 'required|unique:exam_subjects,id',
-            'exam_id' => 'required|exists:exams,id',
-            'Name' => 'required|string|max:255',
+            'id' => 'required|unique:readings,id,' . $id,
+            'exam_content_id' => 'required|exists:exam_contents,id',
+            'Title' => 'required',
             'Status' => 'required|in:true,false',
-            'TimeStart' => 'required|date',
-            'TimeEnd' => 'required|date|after:TimeStart',
+            'Level' => 'nullable|in:Easy,Medium,Difficult',
+            'Image' => 'nullable|file|mimes:jpeg,jpg,png,gif,webp',
         ];
     }
 
@@ -39,23 +36,21 @@ class StoreExamSubjectRequest extends FormRequest
             'required' => ':attribute bắt buộc phải nhập',
             'unique' => ':attribute đã tồn tại',
             'exists' => ':attribute không tồn tại',
-            'string' => ':attribute phải là chuỗi',
-            'max' => ':attribute tối đa :max kí tự',
-            'in' => 'Trạng thái không hợp lệ',
-            'date' => ':attribute không đúng định dạng',
-            'after' => 'Thời gian kết thúc phải sau thời gian bắt đầu'
+            'in' => ':attribute không hợp lệ',
+            'file' => ':attribute phải là một file',
+            'mimes' => ':attribute không đúng định dạng (jpeg,jpg,png,gif,webp)'
         ];
     }
 
     public function attributes()
     {
         return [
-            'id' => 'Mã môn thi',
-            'exam_id' => 'ID kì thi',
-            'Name' => 'Tên môn thi',
+            'id' => 'Mã bài đọc',
+            'exam_content_id' => 'ID nội dung thi',
+            'Title' => 'Bài đọc',
             'Status' => 'Trạng thái',
-            'TimeStart' => 'Thời gian bắt đầu',
-            'TimeEnd' => 'Thời gian kết thúc',
+            'Level' => 'Độ khó',
+            'Image' => 'Ảnh'
         ];
     }
 

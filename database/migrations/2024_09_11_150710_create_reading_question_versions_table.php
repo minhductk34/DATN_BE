@@ -11,10 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('listening_questions', function (Blueprint $table) {
-            $table->string('id')->primary();
-            $table->string('listening_id');
-            $table->foreign('listening_id')->references('id')->on('listenings')->cascadeOnDelete()->cascadeOnUpdate();
+        Schema::create('reading_question_versions', function (Blueprint $table) {
+            $table->id();
+            $table->string('question_id');
+            $table->foreign('question_id')->references('id')->on('reading_questions')->cascadeOnDelete()->cascadeOnUpdate();
+            $table->integer('version');
             $table->string('Title');
             $table->string('Answer_P')->nullable();
             $table->string('Answer_F1')->nullable();
@@ -22,6 +23,7 @@ return new class extends Migration
             $table->string('Answer_F3')->nullable();
             $table->enum('Status', ['true', 'false'])->default('true');
             $table->enum('Level',['Easy','Medium','Difficult'])->default('Easy');
+            $table->unique(['question_id', 'version']);
             $table->timestamps();
         });
     }
@@ -31,6 +33,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('listening_questions');
+        Schema::dropIfExists('reading_question_versions');
     }
 };

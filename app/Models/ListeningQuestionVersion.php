@@ -4,18 +4,15 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 
-class ListeningQuestions extends Model
+class ListeningQuestionVersion extends Model
 {
-    public $incrementing = false;
-    protected $keyType = 'string';
-    protected $primaryKey = 'id';
-    use HasFactory, SoftDeletes;
+    use HasFactory;
 
     protected $fillable = [
         'id',
-        'listening_id',
+        'question_id',
+        'version',
         'Title',
         'Answer_P',
         'Answer_F1',
@@ -25,8 +22,8 @@ class ListeningQuestions extends Model
         'Level',
     ];
 
-    public function listening()
+    public function question()
     {
-        return $this->belongsTo(Listening::class);
+        return $this->belongsTo(ListeningQuestion::class);
     }
 }

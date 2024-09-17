@@ -8,19 +8,30 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Listening extends Model
 {
-    public $incrementing = false;
-    protected $keyType = 'string';
-    protected $primaryKey = 'id';
     use HasFactory ,SoftDeletes;
+    
+    public $incrementing = false;
+
+    protected $keyType = 'string';
+
+    protected $primaryKey = 'id';
+
     protected $fillable = [
         'id',
         'exam_content_id',
-        'url_listening',
+        'Audio',
         'Status',
         'Level',
+        'Name'
     ];
+    
     public function exam_content(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(ExamContent::class);
+    }
+
+    public function questions()
+    {
+        return $this->hasMany(ListeningQuestion::class);
     }
 }
