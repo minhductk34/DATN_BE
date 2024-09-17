@@ -7,6 +7,7 @@ use App\Http\Controllers\ExamRoomController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ExamSubjectController;
+use App\Http\Controllers\PoetryController;
 use App\Http\Controllers\ListeningController;
 use App\Http\Controllers\ListeningQuestionController;
 use App\Http\Controllers\ReadingController;
@@ -32,6 +33,7 @@ Route::prefix('admin')->group(function () {
 
     Route::post('/login', [AdminController::class, 'login']);
     //Quản lý môn thi
+
     Route::middleware('checkToken')->prefix('exam-subjects')->group(function () {
         Route::get('/exam/{id}', [ExamSubjectController::class,'getSubjectByExam']);
         Route::post('/', [ExamSubjectController::class,'store']);
@@ -55,6 +57,10 @@ Route::prefix('admin')->group(function () {
         Route::delete('/delete/{id}', [ExamContentController::class, 'destroy']);
     });
     Route::resource('exam-room', ExamRoomController::class);
+
+
+    // ca thi
+    Route::resource('/poetries',PoetryController::class);
 
 
     Route::prefix('questions')->group(function () {
@@ -143,3 +149,4 @@ Route::prefix('admin')->group(function () {
         });
     });
 });
+
