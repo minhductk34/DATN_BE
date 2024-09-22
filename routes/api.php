@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\QuestionController;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\Clients\HomeController;
 use App\Http\Controllers\ExamContentController;
 use App\Http\Controllers\TopicStructureController;
 use App\Http\Controllers\ExamRoomController;
@@ -41,7 +42,7 @@ Route::prefix('admin')->group(function () {
         Route::put('/{id}', [ExamSubjectController::class, 'update']);
         Route::delete('/{id}', [ExamSubjectController::class, 'destroy']);
         Route::put('/restore/{id}', [ExamSubjectController::class, 'restore']);
-
+    });
     Route::middleware('checkToken')->prefix('exam-subjects')->group(function () {
         Route::get('/exam/{id}', [ExamSubjectController::class,'getSubjectByExam']);
         Route::post('/', [ExamSubjectController::class,'store']);
@@ -82,7 +83,7 @@ Route::prefix('admin')->group(function () {
         Route::post('/', [TopicStructureController::class, 'store']);
 
         Route::put('{id}', [TopicStructureController::class, 'update']);
-
+    });
     Route::resource('exam-room', ExamRoomController::class);
     // ca thi
     Route::resource('/poetries',PoetryController::class);
@@ -172,4 +173,9 @@ Route::prefix('admin')->group(function () {
         });
     });
 });
+
+Route::get('/exam',[HomeController::class,'getExam']);
+Route::get('/exam/{exam}/subjects', [HomeController::class, 'getSubjectsByExam']);
+
+
 

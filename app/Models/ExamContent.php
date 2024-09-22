@@ -21,4 +21,19 @@ class ExamContent extends Model
     {
         return $this->belongsTo(ExamSubject::class);
     }
+
+    public function questions()
+    {
+        return $this->hasMany(Question::class);
+    }
+
+    public function readings()
+    {
+        return $this->hasMany(Reading::class);
+    }
+
+    public function listenings()
+    {
+        return $this->hasMany(Listening::class);
+    }
 }
