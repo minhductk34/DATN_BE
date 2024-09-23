@@ -34,16 +34,6 @@ Route::prefix('admin')->group(function () {
 
     Route::post('/login', [AdminController::class, 'login']);
     //Quản lý môn thi
-
-    Route::prefix('exam-subjects')->group(function () {
-        Route::get('/exam/{id}', [ExamSubjectController::class, 'getSubjectByExam']);
-        Route::post('/', [ExamSubjectController::class, 'store']);
-        Route::get('/{id}', [ExamSubjectController::class, 'show']);
-        Route::put('/{id}', [ExamSubjectController::class, 'update']);
-        Route::delete('/{id}', [ExamSubjectController::class, 'destroy']);
-        Route::put('/restore/{id}', [ExamSubjectController::class, 'restore']);
-    });
-
     Route::middleware('checkToken')->prefix('exam-subjects')->group(function () {
         Route::get('/exam/{id}', [ExamSubjectController::class,'getSubjectByExam']);
         Route::post('/', [ExamSubjectController::class,'store']);
@@ -69,7 +59,7 @@ Route::prefix('admin')->group(function () {
     });
 
     //Exams management
-    Route::prefix('exams-management')->group(function () {
+    Route::middleware('checkToken')->prefix('exams-management')->group(function () {
         Route::get('/', [ExamController::class, 'index']);
         Route::post('/', [ExamController::class, 'store']);
         Route::get('/{id}', [ExamController::class, 'show']);
@@ -79,18 +69,18 @@ Route::prefix('admin')->group(function () {
         Route::post('/import', [ExamController::class, 'importExcel']);
     });
 
-    Route::prefix('topic-structures')->group(function () {
+    Route::middleware('checkToken')->prefix('topic-structures')->group(function () {
 
         Route::post('/', [TopicStructureController::class, 'store']);
 
         Route::put('{id}', [TopicStructureController::class, 'update']);
     });
 
-    Route::resource('exam-room', ExamRoomController::class);
+    Route::middleware('checkToken')->resource('exam-room', ExamRoomController::class);
     // ca thi
-    Route::resource('/poetries',PoetryController::class);
+    Route::middleware('checkToken')->resource('/poetries',PoetryController::class);
 
-    Route::prefix('questions')->group(function () {
+    Route::middleware('checkToken')->prefix('questions')->group(function () {
         //get data
         Route::get('/', [QuestionController::class, 'index']);
         Route::get('/{id}', [QuestionController::class, 'show']);
@@ -109,7 +99,7 @@ Route::prefix('admin')->group(function () {
         Route::delete('/{id}', [QuestionController::class, 'destroy']);
     });
 
-    Route::prefix('readings')->group(function () {
+    Route::middleware('checkToken')->prefix('readings')->group(function () {
         //get data
         Route::get('/', [ReadingController::class, 'index']);
         Route::get('/{id}', [ReadingController::class, 'show']);
@@ -143,7 +133,7 @@ Route::prefix('admin')->group(function () {
         });
     });
 
-    Route::prefix('listenings')->group(function () {
+    Route::middleware('checkToken')->prefix('listenings')->group(function () {
         //get data
         Route::get('/', [ListeningController::class, 'index']);
         Route::get('/{id}', [ListeningController::class, 'show']);

@@ -18,9 +18,8 @@ class CheckToken
      */
     public function handle(Request $request, Closure $next)
     {
-        $token = $request->bearerToken();
 
-
+        $token = $request->header('Authorization');
 
         if (!$token) {
             return response()->json([
@@ -29,6 +28,7 @@ class CheckToken
                 'message' => 'You are not logged in or the token is not provided.'
             ], Response::HTTP_UNAUTHORIZED);
         }
+
 
         $userId = Redis::hget('tokens:' . $token, 'user_id');
         $expiresAt = Redis::hget('tokens:' . $token, 'expires_at');
@@ -52,5 +52,4 @@ class CheckToken
 
         return $next($request);
     }
-
 }
