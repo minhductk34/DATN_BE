@@ -46,7 +46,7 @@ class ExamSubjectController extends Controller
 
             $examSubject = ExamSubject::create($validatedData);
 
-            return $this->jsonResponse(true, $examSubject, '', 201);
+            return $this->jsonResponse(true, $examSubject, 'create exam subject successfully', 201);
         } catch (\Exception $e) {
             return $this->jsonResponse(false, null, $e->getMessage(), 500);
         }
@@ -90,7 +90,6 @@ class ExamSubjectController extends Controller
             DB::commit();
 
             return $this->jsonResponse(true, [], '', 200);
-
         } catch (\Exception $e) {
             return $this->jsonResponse(false, null, $e->getMessage(), 500);
         }
@@ -136,7 +135,7 @@ class ExamSubjectController extends Controller
 
             $examSubject->update($validatedData);
 
-            return $this->jsonResponse(true, $examSubject, '', 200);
+            return $this->jsonResponse(true, $examSubject, 'update exam subject successfully', 200);
         } catch (\Exception $e) {
             return $this->jsonResponse(false, null, $e->getMessage(), 500);
         }
@@ -162,6 +161,24 @@ class ExamSubjectController extends Controller
         }
     }
 
+    public function updateStatus($id)
+    {
+        try {
+            $examSubject = ExamSubject::query()->find($id);
+
+            if (!$examSubject) {
+                return $this->jsonResponse(false, null, 'Không tìm thấy môn thi', 404);
+            }
+
+            $examSubject->Status = $examSubject->Status=='true' ? 'false' : 'true';
+            
+            $examSubject->save();
+
+            return $this->jsonResponse(true, $examSubject->Status, 'update status exam subject successfully', 200);
+        } catch (\Exception $e) {
+            return $this->jsonResponse(false, null, $e->getMessage(), 500);
+        }
+    }
     /**
      * Khôi phục môn thi bị xóa
      */

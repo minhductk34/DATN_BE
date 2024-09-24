@@ -41,7 +41,7 @@ Route::prefix('admin')->group(function () {
         Route::put('/{id}', [ExamSubjectController::class,'update']);
         Route::delete('/{id}', [ExamSubjectController::class,'destroy']);
         Route::put('/restore/{id}', [ExamSubjectController::class,'restore']);
-
+        Route::put('/update-status/{id}', [ExamSubjectController::class,'updateStatus']);
         Route::post('/import', [ExamSubjectController::class, 'importExcel']);
     });
     Route::middleware('checkToken')->prefix('exam-content')->group(function () {
