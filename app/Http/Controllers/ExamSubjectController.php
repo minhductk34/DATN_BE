@@ -89,7 +89,7 @@ class ExamSubjectController extends Controller
 
             DB::commit();
 
-            return $this->jsonResponse(true, [], '', 200);
+            return $this->jsonResponse(true, [], 'import data successfully', 200);
         } catch (\Exception $e) {
             return $this->jsonResponse(false, null, $e->getMessage(), 500);
         }

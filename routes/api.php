@@ -45,16 +45,12 @@ Route::prefix('admin')->group(function () {
         Route::post('/import', [ExamSubjectController::class, 'importExcel']);
     });
     Route::middleware('checkToken')->prefix('exam-content')->group(function () {
-        //get data
         Route::get('exam-subject/{id}', [ExamContentController::class, 'getContentByExam'])->name('exam-content-byExamSubject_id');
         Route::get('/{id}', [ExamContentController::class, 'show'])->name('exam-content-byid');
-        // create data
         Route::post('/', [ExamContentController::class, 'store']);
-        //        Route::post('/import-excel-exam-content', [ExamContentController::class, 'importExcel']);
-        //update data
-        Route::put('/{id}', [ExamContentController::class, 'update']);
-
-        //delete data
+        Route::post('/import-excel-exam-content', [ExamContentController::class, 'importExcel']); 
+        Route::put('/{id}', [ExamContentController::class, 'update']); 
+        Route::put('/status/{id}', [ExamContentController::class, 'updateStatus']);       
         Route::delete('/delete/{id}', [ExamContentController::class, 'destroy']);
     });
 

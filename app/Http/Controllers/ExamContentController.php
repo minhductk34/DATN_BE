@@ -17,7 +17,7 @@ class ExamContentController extends Controller
     {
         //
     }
-    public function getContentBgExam($id)
+    public function getContentByExam($id)
     {
         try {
 
@@ -31,6 +31,7 @@ class ExamContentController extends Controller
             }
 
             $content = ExamContent::query()
+                ->select('id', 'exam_subject_id', 'title', 'Status')
                 ->where('exam_subject_id', $id)
                 ->get();
 
@@ -76,6 +77,7 @@ class ExamContentController extends Controller
     {
         try {
             $validatedData = $request->validate([
+                'id'=> 'required|string',
                 'exam_subject_id' => 'required|string',
                 'title' => 'required|string|max:255',
             ]);
@@ -86,7 +88,7 @@ class ExamContentController extends Controller
                 'success' => true,
                 'status' => 201,
                 'data' => $examSubject,
-                'warning' => ''
+                'warning' => 'Create exam content successfully'
             ], 201);
         } catch (ValidationException $e) {
             return response()->json([
@@ -259,7 +261,7 @@ class ExamContentController extends Controller
                 'success' => true,
                 'status' => 200,
                 'data' => $examSubject,
-                'warning' => ''
+                'warning' => 'update exam contetn successfully'
             ];
 
             return response()->json($response, 200);
@@ -280,6 +282,24 @@ class ExamContentController extends Controller
         }
     }
 
+    public function updateStatus($id)
+    {
+        try {
+            $examSubject = ExamContent::query()->find($id);
+
+            if (!$examSubject) {
+                return $this->jsonResponse(false, null, 'Không tìm thấy môn thi', 404);
+            }
+
+            $examSubject->Status = $examSubject->Status=='true' ? 'false' : 'true';
+            
+            $examSubject->save();
+
+            return $this->jsonResponse(true, $examSubject->Status, 'update status exam content successfully', 200);
+        } catch (\Exception $e) {
+            return $this->jsonResponse(false, null, $e->getMessage(), 500);
+        }
+    }
 
     /**
      * Remove the specified resource from storage.
