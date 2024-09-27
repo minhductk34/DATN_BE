@@ -45,9 +45,10 @@ Route::prefix('admin')->group(function () {
         Route::put('/update-status/{id}', [ExamSubjectController::class,'updateStatus']);
         Route::post('/import', [ExamSubjectController::class, 'importExcel']);
     });
-    Route::middleware('checkToken')->prefix('exam-content')->group(function () {
+    Route::prefix('exam-content')->group(function () {
         Route::get('exam-subject/{id}', [ExamContentController::class, 'getContentByExam'])->name('exam-content-byExamSubject_id');
         Route::get('/{id}', [ExamContentController::class, 'show'])->name('exam-content-byid');
+        Route::get('/{id}/question-counts', [ExamContentController::class, 'getQuestionCounts'])->name('question-count-by-level');
         Route::post('/', [ExamContentController::class, 'store']);
         Route::post('/import-excel-exam-content', [ExamContentController::class, 'importExcel']); 
         Route::put('/{id}', [ExamContentController::class, 'update']); 

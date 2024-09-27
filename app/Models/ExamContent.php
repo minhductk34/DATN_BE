@@ -21,4 +21,9 @@ class ExamContent extends Model
     {
         return $this->belongsTo(ExamSubject::class);
     }
+
+    public function questions()
+    {
+        return $this->hasMany(Question::class);
+    }
 }
