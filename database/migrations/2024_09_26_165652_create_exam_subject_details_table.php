@@ -4,6 +4,8 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
+use function Laravel\Prompts\table;
+
 return new class extends Migration
 {
     /**
@@ -11,14 +13,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('topic_structures', function (Blueprint $table) {
-            $table->string('id')->primary();
-            $table->string('exam_content_id');
-            $table->foreign('exam_content_id')->references('id')->on('exam_contents')->cascadeOnDelete()->cascadeOnUpdate();
+        Schema::create('exam_subject_details', function (Blueprint $table) {
+            $table->id();
             $table->string('exam_subject_id');
             $table->foreign('exam_subject_id')->references('id')->on('exam_subjects')->cascadeOnDelete()->cascadeOnUpdate();
-            $table->enum('Level',['Easy','Medium','Difficult'])->default('Easy');
-            $table->smallInteger('Quality');
+            $table->smallInteger('Quantity');
+            $table->smallInteger('Time');
             $table->timestamps();
         });
     }
@@ -28,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('topic_structures');
+        Schema::dropIfExists('exam_subject_details');
     }
 };
