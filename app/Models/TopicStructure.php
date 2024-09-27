@@ -8,9 +8,6 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class TopicStructure extends Model
 {
-    public $incrementing = false;
-    protected $keyType = 'string';
-    protected $primaryKey = 'id';
     use HasFactory, SoftDeletes;
     protected $fillable = [
         'exam_content_id',
