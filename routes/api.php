@@ -9,6 +9,7 @@ use App\Http\Controllers\ExamRoomController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ExamSubjectController;
+use App\Http\Controllers\ExamSubjectDetailsController;
 use App\Http\Controllers\PoetryController;
 use App\Http\Controllers\ListeningController;
 use App\Http\Controllers\ListeningQuestionController;
@@ -66,12 +67,19 @@ Route::prefix('admin')->group(function () {
     });
 
     Route::middleware('checkToken')->prefix('topic-structures')->group(function () {
-
+        // Tạo mới topic structure
         Route::post('/', [TopicStructureController::class, 'store']);
-
+        
+        // Cập nhật topic structure
         Route::put('{id}', [TopicStructureController::class, 'update']);
+        
+        // Lấy thông tin topic structure theo ID
+        Route::get('{id}', [TopicStructureController::class, 'show']);
+        
+        // Lấy thông tin topic structure theo exam_subject_id
+        Route::get('exam-subject/{exam_subject_id}', [TopicStructureController::class, 'showByExamSubjectId']);
     });
-
+    
     Route::middleware('checkToken')->resource('exam-room', ExamRoomController::class);
     // ca thi
     Route::middleware('checkToken')->resource('/poetries',PoetryController::class);
@@ -161,5 +169,14 @@ Route::prefix('admin')->group(function () {
             Route::delete('/{id}', [ListeningQuestionController::class, 'destroy']);
         });
     });
+    Route::middleware('checkToken')->prefix('exam-subject-details')->group(function () {
+        Route::get('/', [ExamSubjectDetailsController::class, 'index']);
+        Route::get('/{id}', [ExamSubjectDetailsController::class, 'show']);
+        Route::get('/exam-subject/{exam_subject_id}', [ExamSubjectDetailsController::class, 'showByExamSubjectId']);
+        Route::post('/', [ExamSubjectDetailsController::class, 'store']);
+        Route::put('/{id}', [ExamSubjectDetailsController::class, 'update']);
+        Route::delete('/{id}', [ExamSubjectDetailsController::class, 'destroy']);
+    });
+    
 });
 
