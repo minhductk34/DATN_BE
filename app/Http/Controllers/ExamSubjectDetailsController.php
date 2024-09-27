@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\ExamSubjectDetails;
 use Illuminate\Http\Request;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class ExamSubjectDetailsController extends Controller
 {
@@ -34,10 +35,36 @@ class ExamSubjectDetailsController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(ExamSubjectDetails $examSubjectDetails)
+    public function show($id)
     {
-        //
+        try {
+            // Lấy thông tin ExamSubjectDetails theo ID
+            $examSubjectDetails = ExamSubjectDetails::findOrFail($id);
+
+            return response()->json($examSubjectDetails);
+        } catch (ModelNotFoundException $e) {
+            return response()->json(['error' => 'Exam subject details not found.'], 404);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to retrieve exam subject details: ' . $e->getMessage()], 500);
+        }
     }
+
+    public function showByExamSubjectId($exam_subject_id)
+    {
+        try {
+            // Lấy thông tin ExamSubjectDetails theo exam_subject_id
+            $examSubjectDetails = ExamSubjectDetails::where('exam_subject_id', $exam_subject_id)->get();
+
+            if ($examSubjectDetails->isEmpty()) {
+                return response()->json(['error' => 'No exam subject details found for this exam_subject_id.'], 404);
+            }
+
+            return response()->json($examSubjectDetails);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to retrieve exam subject details: ' . $e->getMessage()], 500);
+        }
+    }
+
 
     /**
      * Show the form for editing the specified resource.
@@ -50,9 +77,29 @@ class ExamSubjectDetailsController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, ExamSubjectDetails $examSubjectDetails)
+    public function update(Request $request, $id)
     {
-        //
+        try {
+            // Validate the request
+            $validated = $request->validate([
+                'exam_subject_id' => 'required|exists:exam_subjects,id',
+                'Quantity' => 'required|integer|between:1,32767',
+                'Time' => 'required|integer|between:1,1440', // Giả sử Time được tính bằng phút
+            ]);
+
+            $examSubjectDetails = ExamSubjectDetails::findOrFail($id);
+
+            // Cập nhật dữ liệu
+            $examSubjectDetails->update($validated);
+
+            return response()->json($examSubjectDetails);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json(['errors' => $e->errors()], 422);
+        } catch (ModelNotFoundException $e) {
+            return response()->json(['error' => 'Exam subject details not found.'], 404);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to update exam subject details: ' . $e->getMessage()], 500);
+        }
     }
 
     /**
