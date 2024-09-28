@@ -79,13 +79,15 @@ Route::prefix('admin')->group(function () {
         
         // Lấy thông tin topic structure theo exam_subject_id
         Route::get('exam-subject/{exam_subject_id}', [TopicStructureController::class, 'showByExamSubjectId']);
+
+        Route::get('/totals/{id}', [TopicStructureController::class, 'getTotal']);
     });
     
     Route::middleware('checkToken')->resource('exam-room', ExamRoomController::class);
     // ca thi
     Route::middleware('checkToken')->resource('/poetries',PoetryController::class);
 
-    Route::middleware('checkToken')->prefix('questions')->group(function () {
+    Route::prefix('questions')->group(function () {
         //get data
         Route::get('/', [QuestionController::class, 'index']);
         Route::get('/{id}', [QuestionController::class, 'show']);

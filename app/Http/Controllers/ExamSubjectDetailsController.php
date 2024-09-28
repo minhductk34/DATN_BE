@@ -56,10 +56,20 @@ class ExamSubjectDetailsController extends Controller
             $examSubjectDetails = ExamSubjectDetails::where('exam_subject_id', $exam_subject_id)->get();
 
             if ($examSubjectDetails->isEmpty()) {
-                return response()->json(['error' => 'No exam subject details found for this exam_subject_id.'], 404);
+                return response()->json([
+                    'success' => false,
+                    'status' => "404",
+                    'data' => [],
+                    'warning' => 'No exam subject details found for this exam_subject_id.'
+                ], 404);
             }
 
-            return response()->json($examSubjectDetails);
+            return response()->json([
+                'success' => true,
+                'status' => "200",
+                'data' => $examSubjectDetails,
+                'warning' => ''
+            ], 200);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Failed to retrieve exam subject details: ' . $e->getMessage()], 500);
         }
