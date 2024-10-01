@@ -11,15 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('poetries', function (Blueprint $table) {
+        Schema::create('exam_sessions', function (Blueprint $table) {
             $table->id();
-            $table->string('exam_subject_id');
-            $table->foreign('exam_subject_id')->references('id')->on('exam_subjects')->cascadeOnDelete()->cascadeOnUpdate();
             $table->string('Name');
             $table->dateTime('TimeStart');
             $table->dateTime('TimeEnd');
-            $table->enum('Status', ['true', 'false'])->default('true');
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

@@ -10,13 +10,6 @@ class ExamRoom extends Model
 {
     use HasFactory;
     protected $fillable = [
-        'poetry_id',
         'Name',
-        'Quantity',
-        'Status',
     ];
-    public function poetry()
-    {
-        return $this->belongsTo(Poetry::class, 'poetry_id');
-    }
 }

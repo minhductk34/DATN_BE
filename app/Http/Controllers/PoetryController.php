@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Poetry;
+use App\Models\ExamSession;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
@@ -13,7 +13,7 @@ class PoetryController extends Controller
      */
     public function index()
     {
-        $poetries = Poetry::all();
+        $poetries = ExamSession::all();
 
         return response()->json([
             'success' => true,
@@ -37,7 +37,7 @@ class PoetryController extends Controller
                 'Status' => 'required|in:true,false',
             ]);
 
-            $poetry = Poetry::create($validatedData);
+            $poetry = ExamSession::create($validatedData);
 
             return response()->json([
                 'success' => true,
@@ -61,7 +61,7 @@ class PoetryController extends Controller
      */
     public function show($id)
     {
-        $poetry = Poetry::find($id);
+        $poetry = ExamSession::find($id);
 
         if (!$poetry) {
             return response()->json([
@@ -85,7 +85,7 @@ class PoetryController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $poetry = Poetry::find($id);
+        $poetry = ExamSession::find($id);
 
         if (!$poetry) {
             return response()->json([
@@ -129,7 +129,7 @@ class PoetryController extends Controller
      */
     public function destroy($id)
     {
-        $poetry = Poetry::find($id);
+        $poetry = ExamSession::find($id);
 
         if (!$poetry) {
             return response()->json([

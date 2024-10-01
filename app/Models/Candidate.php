@@ -15,17 +15,20 @@ class Candidate extends Model
 
     protected $fillable = [
         'Idcode',
+        'exam_room_id',
         'exam_id',
         'Fullname',
         'Image',
         'DOB',
         'Address',
-        'Examination_room',
         'Password',
         'Email',
         'Status'
     ];
     public function exam(){
         return $this->belongsTo(Exam::class);
+    }
+    public function exam_room(){
+        return $this->belongsTo(ExamRoom::class);
     }
 }
