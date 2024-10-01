@@ -67,7 +67,7 @@ Route::prefix('admin')->group(function () {
         Route::post('/import', [ExamController::class, 'importExcel']);
     });
 
-    Route::middleware('checkToken')->prefix('topic-structures')->group(function () {
+    Route::prefix('topic-structures')->group(function () {
         // Tạo mới topic structure
         Route::post('/', [TopicStructureController::class, 'store']);
         
@@ -80,7 +80,7 @@ Route::prefix('admin')->group(function () {
         // Lấy thông tin topic structure theo exam_subject_id
         Route::get('exam-subject/{exam_subject_id}', [TopicStructureController::class, 'showByExamSubjectId']);
 
-        Route::get('/totals/{id}', [TopicStructureController::class, 'getTotal']);
+        Route::get('/total/{id}', [TopicStructureController::class, 'getTotal']);
     });
     
     Route::middleware('checkToken')->resource('exam-room', ExamRoomController::class);
