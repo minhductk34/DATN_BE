@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Listening;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -17,7 +18,13 @@ class ListeningQuestionsFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'id' => $this->faker->uuid(),
+            'current_version_id' => $this->faker->numberBetween(1, 10),
+            'listening_id' => Listening::inRandomOrder()->first()->id,
+            'Status' => $this->faker->randomElement(['true', 'false']),
+            'created_at' => now(),
+            'updated_at' => now(),
+            'deleted_at' => null,
         ];
     }
 }

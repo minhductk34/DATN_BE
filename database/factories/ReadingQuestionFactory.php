@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Reading;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -17,7 +18,12 @@ class ReadingQuestionsFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'reading_id' => Reading::inRandomOrder()->first()->id,
+            'current_version_id' => $this->faker->numberBetween(1, 10),
+            'Status' => $this->faker->randomElement(['true', 'false']),
+            'created_at' => now(),
+            'updated_at' => now(),
+            'deleted_at' => $this->faker->optional()->dateTime(),
         ];
     }
 }
