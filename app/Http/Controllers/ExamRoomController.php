@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Candidate;
 use App\Models\ExamRoom;
 use App\Models\ExamRoomDetail;
+use App\Models\ExamSession;
+use App\Models\ExamSubject;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
@@ -87,6 +89,17 @@ class ExamRoomController extends Controller
             $examRoomDetails = ExamRoomDetail::query()->where('exam_room_id', $id)->get();
             $countCandidate = Candidate::query()->where('exam_room_id', $id)->count();
 
+            if ($examRoomDetails instanceof \Illuminate\Support\Collection && $examRoomDetails->count() > 1) {
+                $examRoomDetails = $examRoomDetails->first();
+            } elseif ($examRoomDetails->count() === 1) {
+                $examRoomDetails = $examRoomDetails->first();
+            } else {
+                $examRoomDetails = null;
+            }
+
+            $examSubjectName = ExamSubject::query()->where('id',$examRoomDetails->exam_subject_id)->first()->Name;
+            $examSessionName = ExamSession::query()->where('id',$examRoomDetails->exam_session_id)->first()->Name;
+
             if (!$examRoom) {
                 return response()->json([
                     'success' => false,
@@ -101,7 +114,9 @@ class ExamRoomController extends Controller
                 'status' => '200',
                 'data' => [
                     'examRoom' => $examRoom,
-                    'examRoomDetails' => $examRoomDetails,
+                    'exam_session_name' => $examSessionName,
+                    'exam_date' => $examRoomDetails->exam_date,
+                    'exam_subject_name'=> $examSubjectName,
                     'countCandidate' => $countCandidate,
                 ],
                 'warning' => '',
