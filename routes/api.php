@@ -50,9 +50,9 @@ Route::prefix('admin')->group(function () {
         Route::get('/{id}', [ExamContentController::class, 'show'])->name('exam-content-byid');
         Route::get('/{id}/question-counts', [ExamContentController::class, 'getQuestionCounts'])->name('question-count-by-level');
         Route::post('/', [ExamContentController::class, 'store']);
-        Route::post('/import-excel-exam-content', [ExamContentController::class, 'importExcel']); 
-        Route::put('/{id}', [ExamContentController::class, 'update']); 
-        Route::put('/status/{id}', [ExamContentController::class, 'updateStatus']);       
+        Route::post('/import-excel-exam-content', [ExamContentController::class, 'importExcel']);
+        Route::put('/{id}', [ExamContentController::class, 'update']);
+        Route::put('/status/{id}', [ExamContentController::class, 'updateStatus']);
         Route::delete('/delete/{id}', [ExamContentController::class, 'destroy']);
     });
 
@@ -70,19 +70,19 @@ Route::prefix('admin')->group(function () {
     Route::prefix('topic-structures')->group(function () {
         // Tạo mới topic structure
         Route::post('/', [TopicStructureController::class, 'store']);
-        
+
         // Cập nhật topic structure
         Route::put('{id}', [TopicStructureController::class, 'update']);
-        
+
         // Lấy thông tin topic structure theo ID
         Route::get('{id}', [TopicStructureController::class, 'show']);
-        
+
         // Lấy thông tin topic structure theo exam_subject_id
         Route::get('exam-subject/{exam_subject_id}', [TopicStructureController::class, 'showByExamSubjectId']);
 
         Route::get('/total/{id}', [TopicStructureController::class, 'getTotal']);
     });
-    
+
     Route::middleware('checkToken')->resource('exam-room', ExamRoomController::class);
     // ca thi
     Route::middleware('checkToken')->resource('/poetries',PoetryController::class);
@@ -180,6 +180,6 @@ Route::prefix('admin')->group(function () {
         Route::put('/{id}', [ExamSubjectDetailsController::class, 'update']);
         Route::delete('/{id}', [ExamSubjectDetailsController::class, 'destroy']);
     });
-    
+
 });
 

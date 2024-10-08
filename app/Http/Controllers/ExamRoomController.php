@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Candidate;
 use App\Models\ExamRoom;
+use App\Models\ExamRoomDetail;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
@@ -82,6 +84,8 @@ class ExamRoomController extends Controller
     {
         try {
             $examRoom = ExamRoom::find($id);
+            $examRoomDetails = ExamRoomDetail::query()->where('exam_room_id', $id)->get();
+            $countCandidate = Candidate::query()->where('exam_room_id', $id)->count();
 
             if (!$examRoom) {
                 return response()->json([
@@ -95,7 +99,11 @@ class ExamRoomController extends Controller
             return response()->json([
                 'success' => true,
                 'status' => '200',
-                'data' => $examRoom,
+                'data' => [
+                    'examRoom' => $examRoom,
+                    'examRoomDetails' => $examRoomDetails,
+                    'countCandidate' => $countCandidate,
+                ],
                 'warning' => '',
             ], 200);
 
