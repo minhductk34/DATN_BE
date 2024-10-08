@@ -2,17 +2,17 @@
 
 namespace Database\Seeders;
 
-use App\Models\Lecturers;
+use App\Models\QuestionVersion;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
-class LecturersSeeder extends Seeder
+class QuestionVersionSeeder extends Seeder
 {
     /**
      * Run the database seeds.
      */
     public function run(): void
     {
-        Lecturers::factory()->count(10)->create();
+        QuestionVersion::factory()->count(10)->create();
     }
 }

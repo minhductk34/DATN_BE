@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Readings>
  */
-class ReadingsFactory extends Factory
+class ReadingFactory extends Factory
 {
     /**
      * Define the model's default state.
@@ -18,6 +18,7 @@ class ReadingsFactory extends Factory
     public function definition(): array
     {
         return [
+            'id'=>$this->faker->uuid(),
             'exam_content_id' => ExamContent::inRandomOrder()->first()->id,
             'Title' => $this->faker->title(),
             'Image' => $this->faker->optional()->imageUrl(),

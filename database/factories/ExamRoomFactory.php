@@ -17,7 +17,9 @@ class ExamRoomFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'Name' => $this->faker->word(),
+            'created_at' => now(),
+            'updated_at' => now(),
         ];
     }
 }

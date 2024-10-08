@@ -2,12 +2,14 @@
 
 namespace Database\Factories;
 
+use App\Models\Candidate;
+use App\Models\ExamSubject;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\History>
  */
-class HistoryFactory extends Factory
+    class HistoryFactory extends Factory
 {
     /**
      * Define the model's default state.
@@ -17,7 +19,13 @@ class HistoryFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'exam_subject_id' => ExamSubject::inRandomOrder()->first()->id,
+            'Idcode' => Candidate::inRandomOrder()->first()->Idcode,
+            'Answer' => $this->faker->word(),
+            'Time' => $this->faker->dateTime(),
+            'created_at' => now(),
+            'updated_at' => now(),
+            'deleted_at' => null,
         ];
     }
 }

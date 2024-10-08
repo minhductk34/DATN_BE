@@ -2,6 +2,9 @@
 
 namespace Database\Factories;
 
+use App\Models\ExamRoom;
+use App\Models\ExamSession;
+use App\Models\ExamSubject;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -17,7 +20,12 @@ class ExamRoomDetailFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'exam_room_id' => ExamRoom::inRandomOrder()->first()->id,
+            'exam_subject_id' => ExamSubject::inRandomOrder()->first()->id,
+            'exam_session_id' => ExamSession::inRandomOrder()->first()->id,
+            'exam_date' => $this->faker->date(),
+            'created_at' => now(),
+            'updated_at' => now(),
         ];
     }
 }
