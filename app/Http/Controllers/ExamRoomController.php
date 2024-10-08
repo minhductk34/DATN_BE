@@ -98,7 +98,12 @@ class ExamRoomController extends Controller
             }
 
             $examSubjectName = ExamSubject::query()->where('id',$examRoomDetails->exam_subject_id)->first()->Name;
-            $examSessionName = ExamSession::query()->where('id',$examRoomDetails->exam_session_id)->first()->Name;
+            $examSession = ExamSession::query()->where('id',$examRoomDetails->exam_session_id)->select('Name','TimeStart','TimeEnd')->first();
+
+            $examSessionName = $examSession->Name;
+            $examSessionTimeStart = $examSession->TimeStart;
+            $examSessionTimeEnd = $examSession->TimeEnd;
+
 
             if (!$examRoom) {
                 return response()->json([
@@ -115,7 +120,8 @@ class ExamRoomController extends Controller
                 'data' => [
                     'examRoom' => $examRoom,
                     'exam_session_name' => $examSessionName,
-                    'exam_date' => $examRoomDetails->exam_date,
+                    'examSessionTimeStart' => $examSessionTimeStart,
+                    'examSessionTimeEnd' => $examSessionTimeEnd,
                     'exam_subject_name'=> $examSubjectName,
                     'countCandidate' => $countCandidate,
                 ],
