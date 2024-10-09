@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\QuestionController;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\CandidateController;
 use App\Http\Controllers\ExamContentController;
 use App\Http\Controllers\ExamController;
 use App\Http\Controllers\TopicStructureController;
@@ -52,6 +53,7 @@ Route::prefix('admin')->group(function () {
         Route::post('/', [ExamContentController::class, 'store']);
         Route::post('/import-excel-exam-content', [ExamContentController::class, 'importExcel']);
         Route::put('/{id}', [ExamContentController::class, 'update']);
+
         Route::put('/status/{id}', [ExamContentController::class, 'updateStatus']);
         Route::delete('/delete/{id}', [ExamContentController::class, 'destroy']);
     });
@@ -105,6 +107,16 @@ Route::prefix('admin')->group(function () {
         //delete data
         Route::delete('/{id}', [QuestionController::class, 'destroy']);
     });
+    Route::prefix('candidate')->group(function () {
+        Route::get('/getAll', [CandidateController::class, 'index']);
+        Route::get('/getById/{id}', [CandidateController::class, 'show']);
+        Route::post('/export-excel-password-candidate', [CandidateController::class, 'exportExcel']);
+        Route::post('/create', [CandidateController::class, 'store']);
+        Route::post('/import-excel-candidate', [CandidateController::class, 'importExcel']);
+        Route::put('/update/{id}', [CandidateController::class, 'update']);
+        Route::delete('/delete/{id}', [CandidateController::class, 'destroy']);
+    });
+
 
     Route::middleware('checkToken')->prefix('readings')->group(function () {
         //get data
