@@ -86,6 +86,7 @@ Route::prefix('admin')->group(function () {
     });
 
     Route::middleware('checkToken')->resource('exam-room', ExamRoomController::class);
+    Route::middleware('checkToken')->resource('lecturer', \App\Http\Controllers\LecturersController::class);
     // ca thi
     Route::middleware('checkToken')->resource('/exam-session',ExamSessionController::class);
 
@@ -116,6 +117,7 @@ Route::prefix('admin')->group(function () {
         Route::post('/import-excel-candidate', [CandidateController::class, 'importExcel']);
         Route::put('/update/{id}', [CandidateController::class, 'update']);
         Route::delete('/delete/{id}', [CandidateController::class, 'destroy']);
+        Route::get('/exam-room/{exam_room_id}', [CandidateController::class, 'countCandidateForExamRoom']);
     });
 
     Route::middleware('checkToken')->prefix('readings')->group(function () {

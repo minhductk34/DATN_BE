@@ -20,7 +20,7 @@ class ExamRoomController extends Controller
     public function index()
     {
         try {
-            $examRooms = ExamRoom::all();
+            $examRooms = ExamRoom::withCount('candidates')->get();
 
             return response()->json([
                 'success' => true,
@@ -72,7 +72,8 @@ class ExamRoomController extends Controller
                 'success' => false,
                 'status' => '422',
                 'data' => [],
-                'warning' => $e->errors(),
+                'warning' => 'validation error',
+                'error' => $e->errors()
             ], 422);
         } catch (\Exception $e) {
             return response()->json([
@@ -94,7 +95,6 @@ class ExamRoomController extends Controller
         try {
             $examRoom = ExamRoom::find($id);
             $examRoomDetails = ExamRoomDetail::query()->where('exam_room_id', $id)->get();
-            $countCandidate = Candidate::query()->where('exam_room_id', $id)->count();
 
             if ($examRoomDetails instanceof \Illuminate\Support\Collection && $examRoomDetails->count() > 1) {
                 $examRoomDetails = $examRoomDetails->first();
@@ -105,11 +105,10 @@ class ExamRoomController extends Controller
             }
 
             $examSubjectName = ExamSubject::query()->where('id',$examRoomDetails->exam_subject_id)->first()->Name;
-            $examSession = ExamSession::query()->where('id',$examRoomDetails->exam_session_id)->select('Name','TimeStart','TimeEnd')->first();
+            $examSession = ExamSession::query()->where('id',$examRoomDetails->exam_session_id)->select('Name','TimeStart')->first();
 
             $examSessionName = $examSession->Name;
             $examSessionTimeStart = $examSession->TimeStart;
-            $examSessionTimeEnd = $examSession->TimeEnd;
 
 
             if (!$examRoom) {
@@ -127,10 +126,8 @@ class ExamRoomController extends Controller
                 'data' => [
                     'examRoom' => $examRoom,
                     'exam_session_name' => $examSessionName,
-                    'examSessionTimeStart' => $examSessionTimeStart,
-                    'examSessionTimeEnd' => $examSessionTimeEnd,
+                    'exam_session_time-start' => $examSessionTimeStart,
                     'exam_subject_name'=> $examSubjectName,
-                    'countCandidate' => $countCandidate,
                 ],
                 'warning' => '',
             ], 200);
@@ -165,8 +162,9 @@ class ExamRoomController extends Controller
             return response()->json([
                 'success' => false,
                 'status' => '404',
-                'data' => [],
-                'warning' => 'Exam Room không tồn tại',
+                'data' => '',
+                'warning'=> 'Không tìm thấy phòng',
+                'error' => '404 not found!'
             ], 404);
         }
 
@@ -190,7 +188,8 @@ class ExamRoomController extends Controller
                 'success' => false,
                 'status' => '422',
                 'data' => [],
-                'warning' => $e->errors(),
+                'warning' => 'validation error',
+                'error' => $e->errors()
             ], 422);
         } catch (\Exception $e) {
             return response()->json([
@@ -215,20 +214,30 @@ class ExamRoomController extends Controller
             return response()->json([
                 'success' => false,
                 'status' => '404',
-                'data' => [],
-                'warning' => 'Exam Room không tồn tại',
+                'data' => '',
+                'warning'=> 'Không tìm thấy phòng',
+                'error' => '404 not found!'
             ], 404);
         }
+        try {
+            $examRoom->delete();
 
-        // Xóa ExamRoom
-        $examRoom->delete();
+            return response()->json([
+                'success' => true,
+                'status' => '200',
+                'data' => [],
+                'warning' => '',
+            ], 200);
+        }catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'status' => '500',
+                'data' => [],
+                'warning' => 'Đã xảy ra lỗi không xác định',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
 
-        return response()->json([
-            'success' => true,
-            'status' => '200',
-            'data' => [],
-            'warning' => '',
-        ], 200);
     }
 
 }

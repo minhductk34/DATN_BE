@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Candidate;
+use App\Models\ExamRoom;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\CandidatesExport;
@@ -37,7 +39,7 @@ class CandidateController extends Controller
             'Password' => 'required|string|min:8',
             'Email' => 'required|string|email|max:255|unique:candidates',
         ], $this->validationMessages());
-        
+
         $candidate = Candidate::create($validated);
         return $this->jsonResponse(true, $candidate, 'Thêm ứng viên thành công.', 201);
     }
@@ -180,6 +182,35 @@ class CandidateController extends Controller
             'Email.unique' => 'Email đã tồn tại.',
             'Status.required' => 'Trạng thái là bắt buộc.',
         ];
-        
+
+    }
+    public function countCandidateForExamRoom($examRoomId)
+    {
+        try {
+            $candidateCount = Candidate::where('exam_room_id', $examRoomId)->count();
+            $examRoom =ExamRoom::query()->where('id', $examRoomId)->select('id','Name')->first();
+            return response()->json([
+                'success' => true,
+                'status' => '200',
+                'exam_room_id' => $examRoom->id,
+                'exam_room_name' => $examRoom->Name,
+                'candidate_count' => $candidateCount,
+            ], 200);
+
+        } catch (QueryException $e) {
+            return response()->json([
+                'success' => false,
+                'status' => '500',
+                'message' => 'Không thể lấy dữ liệu từ cơ sở dữ liệu',
+                'error' => $e->getMessage(),
+            ], 500);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'status' => '500',
+                'message' => 'Đã xảy ra lỗi không xác định',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
 }

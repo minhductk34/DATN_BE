@@ -16,4 +16,8 @@ class ExamRoom extends Model
     public function exam(){
         return $this->belongsTo(Exam::class);
     }
+    public function candidates()
+    {
+        return $this->hasMany(Candidate::class, 'exam_room_id');
+    }
 }
