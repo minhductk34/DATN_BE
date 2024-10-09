@@ -11,5 +11,9 @@ class ExamRoom extends Model
     use HasFactory;
     protected $fillable = [
         'Name',
+        'exam_id'
     ];
+    public function exam(){
+        return $this->belongsTo(Exam::class);
+    }
 }

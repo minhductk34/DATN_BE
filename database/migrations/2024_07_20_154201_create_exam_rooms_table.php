@@ -14,6 +14,8 @@ return new class extends Migration
         Schema::create('exam_rooms', function (Blueprint $table) {
             $table->id();
             $table->string('Name');
+            $table->string('exam_id');
+            $table->foreign('exam_id')->references('id')->on('exams')->cascadeOnDelete()->cascadeOnUpdate();
             $table->timestamps();
         });
     }

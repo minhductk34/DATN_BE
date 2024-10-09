@@ -10,7 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ExamSubjectController;
 use App\Http\Controllers\ExamSubjectDetailsController;
-use App\Http\Controllers\PoetryController;
+use App\Http\Controllers\ExamSessionController;
 use App\Http\Controllers\ListeningController;
 use App\Http\Controllers\ListeningQuestionController;
 use App\Http\Controllers\ReadingController;
@@ -85,7 +85,7 @@ Route::prefix('admin')->group(function () {
 
     Route::middleware('checkToken')->resource('exam-room', ExamRoomController::class);
     // ca thi
-    Route::middleware('checkToken')->resource('/poetries',PoetryController::class);
+    Route::middleware('checkToken')->resource('/exam-session',ExamSessionController::class);
 
     Route::prefix('questions')->group(function () {
         //get data

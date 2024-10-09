@@ -18,6 +18,8 @@ return new class extends Migration
             $table->string('Idcode');
             $table->foreign('Idcode')->references('Idcode')->on('candidates')->cascadeOnDelete()->cascadeOnUpdate();
             $table->enum('Active',['Active','Inactive'])->default('Active');
+            $table->string('Reason')->nullable();
+            $table->string('admin_id')->nullable();
             $table->timestamps();
         });
     }

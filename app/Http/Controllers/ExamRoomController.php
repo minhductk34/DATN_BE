@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Candidate;
+use App\Models\Exam;
 use App\Models\ExamRoom;
 use App\Models\ExamRoomDetail;
 use App\Models\ExamSession;
@@ -54,10 +55,8 @@ class ExamRoomController extends Controller
     {
         try {
             $validatedData = $request->validate([
-                'poetry_id' => 'required|exists:poetries,id',
                 'Name' => 'required|max:255',
-                'Quantity' => 'required|integer',
-                'Status' => 'required|in:active,inactive',
+                'exam_id' => 'required|exists:exams,id',
             ]);
 
             $examRoom = ExamRoom::create($validatedData);
@@ -68,7 +67,6 @@ class ExamRoomController extends Controller
                 'data' => $examRoom,
                 'warning' => '',
             ], 201);
-
         } catch (ValidationException $e) {
             return response()->json([
                 'success' => false,
@@ -76,8 +74,17 @@ class ExamRoomController extends Controller
                 'data' => [],
                 'warning' => $e->errors(),
             ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'status' => '500',
+                'data' => [],
+                'warning' => 'Đã xảy ra lỗi không xác định',
+                'error' => $e->getMessage(),
+            ], 500);
         }
     }
+
 
     /**
      * Display the specified resource.
@@ -165,7 +172,8 @@ class ExamRoomController extends Controller
 
         try {
             $validatedData = $request->validate([
-                'poetry_id' => 'required|exists:poetries,id',
+                'Name' => 'required|max:255',
+                'exam_id' => 'required|exists:exams,id'
             ]);
 
             $examRoom->update($validatedData);
@@ -184,8 +192,17 @@ class ExamRoomController extends Controller
                 'data' => [],
                 'warning' => $e->errors(),
             ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'status' => '500',
+                'data' => [],
+                'warning' => 'Đã xảy ra lỗi không xác định',
+                'error' => $e->getMessage(),
+            ], 500);
         }
     }
+
 
     /**
      * Remove the specified resource from storage.
@@ -203,6 +220,7 @@ class ExamRoomController extends Controller
             ], 404);
         }
 
+        // Xóa ExamRoom
         $examRoom->delete();
 
         return response()->json([
@@ -212,4 +230,5 @@ class ExamRoomController extends Controller
             'warning' => '',
         ], 200);
     }
+
 }

@@ -12,7 +12,9 @@ class Active extends Model
     protected $fillable = [
         'exam_subject_id',
         'Idcode',
-        'Active'
+        'Active',
+        'Reason',
+        'admin_id',
     ];
     public function exam_subject(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {

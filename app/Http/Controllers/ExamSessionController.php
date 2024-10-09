@@ -6,19 +6,19 @@ use App\Models\ExamSession;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
-class PoetryController extends Controller
+class ExamSessionController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        $poetries = ExamSession::all();
+        $examSessions = ExamSession::all();
 
         return response()->json([
             'success' => true,
             'status' => '200',
-            'data' => $poetries,
+            'data' => $examSessions,
             'warning' => '',
         ], 200);
     }
@@ -26,23 +26,24 @@ class PoetryController extends Controller
     /**
      * Store a newly created resource in storage.
      */
+    /**
+     * Lưu một tài nguyên mới vào cơ sở dữ liệu.
+     */
     public function store(Request $request)
     {
         try {
             $validatedData = $request->validate([
-                'exam_subject_id' => 'required|string|exists:exam_subjects,id',
                 'Name' => 'required|string|max:255',
                 'TimeStart' => 'required|date',
                 'TimeEnd' => 'required|date',
-                'Status' => 'required|in:true,false',
             ]);
 
-            $poetry = ExamSession::create($validatedData);
+            $examSession = ExamSession::create($validatedData);
 
             return response()->json([
                 'success' => true,
                 'status' => '201',
-                'data' => $poetry,
+                'data' => $examSession,
                 'warning' => '',
             ], 201);
 
@@ -53,29 +54,38 @@ class PoetryController extends Controller
                 'data' => [],
                 'warning' => $e->errors(),
             ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'status' => '500',
+                'data' => [],
+                'warning' => 'Đã xảy ra lỗi không xác định',
+                'error' => $e->getMessage(),
+            ], 500);
         }
     }
+
 
     /**
      * Display the specified resource.
      */
     public function show($id)
     {
-        $poetry = ExamSession::find($id);
+        $examSession = ExamSession::find($id);
 
-        if (!$poetry) {
+        if (!$examSession) {
             return response()->json([
                 'success' => false,
                 'status' => '404',
                 'data' => [],
-                'warning' => 'Poetry không tồn tại',
+                'warning' => 'Exam session does not exist',
             ], 404);
         }
 
         return response()->json([
             'success' => true,
             'status' => '200',
-            'data' => $poetry,
+            'data' => $examSession,
             'warning' => '',
         ], 200);
     }
@@ -85,32 +95,30 @@ class PoetryController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $poetry = ExamSession::find($id);
+        $examSession = ExamSession::find($id);
 
-        if (!$poetry) {
+        if (!$examSession) {
             return response()->json([
                 'success' => false,
                 'status' => '404',
                 'data' => [],
-                'warning' => 'Poetry không tồn tại',
+                'warning' => 'Kỳ thi không tồn tại',
             ], 404);
         }
 
         try {
             $validatedData = $request->validate([
-                'exam_subject_id' => 'required|string|exists:exam_subjects,id',
                 'Name' => 'required|string|max:255',
                 'TimeStart' => 'required|date',
                 'TimeEnd' => 'required|date',
-                'Status' => 'required|in:true,false',
             ]);
 
-            $poetry->update($validatedData);
+            $examSession->update($validatedData);
 
             return response()->json([
                 'success' => true,
                 'status' => '200',
-                'data' => $poetry,
+                'data' => $examSession,
                 'warning' => '',
             ], 200);
 
@@ -121,6 +129,14 @@ class PoetryController extends Controller
                 'data' => [],
                 'warning' => $e->errors(),
             ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'status' => '500',
+                'data' => [],
+                'warning' => 'Đã xảy ra lỗi không xác định',
+                'error' => $e->getMessage(),
+            ], 500);
         }
     }
 
@@ -129,18 +145,18 @@ class PoetryController extends Controller
      */
     public function destroy($id)
     {
-        $poetry = ExamSession::find($id);
+        $examSession = ExamSession::find($id);
 
-        if (!$poetry) {
+        if (!$examSession) {
             return response()->json([
                 'success' => false,
                 'status' => '404',
                 'data' => [],
-                'warning' => 'Poetry không tồn tại',
+                'warning' => 'Exam session does not exist',
             ], 404);
         }
 
-        $poetry->delete();
+        $examSession->delete();
 
         return response()->json([
             'success' => true,
