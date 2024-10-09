@@ -8,6 +8,7 @@ use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\CandidatesExport;
 use App\Imports\CandidatesImport;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\Log;
 
 class CandidateController extends Controller
 {
@@ -147,18 +148,23 @@ class CandidateController extends Controller
     /**
      * Export danh sách ứng viên ra file Excel.
      */
-    public function exportExcel()
+    public function exportExcel(Request $request)
     {
-        // Lấy dữ liệu từ cơ sở dữ liệu và nhóm theo phòng thi
-        $candidatesByRoom = Candidate::all()->groupBy('Examination_room');
-
-        // Tạo tên file với thời gian hiện tại
-        $fileName = 'danh_sach_ung_vien_' . now()->format('Y_m_d_H_i_s') . '.xlsx';
-
-        // Export file Excel với dữ liệu đã nhóm
-        return Excel::download(new CandidatesExport($candidatesByRoom), $fileName);
+        try {
+            // Lấy dữ liệu từ cơ sở dữ liệu và nhóm theo phòng thi
+            $candidatesByRoom = Candidate::all()->groupBy('exam_room_id');
+           
+            if ($candidatesByRoom->isEmpty() || $candidatesByRoom == []) {
+                return response()->json(['error' => 'Không có dữ liệu'], 400);
+            }
+    
+            $fileName = 'danh_sach_ung_vien_' . now()->format('Y_m_d_H_i_s') . '.xlsx';
+           
+            return Excel::download(new CandidatesExport($candidatesByRoom), $fileName);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
     }
-
     /**
      * Validation messages in Vietnamese.
      */

@@ -49,7 +49,7 @@ class CandidatesByRoomSheet implements FromCollection, WithTitle, WithHeadings
                 $candidate->Image,
                 $candidate->DOB,
                 $candidate->Address,
-                $candidate->Examination_room,
+                $candidate->exam_room_id,
                 $candidate->Password,
                 $candidate->Email,
                 $candidate->Status
