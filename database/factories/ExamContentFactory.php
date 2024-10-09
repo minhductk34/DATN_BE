@@ -2,10 +2,11 @@
 
 namespace Database\Factories;
 
+use App\Models\ExamSubject;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Exam_content>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\ExamContent>
  */
 class ExamContentFactory extends Factory
 {
@@ -17,7 +18,13 @@ class ExamContentFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'id' => $this->faker->uuid(),
+            'exam_subject_id' => ExamSubject::inRandomOrder()->first()->id,
+            'title' => $this->faker->sentence(),
+            'Status' => $this->faker->randomElement(['true', 'false']),
+            'created_at' => now(),
+            'updated_at' => now(),
+            'deleted_at' => null,
         ];
     }
 }

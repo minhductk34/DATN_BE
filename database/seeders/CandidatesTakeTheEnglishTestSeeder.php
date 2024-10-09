@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\CandidatesTakeTheEnglishTest;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -12,6 +13,6 @@ class CandidatesTakeTheEnglishTestSeeder extends Seeder
      */
     public function run(): void
     {
-        //
+        CandidatesTakeTheEnglishTest::factory()->count(10)->create();
     }
 }

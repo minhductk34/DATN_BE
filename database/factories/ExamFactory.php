@@ -3,21 +3,22 @@
 namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Str;
 
-/**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Exam>
- */
 class ExamFactory extends Factory
 {
-    /**
-     * Define the model's default state.
-     *
-     * @return array<string, mixed>
-     */
+    protected $model = \App\Models\Exam::class;
+
     public function definition(): array
     {
         return [
-            //
+            'id' => Str::uuid(), // Tạo UUID cho cột 'id'
+            'Name' => $this->faker->word(),
+            'TimeStart' => $this->faker->dateTimeBetween('now', '+1 week'),
+            'TimeEnd' => $this->faker->dateTimeBetween('+1 week', '+2 weeks'),
+            'Status' => $this->faker->randomElement(['Scheduled', 'Ongoing', 'Completed']),
+            'created_at' => now(),
+            'updated_at' => now(),
         ];
     }
 }

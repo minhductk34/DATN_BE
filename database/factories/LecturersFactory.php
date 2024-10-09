@@ -17,7 +17,14 @@ class LecturersFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'Idcode' => $this->faker->unique()->uuid(),
+            'Fullname' => $this->faker->name(),
+            'Profile' => $this->faker->optional()->imageUrl(),
+            'Email' => $this->faker->unique()->safeEmail(),
+            'Status' => $this->faker->randomElement(['Active', 'Inactive']),
+            'created_at' => now(),
+            'updated_at' => now(),
+            'deleted_at' => null,
         ];
     }
 }

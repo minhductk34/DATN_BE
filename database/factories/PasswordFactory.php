@@ -2,7 +2,9 @@
 
 namespace Database\Factories;
 
+use App\Models\Candidate;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Facades\Hash;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Password>
@@ -17,7 +19,11 @@ class PasswordFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'Idcode' => Candidate::inRandomOrder()->first()->Idcode,
+            'Password' => Hash::make('password'),
+            'created_at' => now(),
+            'updated_at' => now(),
+            'deleted_at' => null,
         ];
     }
 }

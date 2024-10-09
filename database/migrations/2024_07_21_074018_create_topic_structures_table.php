@@ -12,9 +12,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('topic_structures', function (Blueprint $table) {
-            $table->id();
+            $table->string('id')->primary();
             $table->string('exam_content_id');
-            $table->foreign('exam_content_id')->references('id')->on('exam_contents')->cascadeOnDelete()->cascadeOnUpdate();            $table->enum('Level',['Easy','Medium','Difficult'])->default('Easy');
+            $table->foreign('exam_content_id')->references('id')->on('exam_contents')->cascadeOnDelete()->cascadeOnUpdate();
+            $table->string('exam_subject_id');
+            $table->foreign('exam_subject_id')->references('id')->on('exam_subjects')->cascadeOnDelete()->cascadeOnUpdate();
+            $table->enum('Level',['Easy','Medium','Difficult'])->default('Easy');
             $table->smallInteger('Quality');
             $table->timestamps();
         });
