@@ -20,79 +20,145 @@ class AdminController extends Controller
         //
     }
 
-    public function login(Request $request)
+public function login(Request $request)
 {
-    $credentials = $request->only('username', 'password');
+    try {
+        $credentials = $request->only('username', 'password');
 
-    if (empty($credentials['username']) || empty($credentials['password'])) {
+        if (empty($credentials['username']) || empty($credentials['password'])) {
+            return response()->json([
+                'success' => false,
+                'status' => 400,
+                'data' => [],
+                'warning' => 'Username và password là bắt buộc.'
+            ], 400);
+        }
+
+        $admin = Admin::where('name', $credentials['username'])->first();
+
+        if (!$admin) {
+            return response()->json([
+                'success' => false,
+                'status' => 404,
+                'data' => [],
+                'warning' => 'Tài khoản không tồn tại.'
+            ], 404);
+        }
+
+        if (!Hash::check($credentials['password'], $admin->Password)) {
+            return response()->json([
+                'success' => false,
+                'status' => 401,
+                'data' => [],
+                'warning' => 'Mật khẩu không chính xác.'
+            ], 401);
+        }
+
+        // Thêm kiểm tra kết nối Redis
+        if (!$this->checkRedisConnection()) {
+            return response()->json([
+                'success' => false,
+                'status' => 503,
+                'data' => [],
+                'warning' => 'Không thể kết nối đến hệ thống lưu trữ, vui lòng thử lại sau.'
+            ], 503);
+        }
+
+        // Thực hiện truy vấn với cơ chế retry khi lỗi kết nối Redis xảy ra
+        $existingToken = $this->retryRedisOperation(function () use ($admin) {
+            return Redis::hget('auth:' . $admin->id, 'token');
+        });
+
+        if ($existingToken) {
+            return response()->json([
+                'success' => false,
+                'status' => 403,
+                'data' => [],
+                'warning' => 'Tài khoản này đã đăng nhập từ nơi khác.'
+            ], 403);
+        }
+
+        // Tạo token mới
+        $token = Str::random(60);
+        $expiresAt = now()->addHours(1)->timestamp;
+        $ttl = now()->addHours(1)->diffInSeconds(now());
+
+        $tokenData = [
+            'user_id' => $admin->id,
+            'expires_at' => $expiresAt,
+        ];
+
+        // Thêm retry cho thao tác lưu trữ
+        $this->retryRedisOperation(function () use ($token, $tokenData, $admin, $ttl) {
+            Redis::hmset('tokens:' . $token, $tokenData);
+            Redis::hmset('auth:' . $admin->id, ['token' => $token, 'expires_at' => $ttl]);
+            Redis::expire('tokens:' . $token, $ttl);
+            Redis::expire('auth:' . $admin->id, $ttl);
+        });
+
+        $data = [
+            'id' => $admin->id,
+            'username' => $admin->Name,
+        ];
+
+        return response()->json([
+            'success' => true,
+            'status' => 200,
+            'expires_at' => $expiresAt,
+            'token' => $token,
+            'data' => $data,
+        ], 200);
+
+    } catch (\Exception $e) {
+        
+
         return response()->json([
             'success' => false,
-            'status' => '400',
+            'status' => 500,
             'data' => [],
-            'warning' => 'Username và password là bắt buộc'
-        ], 400);
+            'warning' => 'Đã có lỗi xảy ra, vui lòng thử lại sau.',
+            'error' => $e->getMessage()
+        ], 500);
     }
-
-    $admin = Admin::where('name', $credentials['username'])->first();
-
-    if (!$admin) {
-        return response()->json([
-            'success' => false,
-            'status' => '404',
-            'data' => [],
-            'warning' => 'Tài khoản không tồn tại'
-        ], 404);
-    }
-
-    if (!Hash::check($credentials['password'], $admin->Password)) {
-        return response()->json([
-            'success' => false,
-            'status' => '401',
-            'data' => [],
-            'warning' => 'Mật khẩu không chính xác'
-        ], 401);
-    }
-
-    // Kiểm tra xem người dùng đã có token hợp lệ chưa
-    $existingToken = Redis::hget('auth:' . $admin->id, 'token');
-    if ($existingToken) {
-        return response()->json([
-            'success' => false,
-            'status' => '403',
-            'data' => [],
-            'warning' => 'Tài khoản này đã đăng nhập từ nơi khác'
-        ], 403);
-    }
-
-    // Tạo khóa lưu trữ token và thông tin người dùng
-    $token = Str::random(60);
-    $expiresAt = now()->addHours(1)->timestamp;
-    $ttl = now()->addHours(1)->diffInSeconds(now());
-
-    // Lưu thông tin token vào Redis hash
-    Redis::hset('tokens:' . $token, 'user_id', $admin->id);
-    Redis::hset('tokens:' . $token, 'expires_at', $expiresAt);
-
-    // Lưu token vào Redis hash với TTL
-    Redis::hset('auth:' . $admin->id, 'token', $token);
-    Redis::hset('auth:' . $admin->id, 'expires_at', $expiresAt);
-
-    // Đặt TTL cho các hash
-    Redis::expire('tokens:' . $token, $ttl);
-    Redis::expire('auth:' . $admin->id, $ttl);
-    $data = [
-        'id' => $admin->id,
-        'username' => $admin->Name,
-    ];
-
-    return response()->json([
-        'success' => true,
-        'status' => '200',
-        'expires_at' => $expiresAt,
-        'token' => $token,
-        'data' =>$data,
-    ], 200);
 }
+
+/**
+ * Kiểm tra kết nối đến Redis
+ */
+private function checkRedisConnection()
+{
+    try {
+        Redis::ping();
+        return true;
+    } catch (\Exception $e) {
+    
+        return false;
+    }
+}
+
+/**
+ * Thực hiện thao tác với Redis và tự động retry khi xảy ra lỗi
+ */
+private function retryRedisOperation(callable $operation, $maxRetries = 3)
+{
+    $attempts = 0;
+    while ($attempts < $maxRetries) {
+        try {
+            return $operation();
+        } catch (\Exception $e) {
+            $attempts++;
+            
+            if ($attempts >= $maxRetries) {
+              
+                throw $e;
+            }
+            // Đợi một thời gian ngắn trước khi thử lại (200ms)
+            usleep(200000); // 200,000 microsecond = 200ms
+        }
+    }
+    return null;
+}
+
 
 
 
