@@ -107,6 +107,7 @@ Route::prefix('admin')->group(function () {
         //delete data
         Route::delete('/{id}', [QuestionController::class, 'destroy']);
     });
+
     Route::prefix('candidate')->group(function () {
         Route::get('/getAll', [CandidateController::class, 'index']);
         Route::get('/getById/{id}', [CandidateController::class, 'show']);
@@ -116,7 +117,6 @@ Route::prefix('admin')->group(function () {
         Route::put('/update/{id}', [CandidateController::class, 'update']);
         Route::delete('/delete/{id}', [CandidateController::class, 'destroy']);
     });
-
 
     Route::middleware('checkToken')->prefix('readings')->group(function () {
         //get data
@@ -184,6 +184,7 @@ Route::prefix('admin')->group(function () {
             Route::delete('/{id}', [ListeningQuestionController::class, 'destroy']);
         });
     });
+
     Route::middleware('checkToken')->prefix('exam-subject-details')->group(function () {
         Route::get('/', [ExamSubjectDetailsController::class, 'index']);
         Route::get('/{id}', [ExamSubjectDetailsController::class, 'show']);
