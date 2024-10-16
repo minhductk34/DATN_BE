@@ -12,8 +12,8 @@ class English_exam_question extends Model
 
     protected $fillable = [
         'question_id',
-        'reading_id',
-        'listening_id',
+        'reading_question_id',
+        'listening_question_id',
         'idcode',
         'numerical_order',
         'answer_P',
@@ -26,14 +26,14 @@ class English_exam_question extends Model
         return $this->belongsTo(Question::class);
     }
 
-    public function reading(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function reading_question(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
-        return $this->belongsTo(Reading::class);
+        return $this->belongsTo(Reading_question::class);
     }
 
-    public function listening(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function listening_question(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
-        return $this->belongsTo(Listening::class);
+        return $this->belongsTo(Listening_question::class);
     }
 
     public function candidate(): \Illuminate\Database\Eloquent\Relations\BelongsTo

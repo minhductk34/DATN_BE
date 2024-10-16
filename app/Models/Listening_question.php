@@ -34,4 +34,8 @@ class Listening_question extends Model
     {
         return $this->belongsTo(Listening_question_version::class, 'current_version_id');
     }
+    public function english_exam_question()
+    {
+        return $this->belongsTo(English_exam_question::class);
+    }
 }

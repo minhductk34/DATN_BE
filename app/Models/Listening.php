@@ -35,8 +35,5 @@ class Listening extends Model
         return $this->hasMany(Listening_question::class);
     }
 
-    public function english_exam_question()
-    {
-        return $this->belongsTo(English_exam_question::class);
-    }
+
 }
