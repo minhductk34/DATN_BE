@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Exam;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -17,7 +18,10 @@ class ExamSubjectFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'id'=>$this->faker->uuid(),
+            'exam_id'=>Exam::inRandomOrder()->first()->id,
+            'name'=>$this->faker->name(),
+            'status'=>$this->faker->boolean(),
         ];
     }
 }

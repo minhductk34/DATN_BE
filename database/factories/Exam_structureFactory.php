@@ -2,6 +2,8 @@
 
 namespace Database\Factories;
 
+use App\Models\Exam_content;
+use App\Models\Exam_subject;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -17,7 +19,10 @@ class ExamStructureFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'exam_subject_id'=>Exam_subject::inRandomOrder()->first()->id,
+            'exam_content_id'=>Exam_content::inRandomOrder()->first()->id,
+            'level'=>$this->faker->randomElement(['easy', 'medium', 'difficult']),
+            'quantity'=>$this->faker->numberBetween(1,100),
         ];
     }
 }

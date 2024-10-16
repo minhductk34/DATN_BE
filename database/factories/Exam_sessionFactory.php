@@ -17,7 +17,9 @@ class ExamSessionFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'name'=>$this->faker->name(),
+            'time_start' => $this->faker->dateTimeBetween('-1 month', 'now'),
+            'time_end' => $this->faker->dateTimeBetween('now', '+1 month'),
         ];
     }
 }

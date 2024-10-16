@@ -2,6 +2,8 @@
 
 namespace Database\Factories;
 
+use App\Models\Candidate;
+use App\Models\Question;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -17,7 +19,12 @@ class CandidateQuestionFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'question_id'=>Question::inRandomOrder()->first()->id,
+            'idcode'=>Candidate::inRandomOrder()->first()->id,
+            'numerical_order'=>$this->faker->numberBetween(0,100),
+            'answer_P'=>$this->faker->text(30),
+            'answer_Pi'=>$this->faker->text(30),
+            'answer_Temp'=>$this->faker->text(30),
         ];
     }
 }
