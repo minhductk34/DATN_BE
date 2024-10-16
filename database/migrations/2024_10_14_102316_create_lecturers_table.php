@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('name');
             $table->string('profile');
             $table->string('email');
-            $table->enum('status', [true, false])->default(true);
+            $table->boolean('status')->default(true);
             $table->timestamps();
             $table->softDeletes();
         });

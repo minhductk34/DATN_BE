@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('listening_id');
             $table->foreign('listening_id')->references('id')->on('listenings')->cascadeOnDelete()->cascadeOnUpdate();
             $table->integer('current_version_id')->nullable();
-            $table->enum('status',[true,false])->default(true);
+            $table->boolean('status')->default(true);
             $table->timestamps();
             $table->softDeletes();
         });

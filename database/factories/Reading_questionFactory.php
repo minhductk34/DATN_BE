@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Reading_question>
  */
-class ReadingQuestionFactory extends Factory
+class Reading_questionFactory extends Factory
 {
     /**
      * Define the model's default state.
@@ -18,11 +18,17 @@ class ReadingQuestionFactory extends Factory
      */
     public function definition(): array
     {
+        $reading = Reading::inRandomOrder()->first();
+        $readingQuestionVersion = Reading_question_version::inRandomOrder()->first();
+
         return [
-            'id'=>$this->faker->uuid(),
-            'reading_id'=>Reading::inRandomOrder()->first()->id,
-            'status'=>$this->faker->boolean(),
-            'current_version_id'=>Reading_question_version::inRandomOrder()->first()->id
+            'id' => $this->faker->uuid(),
+            'reading_id' => $reading ? $reading->id : null,
+            'status' => $this->faker->boolean(),
+            'current_version_id' => $readingQuestionVersion ? $readingQuestionVersion->id : null,
+            'created_at' => now(),
+            'updated_at' => now(),
+            'deleted_at' => null,
         ];
     }
 }

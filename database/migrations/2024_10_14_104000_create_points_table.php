@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('exam_subject_id');
             $table->foreign('exam_subject_id')->references('id')->on('exam_subjects')->cascadeOnDelete()->cascadeOnUpdate();
-            $table->string('idcode');
+            $table->string('idcode')->nullable();
             $table->foreign('idcode')->references('idcode')->on('candidates')->cascadeOnDelete()->cascadeOnUpdate();
             $table->float('point', 5, 2);
             $table->integer('number_of_correct_sentences')->default(0);

@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Candidate;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -17,7 +18,14 @@ class LecturerFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'idcode'=>$this->faker->uuid(),
+            'name'=>$this->faker->name(),
+            'profile'=>$this->faker->imageUrl(),
+            'email'=>$this->faker->email(),
+            'status'=>$this->faker->boolean(),
+            'created_at' => now(),
+            'updated_at' => now(),
+            'deleted_at' => null,
         ];
     }
 }

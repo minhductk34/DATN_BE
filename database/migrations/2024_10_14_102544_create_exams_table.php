@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('name');
             $table->dateTime('time_start');
             $table->dateTime('time_end');
-            $table->enum('status', [true,false])->default(true);
+            $table->boolean('status')->default(true);
             $table->timestamps();
             $table->softDeletes();
         });

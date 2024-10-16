@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Exam_subject_detail>
  */
-class ExamSubjectDetailFactory extends Factory
+class Exam_subject_detailFactory extends Factory
 {
     /**
      * Define the model's default state.
@@ -21,6 +21,9 @@ class ExamSubjectDetailFactory extends Factory
             'exam_subject_id'=>Exam_subject::inRandomOrder()->first()->id,
             'quantity'=>$this->faker->numberBetween(1,100),
             'time'=>$this->faker->numberBetween(1,100),
+            'created_at' => now(),
+            'updated_at' => now(),
+            'deleted_at' => null,
         ];
     }
 }

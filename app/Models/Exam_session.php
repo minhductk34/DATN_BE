@@ -11,8 +11,8 @@ class Exam_session extends Model
     use HasFactory,SoftDeletes;
     protected $fillable = [
         'name',
-        'timeStart',
-        'timeEnd',
+        'time_start',
+        'time_end',
     ];
     public function exam_room_detail()
     {

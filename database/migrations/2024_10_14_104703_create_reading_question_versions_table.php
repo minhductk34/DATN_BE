@@ -21,10 +21,11 @@ return new class extends Migration
             $table->string('answer_F1')->nullable();
             $table->string('answer_F2')->nullable();
             $table->string('answer_F3')->nullable();
-            $table->enum('status', [true,false])->default(true);
+            $table->boolean('status')->default(true);
             $table->enum('level',['easy','medium','difficult'])->default('easy');
             $table->unique(['reading_question_id', 'version']);
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

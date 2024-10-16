@@ -17,7 +17,7 @@ return new class extends Migration
             $table->foreign('exam_content_id')->references('id')->on('exam_contents')->cascadeOnDelete()->cascadeOnUpdate();
             $table->string('name');
             $table->string('audio');
-            $table->enum('status',[true,false])->default(true);
+            $table->boolean('status')->default(true);
             $table->enum('level',['easy', 'medium', 'difficult']);
             $table->timestamps();
             $table->softDeletes();

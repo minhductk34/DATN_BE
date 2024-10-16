@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\English_exam_question>
  */
-class EnglishExamQuestionFactory extends Factory
+class English_exam_questionFactory extends Factory
 {
     /**
      * Define the model's default state.
@@ -29,6 +29,9 @@ class EnglishExamQuestionFactory extends Factory
             'answer_P'=>$this->faker->text(30),
             'answer_Pi'=>$this->faker->text(30),
             'answer_Temp'=>$this->faker->text(30),
+            'created_at' => now(),
+            'updated_at' => now(),
+            'deleted_at' => null,
         ];
     }
 }

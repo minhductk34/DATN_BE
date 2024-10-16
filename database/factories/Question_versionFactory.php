@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Question_version>
  */
-class QuestionVersionFactory extends Factory
+class Question_versionFactory extends Factory
 {
     /**
      * Define the model's default state.
@@ -31,7 +31,10 @@ class QuestionVersionFactory extends Factory
             'image_F3'=>$this->faker->text(30),
             'level'=>$this->faker->randomElement(['easy', 'medium', 'difficult']),
             'version'=>$this->faker->numberBetween(1,10),
-            'is_active'=>$this->faker->boolean()
+            'is_active'=>$this->faker->boolean(),
+            'created_at' => now(),
+            'updated_at' => now(),
+            'deleted_at' => null,
         ];
     }
 }

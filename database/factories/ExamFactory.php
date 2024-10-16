@@ -17,7 +17,14 @@ class ExamFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'id'=>$this->faker->uuid(),
+            'name'=>$this->faker->name(),
+            'time_start' => $this->faker->dateTimeBetween('-1 month', 'now'),
+            'time_end' => $this->faker->dateTimeBetween('now', '+1 month'),
+            'status' => $this->faker->boolean(),
+            'created_at' => now(),
+            'updated_at' => now(),
+            'deleted_at' => null,
         ];
     }
 }

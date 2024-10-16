@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Listening;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -12,6 +13,6 @@ class ListeningQuestionSeeder extends Seeder
      */
     public function run(): void
     {
-        //
+        Listening::factory()->count(1000)->create();
     }
 }

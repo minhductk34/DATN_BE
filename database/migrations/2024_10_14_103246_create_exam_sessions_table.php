@@ -14,8 +14,8 @@ return new class extends Migration
         Schema::create('exam_sessions', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->dateTime('timeStart');
-            $table->dateTime('timeEnd');
+            $table->dateTime('time_start');
+            $table->dateTime('time_end');
             $table->timestamps();
             $table->softDeletes();
         });

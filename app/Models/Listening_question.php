@@ -16,7 +16,7 @@ class Listening_question extends Model
     protected $fillable = [
         'id',
         'listening_id',
-        'Status',
+        'status',
         'current_version_id'
     ];
 

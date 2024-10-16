@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Listening_question_version>
  */
-class ListeningQuestionVersionFactory extends Factory
+class Listening_question_versionFactory extends Factory
 {
     /**
      * Define the model's default state.
@@ -27,6 +27,9 @@ class ListeningQuestionVersionFactory extends Factory
             'answer_F3'=>$this->faker->text(30),
             'status'=>$this->faker->boolean,
             'level'=>$this->faker->randomElement(['easy', 'medium', 'difficult']),
+            'created_at' => now(),
+            'updated_at' => now(),
+            'deleted_at' => null,
         ];
     }
 }

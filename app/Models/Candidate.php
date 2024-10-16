@@ -21,7 +21,6 @@ class Candidate extends Model
         'image',
         'dob',
         'address',
-        'password',
         'email',
         'status'
     ];

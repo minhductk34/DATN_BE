@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('passwords', function (Blueprint $table) {
             $table->id();
-            $table->string('idcode');
+            $table->string('idcode')->nullable();
             $table->foreign('idcode')->references('idcode')->on('candidates')->cascadeOnDelete()->cascadeOnUpdate();
             $table->string('password');
             $table->timestamps();

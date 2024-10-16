@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Exam_content;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -17,7 +18,15 @@ class ReadingFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'id'=>$this->faker->uuid(),
+            'exam_content_id'=>Exam_content::inRandomOrder()->first()->id,
+            'title'=>$this->faker->text(30),
+            'status'=>$this->faker->boolean(),
+            'level'=>$this->faker->randomElement(['easy', 'medium', 'difficult']),
+            'image'=>$this->faker->imageUrl(),
+            'created_at' => now(),
+            'updated_at' => now(),
+            'deleted_at' => null,
         ];
     }
 }

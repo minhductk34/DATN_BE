@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('exam_id');
             $table->foreign('exam_id')->references('id')->on('exams')->cascadeOnDelete()->cascadeOnUpdate();
             $table->string('name');
-            $table->enum('status',[true,false])->default(true);
+            $table->boolean('status')->default(true);
             $table->timestamps();
             $table->softDeletes();
         });

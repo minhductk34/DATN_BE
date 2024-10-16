@@ -21,9 +21,8 @@ return new class extends Migration
             $table->string('image')->default('storage/default/user.png');
             $table->date('dob');
             $table->string('address')->nullable();
-            $table->string('password');
             $table->string('email')->unique();
-            $table->enum('status', [true, false])->default(true);
+            $table->boolean('status')->default(true);
             $table->timestamps();
             $table->softDeletes();
         });

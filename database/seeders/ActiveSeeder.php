@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Active;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -12,6 +13,6 @@ class ActiveSeeder extends Seeder
      */
     public function run(): void
     {
-        //
+        Active::factory()->count(1000)->create();
     }
 }

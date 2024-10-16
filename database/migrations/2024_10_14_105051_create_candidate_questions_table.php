@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('question_id');
             $table->foreign('question_id')->references('id')->on('questions')->cascadeOnDelete()->cascadeOnUpdate();
-            $table->string('idcode');
+            $table->string('idcode')->nullable();
             $table->foreign('idcode')->references('idcode')->on('candidates')->cascadeOnDelete()->cascadeOnUpdate();
             $table->integer('numerical_order');
             $table->string('answer_P');

@@ -13,11 +13,12 @@ return new class extends Migration
     {
         Schema::create('reading_questions', function (Blueprint $table) {
             $table->string('id')->primary();
-            $table->string('reading_id');
+            $table->string('reading_id')->nullable();
             $table->foreign('reading_id')->references('id')->on('readings')->cascadeOnDelete()->cascadeOnUpdate();
             $table->integer('current_version_id')->nullable();
-            $table->enum('status',[true,false])->default(true);
+            $table->boolean('status')->default(true);
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

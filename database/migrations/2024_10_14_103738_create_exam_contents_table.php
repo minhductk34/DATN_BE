@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('exam_subject_id');
             $table->foreign('exam_subject_id')->references('id')->on('exam_subjects')->cascadeOnDelete()->cascadeOnUpdate();
             $table->string('title');
-            $table->enum('status', [true,false])->default(true);
+            $table->boolean('status')->default(true);
             $table->timestamps();
             $table->softDeletes();
         });
