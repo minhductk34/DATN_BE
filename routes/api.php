@@ -36,7 +36,7 @@ Route::prefix('admin')->group(function () {
 
     Route::post('/login', [AdminController::class, 'login']);
     //Quản lý môn thi
-    Route::middleware('checkToken')->prefix('exam-subjects')->group(function () {
+    Route::prefix('exam-subjects')->group(function () {
         Route::get('/exam/{id}', [ExamSubjectController::class,'getSubjectByExam']);
         Route::post('/', [ExamSubjectController::class,'store']);
         Route::get('/{id}', [ExamSubjectController::class,'show']);
@@ -120,7 +120,7 @@ Route::prefix('admin')->group(function () {
         Route::get('/exam-room/{exam_room_id}', [CandidateController::class, 'countCandidateForExamRoom']);
     });
 
-    Route::middleware('checkToken')->prefix('readings')->group(function () {
+    Route::prefix('readings')->group(function () {
         //get data
         Route::get('/', [ReadingController::class, 'index']);
         Route::get('/{id}', [ReadingController::class, 'show']);
@@ -154,7 +154,7 @@ Route::prefix('admin')->group(function () {
         });
     });
 
-    Route::middleware('checkToken')->prefix('listenings')->group(function () {
+    Route::prefix('listenings')->group(function () {
         //get data
         Route::get('/', [ListeningController::class, 'index']);
         Route::get('/{id}', [ListeningController::class, 'show']);

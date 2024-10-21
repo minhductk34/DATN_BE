@@ -20,19 +20,19 @@ class StoreQuestionRequest extends FormRequest
         return [
             'id' => 'required|unique:questions,id|max:255',
             'exam_content_id' => 'required|exists:exam_contents,id|max:255',
-            'Title' => 'required|string|max:255',
-            'Image_Title' => 'nullable|file|mimes:jpeg,jpg,png,gif,webp',
-            'Answer_P' => 'required|string|max:255',
-            'Image_P' => 'nullable|file|mimes:jpeg,jpg,png,gif,webp',
+            'title' => 'required|string|max:255',
+            'image_title' => 'nullable|file|mimes:jpeg,jpg,png,gif,webp',
+            'answer_P' => 'required|string|max:255',
+            'image_P' => 'nullable|file|mimes:jpeg,jpg,png,gif,webp',
 
-            'Answer_F1' => 'required|string|max:255',
-            'Image_F1' => 'nullable|file|mimes:jpeg,jpg,png,gif,webp',
-            'Answer_F2' => 'required|string|max:255',
-            'Image_F2' => 'nullable|file|mimes:jpeg,jpg,png,gif,webp',
-            'Answer_F3' => 'required|string|max:255',
-            'Image_F3' => 'nullable|file|mimes:jpeg,jpg,png,gif,webp',
+            'answer_F1' => 'required|string|max:255',
+            'image_F1' => 'nullable|file|mimes:jpeg,jpg,png,gif,webp',
+            'answer_F2' => 'required|string|max:255',
+            'image_F2' => 'nullable|file|mimes:jpeg,jpg,png,gif,webp',
+            'answer_F3' => 'required|string|max:255',
+            'image_F3' => 'nullable|file|mimes:jpeg,jpg,png,gif,webp',
 
-            'Level' => 'required|in:Easy,Medium,Difficult',
+            'level' => 'required|in:easy,medium,difficult',
         ];
     }
 
@@ -55,19 +55,19 @@ class StoreQuestionRequest extends FormRequest
         return [
             'id' => 'Mã câu hỏi',
             'exam_content_id' => 'Mã nội dung thi',
-            'Title' => 'Nội dung câu hỏi',
-            'Image_Title' => 'Ảnh câu hỏi',
-            'Answer_P' => 'Đáp án đúng',
-            'Image_P' => 'Ảnh đáp án đúng',
+            'title' => 'Nội dung câu hỏi',
+            'image_title' => 'Ảnh câu hỏi',
+            'answer_P' => 'Đáp án đúng',
+            'image_P' => 'Ảnh đáp án đúng',
 
-            'Answer_F1' => 'Đáp án sai 1',
-            'Image_F1' => 'Ảnh đáp án sai 1',
-            'Answer_F2' => 'Đáp án sai 2',
-            'Image_F2' => 'Ảnh đáp án sai 2',
-            'Answer_F3' => 'Đáp án sai 3',
-            'Image_F3' => 'Ảnh đáp án sai 3',
+            'answer_F1' => 'Đáp án sai 1',
+            'image_F1' => 'Ảnh đáp án sai 1',
+            'answer_F2' => 'Đáp án sai 2',
+            'image_F2' => 'Ảnh đáp án sai 2',
+            'answer_F3' => 'Đáp án sai 3',
+            'image_F3' => 'Ảnh đáp án sai 3',
 
-            'Level' => 'Mức độ'
+            'level' => 'Mức độ'
         ];
     }
 

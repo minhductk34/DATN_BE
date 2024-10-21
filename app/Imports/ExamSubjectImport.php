@@ -19,7 +19,7 @@ class ExamSubjectImport implements ToModel, WithHeadingRow, WithValidation, Skip
         return new ExamSubject([
             'id' => $row['id'],
             'exam_id' => $row['exam_id'],
-            'Name' => $row['name'],
+            'name' => $row['name'],
         ]);
     }
 

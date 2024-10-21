@@ -25,7 +25,7 @@ class ReadingController extends Controller
 
             $readings = Reading::query()
                 ->where('exam_content_id', $exam_content_id)
-                ->select('id', 'Title', 'Status', 'Level')
+                ->select('id', 'title', 'status', 'level')
                 ->get();
 
             if ($readings->isEmpty()) {
@@ -40,12 +40,12 @@ class ReadingController extends Controller
 
     public function store(StoreReadingRequest $request)
     {
-        $validatedData = $request->except('Image');
+        $validatedData = $request->except('image');
 
         try {
-            if ($request->hasFile('Image') && $request->file('Image')->isValid()) {
-                $image = $request->file('Image')->store('readings', 'public');
-                $validatedData['Image'] = $image;
+            if ($request->hasFile('image') && $request->file('image')->isValid()) {
+                $image = $request->file('image')->store('readings', 'public');
+                $validatedData['image'] = $image;
             }
 
             $reading = Reading::create($validatedData);
@@ -119,14 +119,14 @@ class ReadingController extends Controller
         try {
             $reading = Reading::findOrFail($id);
 
-            $validatedData = $request->except('Image');
+            $validatedData = $request->except('image');
 
-            $oldImage = $reading->Image;
+            $oldImage = $reading->image;
             $newImage = null;
 
-            if ($request->hasFile('Image') && $request->file('Image')->isValid()) {
-                $newImage = $request->file('Image')->store('readings', 'public');
-                $validatedData['Image'] = $newImage;
+            if ($request->hasFile('image') && $request->file('image')->isValid()) {
+                $newImage = $request->file('image')->store('readings', 'public');
+                $validatedData['image'] = $newImage;
             }
 
             $reading->update($validatedData);
