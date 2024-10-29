@@ -49,17 +49,17 @@ class QuestionImport implements ToCollection, WithHeadingRow, WithValidation, Sk
 
                 $versions[] = [
                     'question_id' => $questionId,
-                    'Title' => $row['question'],
-                    'Image_Title' => $this->saveImageFromExcel($rowNumber, 'D'),
-                    'Answer_P' => $row['correct_answer'],
-                    'Image_P' => $this->saveImageFromExcel($rowNumber, 'F'),
-                    'Answer_F1' => $row['option2'],
-                    'Image_F1' => $this->saveImageFromExcel($rowNumber, 'H'),
-                    'Answer_F2' => $row['option3'],
-                    'Image_F2' => $this->saveImageFromExcel($rowNumber, 'J'),
-                    'Answer_F3' => $row['option4'],
-                    'Image_F3' => $this->saveImageFromExcel($rowNumber, 'K'),
-                    'Level' => $row['level'],
+                    'title' => $row['question'],
+                    'image_Title' => $this->saveImageFromExcel($rowNumber, 'D'),
+                    'answer_P' => $row['correct_answer'],
+                    'image_P' => $this->saveImageFromExcel($rowNumber, 'F'),
+                    'answer_F1' => $row['option2'],
+                    'image_F1' => $this->saveImageFromExcel($rowNumber, 'H'),
+                    'answer_F2' => $row['option3'],
+                    'image_F2' => $this->saveImageFromExcel($rowNumber, 'J'),
+                    'answer_F3' => $row['option4'],
+                    'image_F3' => $this->saveImageFromExcel($rowNumber, 'K'),
+                    'level' => $row['level'],
                     'version' => 1,
                     'created_at' => now(),
                     'updated_at' => now(),
@@ -100,7 +100,7 @@ class QuestionImport implements ToCollection, WithHeadingRow, WithValidation, Sk
             '*.option2' => ['required', 'string', 'max:255'],
             '*.option3' => ['required', 'string', 'max:255'],
             '*.option4' => ['required', 'string', 'max:255'],
-            '*.level' => ['required', 'in:Easy,Medium,Difficult'],
+            '*.level' => ['required', 'in:easy,medium,difficult'],
         ];
     }
 

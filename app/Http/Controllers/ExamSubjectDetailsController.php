@@ -93,8 +93,8 @@ class ExamSubjectDetailsController extends Controller
             // Validate the request
             $validated = $request->validate([
                 'exam_subject_id' => 'required|exists:exam_subjects,id',
-                'Quantity' => 'required|integer|between:1,32767',
-                'Time' => 'required|integer|between:1,1440', // Giả sử Time được tính bằng phút
+                'quantity' => 'required|integer|between:1,32767',
+                'time' => 'required|integer|between:1,1440', // Giả sử Time được tính bằng phút
             ]);
 
             $examSubjectDetails = ExamSubjectDetails::findOrFail($id);

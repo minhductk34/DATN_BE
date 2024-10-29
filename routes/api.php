@@ -36,7 +36,7 @@ Route::prefix('admin')->group(function () {
 
     Route::post('/login', [AdminController::class, 'login']);
     //Quản lý môn thi
-    Route::middleware('checkToken')->prefix('exam-subjects')->group(function () {
+    Route::prefix('exam-subjects')->group(function () {
         Route::get('/exam/{id}', [ExamSubjectController::class,'getSubjectByExam']);
         Route::post('/', [ExamSubjectController::class,'store']);
         Route::get('/{id}', [ExamSubjectController::class,'show']);
@@ -90,7 +90,7 @@ Route::prefix('admin')->group(function () {
     // ca thi
     Route::middleware('checkToken')->resource('/exam-session',ExamSessionController::class);
 
-    Route::prefix('questions')->group(function () {
+    Route::middleware('checkToken')->prefix('questions')->group(function () {
         //get data
         Route::get('/', [QuestionController::class, 'index']);
         Route::get('/{id}', [QuestionController::class, 'show']);
@@ -136,7 +136,7 @@ Route::prefix('admin')->group(function () {
         Route::delete('/{id}', [ReadingController::class, 'destroy']);
 
         // reading questions
-        Route::prefix('questions')->group(function () {
+        Route::middleware('checkToken')->prefix('questions')->group(function () {
             //get data
             // Route::get('/', [ReadingQuestionController::class, 'index']);
             Route::get('/{id}', [ReadingQuestionController::class, 'show']);
@@ -169,7 +169,7 @@ Route::prefix('admin')->group(function () {
         Route::delete('/{id}', [ListeningController::class, 'destroy']);
 
         // reading questions
-        Route::prefix('questions')->group(function () {
+        Route::middleware('checkToken')->prefix('questions')->group(function () {
             //get data
             // Route::get('/', [ReadingQuestionController::class, 'index']);
             Route::get('/{id}', [ListeningQuestionController::class, 'show']);

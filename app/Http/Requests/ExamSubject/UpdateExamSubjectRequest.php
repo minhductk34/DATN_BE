@@ -28,7 +28,7 @@ class UpdateExamSubjectRequest extends FormRequest
         return [
             'id' => 'required|unique:exam_subjects,id,' . $id,
             'exam_id' => 'required|exists:exams,id',
-            'Name' => 'required|string|max:255',
+            'name' => 'required|string|max:255',
         ];
     }
 
@@ -49,7 +49,7 @@ class UpdateExamSubjectRequest extends FormRequest
         return [
             'id' => 'Mã môn thi',
             'exam_id' => 'ID kì thi',
-            'Name' => 'Tên môn thi',
+            'name' => 'Tên môn thi',
         ];
     }
 

@@ -18,12 +18,12 @@ class StoreReadingQuestionRequest extends FormRequest
         return [
             'id' => 'required|unique:reading_questions,id|max:255',
             'reading_id' => 'required|exists:readings,id|max:255',
-            'Title' => 'required|string|max:255',
-            'Answer_P' => 'required|string|max:255',
-            'Answer_F1' => 'required|string|max:255',
-            'Answer_F2' => 'required|string|max:255',
-            'Answer_F3' => 'required|string|max:255',
-            'Level' => 'required|in:Easy,Medium,Difficult',
+            'title' => 'required|string|max:255',
+            'answer_P' => 'required|string|max:255',
+            'answer_F1' => 'required|string|max:255',
+            'answer_F2' => 'required|string|max:255',
+            'answer_F3' => 'required|string|max:255',
+            'level' => 'required|in:easy,medium,difficult',
         ];
     }
 
@@ -44,14 +44,14 @@ class StoreReadingQuestionRequest extends FormRequest
         return [
             'id' => 'Mã câu hỏi',
             'reading_id' => 'Mã bài đọc',
-            'Title' => 'Nội dung câu hỏi',
-            'Answer_P' => 'Đáp án đúng',
+            'title' => 'Nội dung câu hỏi',
+            'answer_P' => 'Đáp án đúng',
 
-            'Answer_F1' => 'Đáp án sai 1',
-            'Answer_F2' => 'Đáp án sai 2',
-            'Answer_F3' => 'Đáp án sai 3',
+            'answer_F1' => 'Đáp án sai 1',
+            'answer_F2' => 'Đáp án sai 2',
+            'answer_F3' => 'Đáp án sai 3',
 
-            'Level' => 'Mức độ'
+            'level' => 'Mức độ'
         ];
     }
 
