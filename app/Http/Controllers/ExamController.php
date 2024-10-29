@@ -29,13 +29,18 @@ class ExamController extends Controller
             'Name' => 'required|string|max:255',
             'TimeStart' => 'required|date',
             'TimeEnd' => 'required|date|after_or_equal:TimeStart',
-            'Status' => 'required|in:Scheduled,Ongoing,Completed'
+          
         ]);
 
         $exam = Exam::create($validated);
 
         if ($exam) {
-            return response()->json($exam, 201);
+            return response()->json([
+                'success' => true,
+                'status' => '201',
+                'data' => $exam,
+                'message' => 'Create exam successfully.',
+            ], 201);
         } else {
             return response()->json([
                 'message' => 'Failed to create exam. Please try again.'
@@ -64,7 +69,7 @@ class ExamController extends Controller
             'Name' => 'sometimes|string|max:255',
             'TimeStart' => 'sometimes|date',
             'TimeEnd' => 'sometimes|date|after_or_equal:TimeStart', // Ensure TimeEnd is valid
-            'Status' => 'sometimes|in:Scheduled,Ongoing,Completed'
+           
         ]);
 
         $exam = Exam::findOrFail($id);
@@ -75,7 +80,12 @@ class ExamController extends Controller
         $updated = $exam->update($validated);
 
         if ($updated) {
-            return response()->json($exam);
+            return response()->json([
+                'success' => true,
+                'status' => '201',
+                'data' => $exam,
+                'message' => 'Update exam successfully.',
+            ],200);
         } else {
 
             return response()->json(['message' => 'Failed to update exam. Please try again.'], 500);
@@ -93,7 +103,7 @@ class ExamController extends Controller
 
         if ($exam->delete()) {
 
-            return response()->json(['message' => 'Exam deleted successfully.'], 200);
+            return response()->json(['message' => 'Exam deleted successfully.','success' => true,], 200, );
         } else {
 
             return response()->json(['message' => 'Failed to delete exam. Please try again.'], 500);

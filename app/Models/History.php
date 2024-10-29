@@ -8,16 +8,16 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class History extends Model
 {
-    use HasFactory ,SoftDeletes;
+    use HasFactory,softDeletes;
     protected $fillable = [
         'exam_subject_id',
-        'Idcode',
-        'Answer',
-        'Time'
+        'idcode',
+        'answer',
+        'time',
     ];
     public function exam_subject(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
-        return $this->belongsTo(ExamSubject::class);
+        return $this->belongsTo(Exam_subject::class);
     }
     public function candidate(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {

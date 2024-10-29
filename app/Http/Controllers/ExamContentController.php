@@ -17,7 +17,63 @@ class ExamContentController extends Controller
     {
         //
     }
-    public function getContentBgExam($id)
+
+    public function getQuestionCounts($id)
+    {
+        try {
+            if (!is_string($id) || empty(trim($id))) {
+                return response()->json([
+                    'success' => false,
+                    'status' => 400,
+                    'data' => [],
+                    'warning' => 'Invalid exam_content_id',
+                ], 400);
+            }
+
+            $content = ExamContent::find($id);
+
+            if (!$content) {
+                return response()->json([
+                    'success' => false,
+                    'status' => 404,
+                    'data' => [],
+                    'warning' => 'No content found for the given content_id',
+                ], 404);
+            }
+
+            $questionCounts = $content->questions()
+            ->join('question_versions', function ($join) {
+                $join->on('questions.current_version_id', '=', 'question_versions.id');
+            })
+            ->select('question_versions.level', DB::raw('count(*) as count'))
+            ->groupBy('question_versions.level')
+            ->pluck('count', 'level')
+            ->toArray();
+
+            $data = [
+                'easy' => $questionCounts['Easy'] ?? 0,
+                'medium' => $questionCounts['Medium'] ?? 0,
+                'difficult' => $questionCounts['Difficult'] ?? 0,
+            ];
+
+            return response()->json([
+                'success' => true,
+                'status' => 200,
+                'data' => $data,
+                'warning' => '',
+            ], 200);
+        } catch (\Exception $e) {
+
+            return response()->json([
+                'success' => false,
+                'status' => '500',
+                'data' => [],
+                'warning' => 'An unexpected error occurred: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function getContentByExam($id)
     {
         try {
 
@@ -31,6 +87,7 @@ class ExamContentController extends Controller
             }
 
             $content = ExamContent::query()
+                ->select('id', 'exam_subject_id', 'title', 'Status')
                 ->where('exam_subject_id', $id)
                 ->get();
 
@@ -76,6 +133,7 @@ class ExamContentController extends Controller
     {
         try {
             $validatedData = $request->validate([
+                'id' => 'required|string',
                 'exam_subject_id' => 'required|string',
                 'title' => 'required|string|max:255',
             ]);
@@ -86,7 +144,7 @@ class ExamContentController extends Controller
                 'success' => true,
                 'status' => 201,
                 'data' => $examSubject,
-                'warning' => ''
+                'warning' => 'Create exam content successfully'
             ], 201);
         } catch (ValidationException $e) {
             return response()->json([
@@ -259,7 +317,7 @@ class ExamContentController extends Controller
                 'success' => true,
                 'status' => 200,
                 'data' => $examSubject,
-                'warning' => ''
+                'warning' => 'update exam contetn successfully'
             ];
 
             return response()->json($response, 200);
@@ -280,6 +338,24 @@ class ExamContentController extends Controller
         }
     }
 
+    public function updateStatus($id)
+    {
+        try {
+            $examSubject = ExamContent::query()->find($id);
+
+            if (!$examSubject) {
+                return $this->jsonResponse(false, null, 'Không tìm thấy môn thi', 404);
+            }
+
+            $examSubject->Status = $examSubject->Status == 'true' ? 'false' : 'true';
+
+            $examSubject->save();
+
+            return $this->jsonResponse(true, $examSubject->Status, 'update status exam content successfully', 200);
+        } catch (\Exception $e) {
+            return $this->jsonResponse(false, null, $e->getMessage(), 500);
+        }
+    }
 
     /**
      * Remove the specified resource from storage.

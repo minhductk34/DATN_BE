@@ -161,6 +161,25 @@ class QuestionController extends Controller
         }
     }
 
+    public function showByIdContent($id)
+    {
+        try {
+            if (!is_string($id) || empty(trim($id))) {
+                return $this->jsonResponse(false, null, 'ID nội dung thi không hợp lệ', 400);
+            }
+
+            $question = Question::with('currentVersion')->where('exam_content_id', $id)->get();
+
+            if (!$question) {
+                return $this->jsonResponse(false, $id, 'Không tìm thấy câu hỏi', 404);
+            }
+
+            return $this->jsonResponse(true, $question, '', 200);
+        } catch (\Exception $e) {
+            return $this->jsonResponse(false, null, $e->getMessage(), 500);
+        }
+    }
+
     public function update(UpdateQuestionRequest $request, $id)
     {
         $question  = Question::find($id);
@@ -210,6 +229,25 @@ class QuestionController extends Controller
                 }
             }
 
+            return $this->jsonResponse(false, null, $e->getMessage(), 500);
+        }
+    }
+
+    public function updateStatus($id)
+    {
+        try {
+            $examSubject = Question::query()->find($id);
+
+            if (!$examSubject) {
+                return $this->jsonResponse(false, null, 'Không tìm thấy câu hỏi', 404);
+            }
+
+            $examSubject->Status = $examSubject->Status == 'true' ? 'false' : 'true';
+
+            $examSubject->save();
+
+            return $this->jsonResponse(true, $examSubject->Status, 'update status question successfully', 200);
+        } catch (\Exception $e) {
             return $this->jsonResponse(false, null, $e->getMessage(), 500);
         }
     }

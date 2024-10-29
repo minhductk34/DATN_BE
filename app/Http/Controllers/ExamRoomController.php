@@ -2,7 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Candidate;
+use App\Models\Exam;
 use App\Models\ExamRoom;
+use App\Models\ExamRoomDetail;
+use App\Models\ExamSession;
+use App\Models\ExamSubject;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
@@ -15,7 +20,7 @@ class ExamRoomController extends Controller
     public function index()
     {
         try {
-            $examRooms = ExamRoom::all();
+            $examRooms = ExamRoom::withCount('candidates')->get();
 
             return response()->json([
                 'success' => true,
@@ -50,10 +55,8 @@ class ExamRoomController extends Controller
     {
         try {
             $validatedData = $request->validate([
-                'poetry_id' => 'required|exists:poetries,id',
                 'Name' => 'required|max:255',
-                'Quantity' => 'required|integer',
-                'Status' => 'required|in:active,inactive',
+                'exam_id' => 'required|exists:exams,id',
             ]);
 
             $examRoom = ExamRoom::create($validatedData);
@@ -64,16 +67,25 @@ class ExamRoomController extends Controller
                 'data' => $examRoom,
                 'warning' => '',
             ], 201);
-
         } catch (ValidationException $e) {
             return response()->json([
                 'success' => false,
                 'status' => '422',
                 'data' => [],
-                'warning' => $e->errors(),
+                'warning' => 'validation error',
+                'error' => $e->errors()
             ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'status' => '500',
+                'data' => [],
+                'warning' => 'Đã xảy ra lỗi không xác định',
+                'error' => $e->getMessage(),
+            ], 500);
         }
     }
+
 
     /**
      * Display the specified resource.
@@ -82,6 +94,22 @@ class ExamRoomController extends Controller
     {
         try {
             $examRoom = ExamRoom::find($id);
+            $examRoomDetails = ExamRoomDetail::query()->where('exam_room_id', $id)->get();
+
+            if ($examRoomDetails instanceof \Illuminate\Support\Collection && $examRoomDetails->count() > 1) {
+                $examRoomDetails = $examRoomDetails->first();
+            } elseif ($examRoomDetails->count() === 1) {
+                $examRoomDetails = $examRoomDetails->first();
+            } else {
+                $examRoomDetails = null;
+            }
+
+            $examSubjectName = ExamSubject::query()->where('id',$examRoomDetails->exam_subject_id)->first()->Name;
+            $examSession = ExamSession::query()->where('id',$examRoomDetails->exam_session_id)->select('Name','TimeStart')->first();
+
+            $examSessionName = $examSession->Name;
+            $examSessionTimeStart = $examSession->TimeStart;
+
 
             if (!$examRoom) {
                 return response()->json([
@@ -95,7 +123,12 @@ class ExamRoomController extends Controller
             return response()->json([
                 'success' => true,
                 'status' => '200',
-                'data' => $examRoom,
+                'data' => [
+                    'examRoom' => $examRoom,
+                    'exam_session_name' => $examSessionName,
+                    'exam_session_time-start' => $examSessionTimeStart,
+                    'exam_subject_name'=> $examSubjectName,
+                ],
                 'warning' => '',
             ], 200);
 
@@ -129,14 +162,16 @@ class ExamRoomController extends Controller
             return response()->json([
                 'success' => false,
                 'status' => '404',
-                'data' => [],
-                'warning' => 'Exam Room không tồn tại',
+                'data' => '',
+                'warning'=> 'Không tìm thấy phòng',
+                'error' => '404 not found!'
             ], 404);
         }
 
         try {
             $validatedData = $request->validate([
-                'poetry_id' => 'required|exists:poetries,id',
+                'Name' => 'required|max:255',
+                'exam_id' => 'required|exists:exams,id'
             ]);
 
             $examRoom->update($validatedData);
@@ -153,10 +188,20 @@ class ExamRoomController extends Controller
                 'success' => false,
                 'status' => '422',
                 'data' => [],
-                'warning' => $e->errors(),
+                'warning' => 'validation error',
+                'error' => $e->errors()
             ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'status' => '500',
+                'data' => [],
+                'warning' => 'Đã xảy ra lỗi không xác định',
+                'error' => $e->getMessage(),
+            ], 500);
         }
     }
+
 
     /**
      * Remove the specified resource from storage.
@@ -169,18 +214,30 @@ class ExamRoomController extends Controller
             return response()->json([
                 'success' => false,
                 'status' => '404',
-                'data' => [],
-                'warning' => 'Exam Room không tồn tại',
+                'data' => '',
+                'warning'=> 'Không tìm thấy phòng',
+                'error' => '404 not found!'
             ], 404);
         }
+        try {
+            $examRoom->delete();
 
-        $examRoom->delete();
+            return response()->json([
+                'success' => true,
+                'status' => '200',
+                'data' => [],
+                'warning' => '',
+            ], 200);
+        }catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'status' => '500',
+                'data' => [],
+                'warning' => 'Đã xảy ra lỗi không xác định',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
 
-        return response()->json([
-            'success' => true,
-            'status' => '200',
-            'data' => [],
-            'warning' => '',
-        ], 200);
     }
+
 }

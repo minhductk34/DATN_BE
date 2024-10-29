@@ -11,15 +11,15 @@ class Point extends Model
     use HasFactory, SoftDeletes;
     protected $fillable = [
         'exam_subject_id',
-        'Idcode',
-        'Point',
-        'Number_of_correct_sentences',
-        'TimeStart',
-        'TimeEnd',
+        'idcode',
+        'point',
+        'number_of_correct_sentences',
+        'time_start',
+        'time_end',
     ];
     public function exam_subject(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
-        return $this->belongsTo(ExamSubject::class);
+        return $this->belongsTo(Exam_subject::class);
     }
     public function candidate()
     {
