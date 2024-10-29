@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Listening_question;
 use App\Models\ListeningQuestion;
 use Illuminate\Support\Facades\DB;
 use App\Http\Requests\ImportExelRequest;
@@ -25,7 +26,7 @@ class ListeningQuestionController extends Controller
 
         try {
             return DB::transaction(function () use ($validatedData) {
-                $question = ListeningQuestion::create(    
+                $question = Listening_question::create(
                     [
                         'id' => $validatedData['id'],
                         'listening_id' => $validatedData['listening_id'],
@@ -74,7 +75,7 @@ class ListeningQuestionController extends Controller
     public function versions($id)
     {
         try {
-            $question = ListeningQuestion::with('versions')->find($id);
+            $question = Listening_question::with('versions')->find($id);
 
             if (! $question) {
                 return $this->jsonResponse(true, [], 'Không tìm thấy câu hỏi', 404);
@@ -93,7 +94,7 @@ class ListeningQuestionController extends Controller
                 return $this->jsonResponse(false, null, 'ID câu hỏi không hợp lệ', 400);
             }
 
-            $question = ListeningQuestion::with('currentVersion')->find($id);
+            $question = Listening_question::with('currentVersion')->find($id);
 
             if (!$question) {
                 return $this->jsonResponse(false, null, 'Không tìm thấy câu hỏi', 404);
@@ -107,7 +108,7 @@ class ListeningQuestionController extends Controller
 
     public function update(UpdateListeningQuestionRequest $request, $id)
     {
-        $question  = ListeningQuestion::find($id);
+        $question  = Listening_question::find($id);
 
         if (!$question) {
             return $this->jsonResponse(false, null, 'Không tìm thấy câu hỏi', 404);
@@ -140,7 +141,7 @@ class ListeningQuestionController extends Controller
     public function destroy($id)
     {
         try {
-            $question = ListeningQuestion::query()->select('id')->find($id);
+            $question = Listening_question::query()->select('id')->find($id);
 
             if (!$question) {
                 return $this->jsonResponse(false, null, 'Không tìm thấy câu hỏi', 404);
@@ -154,7 +155,7 @@ class ListeningQuestionController extends Controller
         }
     }
 
-    private function createQuestionVersion(ListeningQuestion $question, array $data, int $version)
+    private function createQuestionVersion(Listening_question $question, array $data, int $version)
     {
         return $question->versions()->create([
             'title' => $data['title'],

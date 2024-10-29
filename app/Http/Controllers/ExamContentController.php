@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Imports\ExamContentImport;
+use App\Models\Exam_content;
 use App\Models\ExamContent;
 use Dotenv\Exception\ValidationException;
 use Illuminate\Http\Request;
@@ -30,7 +31,7 @@ class ExamContentController extends Controller
                 ], 400);
             }
 
-            $content = ExamContent::find($id);
+            $content = Exam_content::find($id);
 
             if (!$content) {
                 return response()->json([
@@ -86,7 +87,7 @@ class ExamContentController extends Controller
                 ], 400);
             }
 
-            $content = ExamContent::query()
+            $content = Exam_content::query()
                 ->select('id', 'exam_subject_id', 'title', 'Status')
                 ->where('exam_subject_id', $id)
                 ->get();
@@ -138,7 +139,7 @@ class ExamContentController extends Controller
                 'title' => 'required|string|max:255',
             ]);
 
-            $examSubject = ExamContent::create($validatedData);
+            $examSubject = Exam_content::create($validatedData);
 
             return response()->json([
                 'success' => true,

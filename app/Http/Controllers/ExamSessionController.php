@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Exam_session;
 use App\Models\ExamSession;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
@@ -13,7 +14,7 @@ class ExamSessionController extends Controller
      */
     public function index()
     {
-        $examSessions = ExamSession::all();
+        $examSessions = Exam_session::all();
 
         return response()->json([
             'success' => true,
@@ -38,7 +39,7 @@ class ExamSessionController extends Controller
                 'TimeEnd' => 'required|date',
             ]);
 
-            $examSession = ExamSession::create($validatedData);
+            $examSession = Exam_session::create($validatedData);
 
             return response()->json([
                 'success' => true,
@@ -71,7 +72,7 @@ class ExamSessionController extends Controller
      */
     public function show($id)
     {
-        $examSession = ExamSession::find($id);
+        $examSession = Exam_session::find($id);
 
         if (!$examSession) {
             return response()->json([
@@ -95,7 +96,7 @@ class ExamSessionController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $examSession = ExamSession::find($id);
+        $examSession = Exam_session::find($id);
 
         if (!$examSession) {
             return response()->json([
@@ -145,7 +146,7 @@ class ExamSessionController extends Controller
      */
     public function destroy($id)
     {
-        $examSession = ExamSession::find($id);
+        $examSession = Exam_session::find($id);
 
         if (!$examSession) {
             return response()->json([

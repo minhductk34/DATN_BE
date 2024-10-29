@@ -8,9 +8,12 @@ use App\Http\Requests\Questions\UpdateQuestionRequest;
 use App\Imports\QuestionImport;
 use App\Imports\QuestionUpdate;
 use App\Models\Exam;
+use App\Models\Exam_content;
+use App\Models\Exam_subject;
 use App\Models\ExamContent;
 use App\Models\ExamSubject;
 use App\Models\Question;
+use App\Models\Question_version;
 use App\Models\QuestionVersion;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -397,7 +400,7 @@ class QuestionController extends Controller
                 ], 404);
             }
 
-            $examSubject = ExamSubject::where('id', $examSubjectId)
+            $examSubject = Exam_subject::where('id', $examSubjectId)
                 ->where('exam_id', $examId)
                 ->select('id')
                 ->first();
@@ -411,7 +414,7 @@ class QuestionController extends Controller
                 ], 404);
             }
 
-            $examContent = ExamContent::where('exam_subject_id', $examSubjectId)
+            $examContent = Exam_content::where('exam_subject_id', $examSubjectId)
                 ->get();
 
             if ($examContent->isEmpty()) {
@@ -434,7 +437,7 @@ class QuestionController extends Controller
                 ], 404);
             }
 
-            $questionVersions = QuestionVersion::whereIn('question_id', $questionIds)->get(); // Lấy tất cả các phiên bản câu hỏi
+            $questionVersions = Question_version::whereIn('question_id', $questionIds)->get(); // Lấy tất cả các phiên bản câu hỏi
 
             return response()->json([
                 'success' => true,

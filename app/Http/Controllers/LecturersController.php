@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Lecturer;
 use App\Models\Lecturers;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
@@ -15,7 +16,7 @@ class LecturersController extends Controller
     public function index()
     {
         try {
-            $lecturers = Lecturers::all();
+            $lecturers = Lecturer::all();
 
             return response()->json([
                 'success' => true,
@@ -60,7 +61,7 @@ class LecturersController extends Controller
             ]);
 
             // Tạo mới một Lecturer
-            $lecturer = Lecturers::create($validated);
+            $lecturer = Lecturer::create($validated);
 
             return response()->json([
                 'success' => true,
@@ -96,7 +97,7 @@ class LecturersController extends Controller
     public function show($id)
     {
         try {
-            $lecturer = Lecturers::find($id);
+            $lecturer = Lecturer::find($id);
 
             if (!$lecturer) {
                 return response()->json([
@@ -131,7 +132,7 @@ class LecturersController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Lecturers $lecturers)
+    public function edit(Lecturer $lecturers)
     {
         //
     }
@@ -141,7 +142,7 @@ class LecturersController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $lecturer = Lecturers::find($id);
+        $lecturer = Lecturer::find($id);
 
         if (!$lecturer) {
             return response()->json([
@@ -196,7 +197,7 @@ class LecturersController extends Controller
      */
     public function destroy($id)
     {
-        $lecturer = Lecturers::find($id);
+        $lecturer = Lecturer::find($id);
 
         if (!$lecturer) {
             return response()->json([

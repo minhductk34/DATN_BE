@@ -4,6 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\Candidate;
 use App\Models\Exam;
+use App\Models\Exam_room;
+use App\Models\Exam_room_detail;
+use App\Models\Exam_session;
+use App\Models\Exam_subject;
 use App\Models\ExamRoom;
 use App\Models\ExamRoomDetail;
 use App\Models\ExamSession;
@@ -20,7 +24,7 @@ class ExamRoomController extends Controller
     public function index()
     {
         try {
-            $examRooms = ExamRoom::withCount('candidates')->get();
+            $examRooms = Exam_room::withCount('candidates')->get();
 
             return response()->json([
                 'success' => true,
@@ -59,7 +63,7 @@ class ExamRoomController extends Controller
                 'exam_id' => 'required|exists:exams,id',
             ]);
 
-            $examRoom = ExamRoom::create($validatedData);
+            $examRoom = Exam_room::create($validatedData);
 
             return response()->json([
                 'success' => true,
@@ -93,8 +97,8 @@ class ExamRoomController extends Controller
     public function show($id)
     {
         try {
-            $examRoom = ExamRoom::find($id);
-            $examRoomDetails = ExamRoomDetail::query()->where('exam_room_id', $id)->get();
+            $examRoom = Exam_room::find($id);
+            $examRoomDetails = Exam_room_detail::query()->where('exam_room_id', $id)->get();
 
             if ($examRoomDetails instanceof \Illuminate\Support\Collection && $examRoomDetails->count() > 1) {
                 $examRoomDetails = $examRoomDetails->first();
@@ -104,8 +108,8 @@ class ExamRoomController extends Controller
                 $examRoomDetails = null;
             }
 
-            $examSubjectName = ExamSubject::query()->where('id',$examRoomDetails->exam_subject_id)->first()->Name;
-            $examSession = ExamSession::query()->where('id',$examRoomDetails->exam_session_id)->select('Name','TimeStart')->first();
+            $examSubjectName = Exam_subject::query()->where('id',$examRoomDetails->exam_subject_id)->first()->Name;
+            $examSession = Exam_session::query()->where('id',$examRoomDetails->exam_session_id)->select('Name','TimeStart')->first();
 
             $examSessionName = $examSession->Name;
             $examSessionTimeStart = $examSession->TimeStart;
@@ -156,7 +160,7 @@ class ExamRoomController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $examRoom = ExamRoom::find($id);
+        $examRoom = Exam_room::find($id);
 
         if (!$examRoom) {
             return response()->json([
@@ -208,7 +212,7 @@ class ExamRoomController extends Controller
      */
     public function destroy($id)
     {
-        $examRoom = ExamRoom::find($id);
+        $examRoom = Exam_room::find($id);
 
         if (!$examRoom) {
             return response()->json([

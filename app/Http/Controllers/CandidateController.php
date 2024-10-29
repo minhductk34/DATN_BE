@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Candidate;
+use App\Models\Exam_room;
 use App\Models\ExamRoom;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
@@ -155,13 +156,13 @@ class CandidateController extends Controller
         try {
             // Lấy dữ liệu từ cơ sở dữ liệu và nhóm theo phòng thi
             $candidatesByRoom = Candidate::all()->groupBy('exam_room_id');
-           
+
             if ($candidatesByRoom->isEmpty() || $candidatesByRoom == []) {
                 return response()->json(['error' => 'Không có dữ liệu'], 400);
             }
-    
+
             $fileName = 'danh_sach_ung_vien_' . now()->format('Y_m_d_H_i_s') . '.xlsx';
-           
+
             return Excel::download(new CandidatesExport($candidatesByRoom), $fileName);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
@@ -194,7 +195,7 @@ class CandidateController extends Controller
     {
         try {
             $candidateCount = Candidate::where('exam_room_id', $examRoomId)->count();
-            $examRoom =ExamRoom::query()->where('id', $examRoomId)->select('id','Name')->first();
+            $examRoom =Exam_room::query()->where('id', $examRoomId)->select('id','Name')->first();
             return response()->json([
                 'success' => true,
                 'status' => '200',

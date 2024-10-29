@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Exam_subject_detail;
 use App\Models\ExamSubjectDetails;
 use Illuminate\Http\Request;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -39,7 +40,7 @@ class ExamSubjectDetailsController extends Controller
     {
         try {
             // Lấy thông tin ExamSubjectDetails theo ID
-            $examSubjectDetails = ExamSubjectDetails::findOrFail($id);
+            $examSubjectDetails = Exam_subject_detail::findOrFail($id);
 
             return response()->json($examSubjectDetails);
         } catch (ModelNotFoundException $e) {
@@ -53,7 +54,7 @@ class ExamSubjectDetailsController extends Controller
     {
         try {
             // Lấy thông tin ExamSubjectDetails theo exam_subject_id
-            $examSubjectDetails = ExamSubjectDetails::where('exam_subject_id', $exam_subject_id)->get();
+            $examSubjectDetails = Exam_subject_detail::where('exam_subject_id', $exam_subject_id)->get();
 
             if ($examSubjectDetails->isEmpty()) {
                 return response()->json([
@@ -79,7 +80,7 @@ class ExamSubjectDetailsController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(ExamSubjectDetails $examSubjectDetails)
+    public function edit(Exam_subject_detail $examSubjectDetails)
     {
         //
     }
@@ -97,7 +98,7 @@ class ExamSubjectDetailsController extends Controller
                 'time' => 'required|integer|between:1,1440', // Giả sử Time được tính bằng phút
             ]);
 
-            $examSubjectDetails = ExamSubjectDetails::findOrFail($id);
+            $examSubjectDetails = Exam_subject_detail::findOrFail($id);
 
             // Cập nhật dữ liệu
             $examSubjectDetails->update($validated);
@@ -115,7 +116,7 @@ class ExamSubjectDetailsController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(ExamSubjectDetails $examSubjectDetails)
+    public function destroy(Exam_subject_detail $examSubjectDetails)
     {
         //
     }

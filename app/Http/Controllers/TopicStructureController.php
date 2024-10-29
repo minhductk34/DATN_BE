@@ -3,6 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Models\Exam_content;
+use App\Models\Exam_structure;
+use App\Models\Exam_subject_detail;
 use App\Models\ExamContent;
 use App\Models\ExamSubjectDetails;
 use App\Models\TopicStructure;
@@ -28,7 +31,7 @@ class TopicStructureController extends Controller
             // Kiểm tra điều kiện `checkCreateStruct`
             if ($validated['checkCreateStruct']) {
                 // Tìm bản ghi với `exam_subject_id` để cập nhật
-                $topicStructure = ExamSubjectDetails::where('exam_subject_id', $validated['subject'])->first();
+                $topicStructure = Exam_subject_detail::where('exam_subject_id', $validated['subject'])->first();
 
                 if (!$topicStructure) {
                     return response()->json([
@@ -43,10 +46,10 @@ class TopicStructureController extends Controller
                     'Quantity' => $validated['total'],
                 ]);
 
-                
+
             } else {
                 // Nếu là tạo mới (checkCreateStruct = false), tạo bản ghi mới
-                $topicStructure = ExamSubjectDetails::create([
+                $topicStructure = Exam_subject_detail::create([
                     'exam_subject_id' => $validated['subject'], // Thêm exam_subject_id để liên kết
                    'Time' => $validated['time'],
                     'Quantity' => $validated['total'],
@@ -84,20 +87,20 @@ class TopicStructureController extends Controller
                 if ($relatedTopics->isEmpty()) {
                     // Không có dữ liệu, thực hiện hành động khác (ví dụ: tạo mới)
                     // Bạn có thể thêm logic tạo mới ở đây
-                    $content = ExamContent::query()
+                    $content = Exam_content::query()
                     ->where('title',$value['title'])
                     ->where('exam_subject_id',$validated['subject'])
                     ->first();
-                    TopicStructure::create([
-                        'exam_content_id' => $content->id, 
-                        'exam_subject_id' => $validated['subject'], 
+                    Exam_structure::create([
+                        'exam_content_id' => $content->id,
+                        'exam_subject_id' => $validated['subject'],
                         'Level' => $value['Level'],
                         'Quality' => $value['Quantity'],
                     ]);
                 } else {
                     // Duyệt qua từng topic đã tìm thấy
                     foreach ($relatedTopics as $topic) {
-                        $existingTopic = TopicStructure::query()
+                        $existingTopic = Exam_structure::query()
                             ->where('exam_content_id', $topic->exam_content_id)
                             ->where('Level', $topic->Level)
                             ->first();
@@ -135,7 +138,7 @@ class TopicStructureController extends Controller
                 'quality' => 'required|integer|between:1,32767',
             ]);
 
-            $topicStructure = TopicStructure::findOrFail($id);
+            $topicStructure = Exam_structure::findOrFail($id);
 
             if (empty($validated)) {
                 return response()->json(['message' => 'No valid data provided for update.'], 400);
@@ -176,10 +179,10 @@ class TopicStructureController extends Controller
     UNION ALL
     SELECT 'Difficult'
 )
-SELECT 
-    ec.title, 
-    lv.Level, 
-    COALESCE(SUM(CASE WHEN qsv.Level = lv.Level THEN 1 ELSE 0 END), 0) AS total, 
+SELECT
+    ec.title,
+    lv.Level,
+    COALESCE(SUM(CASE WHEN qsv.Level = lv.Level THEN 1 ELSE 0 END), 0) AS total,
     COALESCE(MAX(CASE WHEN ts.exam_content_id = ec.id AND ts.level = lv.Level THEN ts.Quality ELSE 0 END), 0) AS Quantity
 FROM Levels lv
 CROSS JOIN exam_contents ec
@@ -187,7 +190,7 @@ LEFT JOIN topic_structures ts ON ts.exam_subject_id = ec.exam_subject_id AND ts.
 LEFT JOIN exam_subject_details esd ON esd.exam_subject_id = ts.exam_subject_id
 LEFT JOIN questions qs ON qs.exam_content_id = ec.id
 LEFT JOIN question_versions qsv ON qsv.question_id = qs.id
-WHERE ts.exam_subject_id = ? OR ts.exam_subject_id IS NULL 
+WHERE ts.exam_subject_id = ? OR ts.exam_subject_id IS NULL
 GROUP BY ec.title, lv.Level
 ORDER BY ec.title, lv.Level;
             ";
@@ -229,7 +232,7 @@ ORDER BY ec.title, lv.Level;
     {
         try {
             // Tìm kiếm TopicStructure theo ID
-            $topicStructure = TopicStructure::findOrFail($id);
+            $topicStructure = Exam_structure::findOrFail($id);
 
             return response()->json($topicStructure);
         } catch (ModelNotFoundException $e) {
@@ -248,7 +251,7 @@ ORDER BY ec.title, lv.Level;
     public function showByExamSubjectId($exam_subject_id)
     {
         try {
-            $query = TopicStructure::query()->where('exam_subject_id', $exam_subject_id);
+            $query = Exam_structure::query()->where('exam_subject_id', $exam_subject_id);
             // dd($query->toSql());
 
             // Thực thi truy vấn
