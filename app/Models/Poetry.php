@@ -20,4 +20,9 @@ class Poetry extends Model
     {
         return $this->belongsTo(ExamSubject::class);
     }
+    public function examRooms()
+    {
+        return $this->hasMany(ExamRoom::class);
+    }
+
 }
