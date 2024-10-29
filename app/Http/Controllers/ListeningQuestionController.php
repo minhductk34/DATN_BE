@@ -157,12 +157,12 @@ class ListeningQuestionController extends Controller
     private function createQuestionVersion(ListeningQuestion $question, array $data, int $version)
     {
         return $question->versions()->create([
-            'Title' => $data['Title'],
-            'Answer_P' => $data['Answer_P'],
-            'Answer_F1' => $data['Answer_F1'],
-            'Answer_F2' => $data['Answer_F2'],
-            'Answer_F3' => $data['Answer_F3'],
-            'Level' => $data['Level'],
+            'title' => $data['title'],
+            'answer_P' => $data['answer_P'],
+            'answer_F1' => $data['answer_F1'],
+            'answer_F2' => $data['answer_F2'],
+            'answer_F3' => $data['answer_F3'],
+            'level' => $data['level'],
             'version' => $version,
             'is_active' => true,
         ]);

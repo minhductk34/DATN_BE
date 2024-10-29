@@ -48,17 +48,17 @@ class QuestionUpdate implements ToModel, WithHeadingRow, WithValidation, SkipsOn
 
             $newVersion = new QuestionVersion([
                 'question_id' => $existingQuestion->id,
-                'Title' => $row['question'],
-                'Image_Title' => $image,
-                'Answer_P' => $row['correct_answer'],
-                'Image_P' => $image1,
-                'Answer_F1' => $row['option2'],
-                'Image_F1' => $image2,
-                'Answer_F2' => $row['option3'],
-                'Image_F2' => $image3,
-                'Answer_F3' => $row['option4'],
-                'Image_F3' => $image4,
-                'Level' => $row['level'],
+                'title' => $row['question'],
+                'image_Title' => $image,
+                'answer_P' => $row['correct_answer'],
+                'image_P' => $image1,
+                'answer_F1' => $row['option2'],
+                'image_F1' => $image2,
+                'answer_F2' => $row['option3'],
+                'image_F2' => $image3,
+                'answer_F3' => $row['option4'],
+                'image_F3' => $image4,
+                'level' => $row['level'],
                 'version' => $existingQuestion->versions()->max('version') + 1,
             ]);
 
@@ -84,7 +84,7 @@ class QuestionUpdate implements ToModel, WithHeadingRow, WithValidation, SkipsOn
             '*.option2' => ['required', 'string', 'max:255'],
             '*.option3' => ['required', 'string', 'max:255'],
             '*.option4' => ['required', 'string', 'max:255'],
-            '*.level' => ['required', 'in:Easy,Medium,Difficult'],
+            '*.level' => ['required', 'in:easy,medium,difficult'],
         ];
     }
 

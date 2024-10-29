@@ -37,7 +37,7 @@ class QuestionController extends Controller
                         ->on('questions.current_version_id', '=', 'question_versions.id');
                 })
                 ->where('questions.exam_content_id', $exam_content_id)
-                ->select('questions.id', 'question_versions.Title', 'questions.Status')
+                ->select('questions.id', 'question_versions.title', 'questions.status')
                 ->get();
 
             if ($questions->isEmpty()) {
@@ -67,11 +67,11 @@ class QuestionController extends Controller
 
     public function store(StoreQuestionRequest $request)
     {
-        $validatedData = $request->except(['Image_Title', 'Image_P', 'Image_F1', 'Image_F2', 'Image_F3']);
+        $validatedData = $request->except(['image_Title', 'image_P', 'image_F1', 'image_F2', 'image_F3']);
         $imagePaths = [];
 
         try {
-            $imageFields = ['Image_Title', 'Image_P', 'Image_F1', 'Image_F2', 'Image_F3'];
+            $imageFields = ['image_Title', 'image_P', 'image_F1', 'image_F2', 'image_F3'];
 
             foreach ($imageFields as $field) {
                 if ($request->hasFile($field)) {
@@ -188,11 +188,11 @@ class QuestionController extends Controller
             return $this->jsonResponse(false, null, 'Không tìm thấy câu hỏi', 404);
         }
 
-        $validatedData = $request->except(['Image_Title', 'Image_P', 'Image_F1', 'Image_F2', 'Image_F3']);
+        $validatedData = $request->except(['image_Title', 'image_P', 'image_F1', 'image_F2', 'image_F3']);
         $imagePaths = [];
 
         try {
-            $imageFields = ['Image_Title', 'Image_P', 'Image_F1', 'Image_F2', 'Image_F3'];
+            $imageFields = ['image_Title', 'image_P', 'image_F1', 'image_F2', 'image_F3'];
 
             foreach ($imageFields as $field) {
                 if ($request->hasFile($field)) {
@@ -242,11 +242,11 @@ class QuestionController extends Controller
                 return $this->jsonResponse(false, null, 'Không tìm thấy câu hỏi', 404);
             }
 
-            $examSubject->Status = $examSubject->Status == 'true' ? 'false' : 'true';
+            $examSubject->status = $examSubject->status == 'true' ? 'false' : 'true';
 
             $examSubject->save();
 
-            return $this->jsonResponse(true, $examSubject->Status, 'update status question successfully', 200);
+            return $this->jsonResponse(true, $examSubject->status, 'update status question successfully', 200);
         } catch (\Exception $e) {
             return $this->jsonResponse(false, null, $e->getMessage(), 500);
         }
@@ -331,17 +331,17 @@ class QuestionController extends Controller
     private function createQuestionVersion(Question $question, array $data, int $version)
     {
         return $question->versions()->create([
-            'Title' => $data['Title'],
-            'Image_Title' => $data['Image_Title'] ?? null,
-            'Answer_P' => $data['Answer_P'],
-            'Image_P' => $data['Image_P'] ?? null,
-            'Answer_F1' => $data['Answer_F1'],
-            'Image_F1' => $data['Image_F1'] ?? null,
-            'Answer_F2' => $data['Answer_F2'],
-            'Image_F2' => $data['Image_F2'] ?? null,
-            'Answer_F3' => $data['Answer_F3'],
-            'Image_F3' => $data['Image_F3'] ?? null,
-            'Level' => $data['Level'],
+            'title' => $data['title'],
+            'image_Title' => $data['image_Title'] ?? null,
+            'answer_P' => $data['answer_P'],
+            'image_P' => $data['image_P'] ?? null,
+            'answer_F1' => $data['answer_F1'],
+            'image_F1' => $data['image_F1'] ?? null,
+            'answer_F2' => $data['answer_F2'],
+            'image_F2' => $data['image_F2'] ?? null,
+            'answer_F3' => $data['answer_F3'],
+            'image_F3' => $data['image_F3'] ?? null,
+            'level' => $data['level'],
             'version' => $version,
             'is_active' => true,
         ]);

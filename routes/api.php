@@ -98,7 +98,7 @@ Route::prefix('admin')->group(function () {
     // ca thi
     Route::middleware('checkToken')->resource('/exam-session',ExamSessionController::class);
 
-    Route::prefix('questions')->group(function () {
+    Route::middleware('checkToken')->prefix('questions')->group(function () {
         //get data
         Route::get('/', [QuestionController::class, 'index']);
         Route::get('/{id}', [QuestionController::class, 'show']);
@@ -144,7 +144,7 @@ Route::prefix('admin')->group(function () {
         Route::delete('/{id}', [ReadingController::class, 'destroy']);
 
         // reading questions
-        Route::prefix('questions')->group(function () {
+        Route::middleware('checkToken')->prefix('questions')->group(function () {
             //get data
             // Route::get('/', [ReadingQuestionController::class, 'index']);
             Route::get('/{id}', [ReadingQuestionController::class, 'show']);
@@ -177,7 +177,7 @@ Route::prefix('admin')->group(function () {
         Route::delete('/{id}', [ListeningController::class, 'destroy']);
 
         // reading questions
-        Route::prefix('questions')->group(function () {
+        Route::middleware('checkToken')->prefix('questions')->group(function () {
             //get data
             // Route::get('/', [ReadingQuestionController::class, 'index']);
             Route::get('/{id}', [ListeningQuestionController::class, 'show']);
