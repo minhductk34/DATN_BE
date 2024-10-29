@@ -30,7 +30,7 @@ public function login(Request $request)
                 'success' => false,
                 'status' => 400,
                 'data' => [],
-                'warning' => 'Username và password là bắt buộc.'
+                'warning' => 'username và password là bắt buộc.'
             ], 400);
         }
 
@@ -45,7 +45,7 @@ public function login(Request $request)
             ], 404);
         }
 
-        if (!Hash::check($credentials['password'], $admin->Password)) {
+        if (!Hash::check($credentials['password'], $admin->password)) {
             return response()->json([
                 'success' => false,
                 'status' => 401,
