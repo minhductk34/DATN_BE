@@ -33,7 +33,6 @@ Route::prefix('admin')->group(function () {
 
     Route::post('/login', [AdminController::class, 'login']);
     //Quản lý môn thi
-
     Route::prefix('exam-subjects')->group(function () {
         Route::get('/exam/{id}', [ExamSubjectController::class, 'getSubjectByExam']);
         Route::post('/', [ExamSubjectController::class, 'store']);
@@ -52,7 +51,7 @@ Route::prefix('admin')->group(function () {
 
         Route::post('/import', [ExamSubjectController::class, 'importExcel']);
     });
-    Route::middleware('checkToken')->prefix('exam-content')->group(function () {
+    Route::prefix('exam-content')->group(function () {
         //get data
         Route::get('exam-subject/{id}', [ExamContentController::class, 'getContentByExam'])->name('exam-content-byExamSubject_id');
         Route::get('/{id}', [ExamContentController::class, 'show'])->name('exam-content-byid');
@@ -173,3 +172,12 @@ Route::prefix('admin')->group(function () {
     });
 });
 
+
+Route::prefix('client')->group(function () {
+    Route::prefix('questions')->group(function () {
+        Route::get('manageQuestions', [QuestionController::class, 'dataOptions']);
+        Route::post('manageQuestions/{examId}/{examSubjectId}', [QuestionController::class, 'dataQuestion']);
+
+
+    });
+});
