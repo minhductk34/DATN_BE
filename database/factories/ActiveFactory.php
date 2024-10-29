@@ -2,8 +2,9 @@
 
 namespace Database\Factories;
 
+use App\Models\Admin;
 use App\Models\Candidate;
-use App\Models\ExamSubject;
+use App\Models\Exam_subject;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -19,11 +20,11 @@ class ActiveFactory extends Factory
     public function definition(): array
     {
         return [
-            'exam_subject_id' => ExamSubject::inRandomOrder()->first()->id,
-            'Idcode' => Candidate::inRandomOrder()->first()->Idcode,
-            'Active' => $this->faker->randomElement(['Active', 'Inactive']),
-            'Reason'=>$this->faker->text(30),
-            'admin_id'=>$this->faker->numberBetween(1,60),
+            'exam_subject_id'=>Exam_subject::inRandomOrder()->first()->id,
+            'idcode'=>Candidate::inRandomOrder()->first()->idcode,
+            'active'=>$this->faker->randomElement(['active','inactive']),
+            'reason'=>$this->faker->text(30),
+            'admin_id'=>Admin::inRandomOrder()->first()->id,
             'created_at' => now(),
             'updated_at' => now(),
             'deleted_at' => null,

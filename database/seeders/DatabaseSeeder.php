@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\English_exam_question;
 use Illuminate\Database\Seeder;
 use Database\Seeders\ExamSeeder;
 class DatabaseSeeder extends Seeder
@@ -13,31 +14,31 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call([
-            LecturersSeeder::class,
             AdminSeeder::class,
+            LecturerSeeder::class,
             ExamSeeder::class,
             ExamRoomSeeder::class,
-            CandidateSeeder::class,
             ExamSubjectSeeder::class,
             ExamSessionSeeder::class,
+            ExamSubjectDetailSeeder::class,
+            ExamRoomDetailSeeder::class,
+            CandidateSeeder::class,
             PasswordSeeder::class,
             ActiveSeeder::class,
-            PointSeeder::class,
-            ExamContentSeeder::class,
             HistorySeeder::class,
+            ExamContentSeeder::class,
+            ExamStructureSeeder::class,
+            PointSeeder::class,
             ListeningSeeder::class,
-            ReadingsSeeder::class,
-            TopicStructureSeeder::class,
+            ReadingSeeder::class,
             QuestionSeeder::class,
-            ListeningQuestionsSeeder::class,
-            ReadingQuestionsSeeder::class,
-            CandidateQuestionSeeder::class,
-            CandidatesTakeTheEnglishTestSeeder::class,
-            ExamRoomDetailSeeder::class,
+            ListeningQuestionSeeder::class,
+            ReadingQuestionSeeder::class,
 //            QuestionVersionSeeder::class,
-//            RedingQuestionVersionSeeder::class,
 //            ListeningQuestionVersionSeeder::class,
-            ExamSubjectDetailsSeeder::class,
+//            ReadingQuestionVersionSeeder::class,
+            CandidateQuestionSeeder::class,
+            EnglishExamQuestionSeeder::class
         ]);
     }
 

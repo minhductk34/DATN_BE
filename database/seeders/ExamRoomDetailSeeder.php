@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Models\ExamRoomDetail;
+use App\Models\Exam_room_detail;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -13,6 +13,6 @@ class ExamRoomDetailSeeder extends Seeder
      */
     public function run(): void
     {
-        ExamRoomDetail::factory()->count(10)->create();
+        Exam_room_detail::factory()->count(1000)->create();
     }
 }

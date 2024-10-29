@@ -8,12 +8,12 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Password extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory,softDeletes;
     protected $fillable = [
-        'Idcode',
-        'Password',
+        'idcode',
+        'password',
     ];
-    public function candidate(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function candidate()
     {
         return $this->belongsTo(Candidate::class);
     }

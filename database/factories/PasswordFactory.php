@@ -18,12 +18,17 @@ class PasswordFactory extends Factory
      */
     public function definition(): array
     {
+
+
+        $candidate = Candidate::inRandomOrder()->first();
+
         return [
-            'Idcode' => Candidate::inRandomOrder()->first()->Idcode,
-            'Password' => Hash::make('password'),
+            'idcode' => $candidate ? $candidate->id : null,
+            'password' => Hash::make('12345678'),
             'created_at' => now(),
             'updated_at' => now(),
             'deleted_at' => null,
         ];
     }
 }
+

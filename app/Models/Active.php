@@ -11,14 +11,14 @@ class Active extends Model
     use HasFactory, SoftDeletes;
     protected $fillable = [
         'exam_subject_id',
-        'Idcode',
-        'Active',
-        'Reason',
+        'idcode',
+        'active',
+        'reason',
         'admin_id',
     ];
     public function exam_subject(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
-        return $this->belongsTo(ExamSubject::class);
+        return $this->belongsTo(Exam_subject::class);
     }
     public function candidate(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {

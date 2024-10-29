@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Models\ExamContent;
+use App\Models\Exam_content;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -13,6 +13,6 @@ class ExamContentSeeder extends Seeder
      */
     public function run(): void
     {
-        ExamContent::factory()->count(10)->create();
+        Exam_content::factory()->count(1000)->create();
     }
 }

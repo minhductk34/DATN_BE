@@ -13,6 +13,6 @@ class ListeningSeeder extends Seeder
      */
     public function run(): void
     {
-        Listening::factory()->count(10)->create();
+        Listening::factory()->count(1000)->create();
     }
 }

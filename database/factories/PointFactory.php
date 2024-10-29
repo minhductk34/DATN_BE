@@ -3,7 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\Candidate;
-use App\Models\ExamSubject;
+use App\Models\Exam_subject;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -19,12 +19,12 @@ class PointFactory extends Factory
     public function definition(): array
     {
         return [
-            'exam_subject_id' => ExamSubject::inRandomOrder()->first()->id,
-            'Idcode' => Candidate::inRandomOrder()->first()->Idcode,
-            'Point' => $this->faker->randomFloat(2, 0, 99.99),
-            'Number_of_correct_sentences' => $this->faker->numberBetween(0, 50),
-            'TimeStart' => $this->faker->dateTime(),
-            'TimeEnd' => $this->faker->dateTime(),
+            'exam_subject_id'=>Exam_subject::inRandomOrder()->first()->id,
+            'idcode'=>Candidate::inRandomOrder()->first()->id,
+            'point'=>$this->faker->randomFloat(2,0,10),
+            'number_of_correct_sentences'=>$this->faker->numberBetween(1,100),
+            'time_start' => $this->faker->dateTimeBetween('-1 month', 'now'),
+            'time_end' => $this->faker->dateTimeBetween('now', '+1 month'),
             'created_at' => now(),
             'updated_at' => now(),
             'deleted_at' => null,

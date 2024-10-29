@@ -13,6 +13,6 @@ class ActiveSeeder extends Seeder
      */
     public function run(): void
     {
-        Active::factory()->count(10)->create();
+        Active::factory()->count(1000)->create();
     }
 }

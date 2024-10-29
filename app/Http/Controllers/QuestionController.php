@@ -7,10 +7,17 @@ use App\Http\Requests\Questions\StoreQuestionRequest;
 use App\Http\Requests\Questions\UpdateQuestionRequest;
 use App\Imports\QuestionImport;
 use App\Imports\QuestionUpdate;
+use App\Models\Exam;
+use App\Models\ExamContent;
+use App\Models\ExamSubject;
 use App\Models\Question;
+use App\Models\QuestionVersion;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use App\Http\Controllers\ExamController;
+use App\Http\Controllers\ExamSubjectController;
+use App\Http\Controllers\ExamContentController;
 
 class QuestionController extends Controller
 {
@@ -349,4 +356,102 @@ class QuestionController extends Controller
             'warning' => $warning
         ], $statusCode);
     }
+
+    public function dataOptions()
+    {
+        try {
+            $examController = new ExamController();
+            $examSubjectController = new ExamSubjectController();
+
+            $dataExam = $examController->getDataShow()->getData()->data;
+            $dataExamSubjects = $examSubjectController->getDataShow()->getData()->data;
+
+            return response()->json([
+                'success' => true,
+                'status' => '200',
+                'data' => [
+                    'exams' => $dataExam,
+                    'subjects' => $dataExamSubjects
+                ],
+                'warning' => '',
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'status' => '500',
+                'data' => [],
+                'warning' => $e->getMessage(),
+            ], 500);
+        }
+    }
+    public function dataQuestion($examId, $examSubjectId)
+    {
+        try {
+            $exam = Exam::find($examId);
+            if (!$exam) {
+                return response()->json([
+                    'success' => false,
+                    'status' => '404',
+                    'data' => [],
+                    'warning' => 'Exam not found',
+                ], 404);
+            }
+
+            $examSubject = ExamSubject::where('id', $examSubjectId)
+                ->where('exam_id', $examId)
+                ->select('id')
+                ->first();
+
+            if (!$examSubject) {
+                return response()->json([
+                    'success' => false,
+                    'status' => '404',
+                    'data' => [],
+                    'warning' => 'ExamSubject not found for the given exam_id',
+                ], 404);
+            }
+
+            $examContent = ExamContent::where('exam_subject_id', $examSubjectId)
+                ->get();
+
+            if ($examContent->isEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'status' => '404',
+                    'data' => [],
+                    'warning' => 'ExamContent not found for the given exam_subject_id',
+                ], 404);
+            }
+
+            $questionIds = Question::whereIn('exam_content_id', $examContent->pluck('id'))->pluck('id'); // Lấy tất cả các câu hỏi
+
+            if ($questionIds->isEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'status' => '404',
+                    'data' => [],
+                    'warning' => 'Questions not found for the given exam_content_id',
+                ], 404);
+            }
+
+            $questionVersions = QuestionVersion::whereIn('question_id', $questionIds)->get(); // Lấy tất cả các phiên bản câu hỏi
+
+            return response()->json([
+                'success' => true,
+                'status' => '200',
+                'data' => $questionVersions,
+                'warning' => '',
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'status' => '500',
+                'data' => [],
+                'warning' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+
 }

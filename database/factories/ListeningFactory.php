@@ -2,7 +2,7 @@
 
 namespace Database\Factories;
 
-use App\Models\ExamContent;
+use App\Models\Exam_content;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -18,12 +18,12 @@ class ListeningFactory extends Factory
     public function definition(): array
     {
         return [
-            'id' => $this->faker->uuid(),
-            'exam_content_id' => ExamContent::inRandomOrder()->first()->id,
-            'Name' => $this->faker->name(),
-            'Audio' => $this->faker->randomElement(['audio/audio1.mp3', 'audio/audio2.mp3', 'audio/audio3.mp3']),
-            'Status' => $this->faker->randomElement(['true', 'false']),
-            'Level' => $this->faker->randomElement(['Easy', 'Medium', 'Difficult']),
+            'id'=>$this->faker->uuid(),
+            'exam_content_id'=>Exam_content::inRandomOrder()->first()->id,
+            'audio'=>$this->faker->text(30),
+            'status'=>$this->faker->boolean(),
+            'level'=>$this->faker->randomElement(['easy', 'medium', 'difficult']),
+            'name'=>$this->faker->name(),
             'created_at' => now(),
             'updated_at' => now(),
             'deleted_at' => null,

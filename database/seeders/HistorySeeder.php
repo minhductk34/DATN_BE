@@ -13,6 +13,6 @@ class HistorySeeder extends Seeder
      */
     public function run(): void
     {
-        History::factory()->count(10)->create();
+        History::factory()->count(1000)->create();
     }
 }

@@ -13,6 +13,6 @@ class PasswordSeeder extends Seeder
      */
     public function run(): void
     {
-        Password::factory()->count(10)->create();
+        Password::factory()->count(1000)->create();
     }
 }

@@ -19,19 +19,18 @@ class Reading extends Model
     protected $fillable = [
         'id',
         'exam_content_id',
-        'Title',
-        'Status',
-        'Level',
-        'Image'
+        'title',
+        'status',
+        'level',
+        'image'
     ];
-    
+
     public function exam_content(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
-        return $this->belongsTo(ExamContent::class);
+        return $this->belongsTo(Exam_content::class);
     }
-
-    public function questions()
+    public function reading_question()
     {
-        return $this->hasMany(ReadingQuestion::class);
+        return $this->hasMany(Reading_question::class);
     }
 }

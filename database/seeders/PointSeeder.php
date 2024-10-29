@@ -13,6 +13,6 @@ class PointSeeder extends Seeder
      */
     public function run(): void
     {
-        Point::factory()->count(10)->create();
+        Point::factory()->count(1000)->create();
     }
 }

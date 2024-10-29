@@ -18,8 +18,8 @@ class AdminFactory extends Factory
     public function definition(): array
     {
         return [
-            'Name' => $this->faker->name(),
-            'Password' => Hash::make('password'),
+            'name'=>'admin',
+            'password'=>Hash::make(12345678),
             'created_at' => now(),
             'updated_at' => now(),
             'deleted_at' => null,
