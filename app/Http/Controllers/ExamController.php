@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Exam;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Facades\Excel;
 //use App\Imports\ExamsImport;
 class ExamController extends Controller
@@ -26,14 +27,13 @@ class ExamController extends Controller
         // Validate the request data
         $validated = $request->validate([
             'id' => 'required|string|unique:exams,id',
-            'Name' => 'required|string|max:255',
-            'TimeStart' => 'required|date',
-            'TimeEnd' => 'required|date|after_or_equal:TimeStart',
+            'name' => 'required|string|max:255',
+            'time_start' => 'required|date',
+            'time_end' => 'required|date|after_or_equal:TimeStart',
           
         ]);
 
         $exam = Exam::create($validated);
-
         if ($exam) {
             return response()->json([
                 'success' => true,
@@ -66,9 +66,9 @@ class ExamController extends Controller
     {
         // Validate the request
         $validated = $request->validate([
-            'Name' => 'sometimes|string|max:255',
-            'TimeStart' => 'sometimes|date',
-            'TimeEnd' => 'sometimes|date|after_or_equal:TimeStart', // Ensure TimeEnd is valid
+            'name' => 'sometimes|string|max:255',
+            'time_start' => 'sometimes|date',
+            'time_end' => 'sometimes|date|after_or_equal:time_start', 
            
         ]);
 

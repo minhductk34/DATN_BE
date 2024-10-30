@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Log;
 
 class AdminController extends Controller
 {
@@ -20,12 +21,16 @@ class AdminController extends Controller
         //
     }
 
+
 public function login(Request $request)
 {
     try {
+        Log::debug('Login request received', ['request' => $request->all()]);
+
         $credentials = $request->only('username', 'password');
 
         if (empty($credentials['username']) || empty($credentials['password'])) {
+            Log::warning('Missing username or password');
             return response()->json([
                 'success' => false,
                 'status' => 400,
@@ -34,9 +39,11 @@ public function login(Request $request)
             ], 400);
         }
 
+        Log::debug('Searching for admin', ['username' => $credentials['username']]);
         $admin = Admin::where('name', $credentials['username'])->first();
 
         if (!$admin) {
+            Log::warning('Admin not found', ['username' => $credentials['username']]);
             return response()->json([
                 'success' => false,
                 'status' => 404,
@@ -46,6 +53,7 @@ public function login(Request $request)
         }
 
         if (!Hash::check($credentials['password'], $admin->password)) {
+            Log::warning('Incorrect password', ['username' => $credentials['username']]);
             return response()->json([
                 'success' => false,
                 'status' => 401,
@@ -54,8 +62,8 @@ public function login(Request $request)
             ], 401);
         }
 
-        // Thêm kiểm tra kết nối Redis
         if (!$this->checkRedisConnection()) {
+            Log::error('Redis connection failed');
             return response()->json([
                 'success' => false,
                 'status' => 503,
@@ -64,12 +72,13 @@ public function login(Request $request)
             ], 503);
         }
 
-        // Thực hiện truy vấn với cơ chế retry khi lỗi kết nối Redis xảy ra
+        Log::debug('Checking existing token in Redis');
         $existingToken = $this->retryRedisOperation(function () use ($admin) {
             return Redis::hget('auth:' . $admin->id, 'token');
         });
 
         if ($existingToken) {
+            Log::warning('User already logged in from another location', ['user_id' => $admin->id]);
             return response()->json([
                 'success' => false,
                 'status' => 403,
@@ -78,7 +87,6 @@ public function login(Request $request)
             ], 403);
         }
 
-        // Tạo token mới
         $token = Str::random(60);
         $expiresAt = now()->addHours(1)->timestamp;
         $ttl = now()->addHours(1)->diffInSeconds(now());
@@ -88,7 +96,7 @@ public function login(Request $request)
             'expires_at' => $expiresAt,
         ];
 
-        // Thêm retry cho thao tác lưu trữ
+        Log::debug('Storing token in Redis', ['token' => $token, 'ttl' => $ttl]);
         $this->retryRedisOperation(function () use ($token, $tokenData, $admin, $ttl) {
             Redis::hmset('tokens:' . $token, $tokenData);
             Redis::hmset('auth:' . $admin->id, ['token' => $token, 'expires_at' => $ttl]);
@@ -98,9 +106,10 @@ public function login(Request $request)
 
         $data = [
             'id' => $admin->id,
-            'username' => $admin->Name,
+            'username' => $admin->name,
         ];
 
+        Log::info('User logged in successfully', ['user_id' => $admin->id]);
         return response()->json([
             'success' => true,
             'status' => 200,
@@ -110,7 +119,7 @@ public function login(Request $request)
         ], 200);
 
     } catch (\Exception $e) {
-        
+        Log::error('Login failed', ['error' => $e->getMessage()]);
 
         return response()->json([
             'success' => false,
@@ -121,6 +130,7 @@ public function login(Request $request)
         ], 500);
     }
 }
+
 
 /**
  * Kiểm tra kết nối đến Redis
