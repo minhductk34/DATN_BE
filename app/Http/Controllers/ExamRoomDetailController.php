@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Exam_room_detail;
 use App\Models\ExamRoomDetail;
 use Illuminate\Http\Request;
 
@@ -34,7 +35,7 @@ class ExamRoomDetailController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(ExamRoomDetail $examRoomDetail)
+    public function show(Exam_room_detail $examRoomDetail)
     {
         //
     }
@@ -42,7 +43,7 @@ class ExamRoomDetailController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(ExamRoomDetail $examRoomDetail)
+    public function edit(Exam_room_detail $examRoomDetail)
     {
         //
     }
@@ -50,7 +51,7 @@ class ExamRoomDetailController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, ExamRoomDetail $examRoomDetail)
+    public function update(Request $request, Exam_room_detail $examRoomDetail)
     {
         //
     }
@@ -58,7 +59,7 @@ class ExamRoomDetailController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(ExamRoomDetail $examRoomDetail)
+    public function destroy(Exam_room_detail $examRoomDetail)
     {
         //
     }

@@ -260,7 +260,7 @@ class ExamContentController extends Controller
                 ], 400);
             }
 
-            $content = ExamContent::query()
+            $content = Exam_content::query()
                 ->where('id', $id)
                 ->get();
 
@@ -294,7 +294,7 @@ class ExamContentController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(ExamContent $exam_content)
+    public function edit(Exam_content $exam_content)
     {
         //
     }
@@ -310,7 +310,7 @@ class ExamContentController extends Controller
                 'title' => 'required|string|max:255',
             ]);
 
-            $examSubject = ExamContent::findOrFail($id);
+            $examSubject = Exam_content::findOrFail($id);
 
             $examSubject->update($validatedData);
 
@@ -342,7 +342,7 @@ class ExamContentController extends Controller
     public function updateStatus($id)
     {
         try {
-            $examSubject = ExamContent::query()->find($id);
+            $examSubject = Exam_content::query()->find($id);
 
             if (!$examSubject) {
                 return $this->jsonResponse(false, null, 'Không tìm thấy môn thi', 404);
@@ -361,7 +361,7 @@ class ExamContentController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(ExamContent $exam_content)
+    public function destroy(Exam_content $exam_content)
     {
         //
     }
