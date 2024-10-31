@@ -27,7 +27,7 @@ class StoreExamSubjectRequest extends FormRequest
             'id' => 'required|unique:exam_subjects,id',
             'exam_id' => 'required|exists:exams,id',
             'name' => 'required|string|max:255',
-            'status' => 'required|in:true,false',
+            // 'status' => 'required|in:true,false',
         ];
     }
 

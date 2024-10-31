@@ -88,7 +88,7 @@ class ExamContentController extends Controller
             }
 
             $content = Exam_content::query()
-                ->select('id', 'exam_subject_id', 'title', 'Status')
+                ->select('id', 'exam_subject_id', 'title', 'status')
                 ->where('exam_subject_id', $id)
                 ->get();
 
