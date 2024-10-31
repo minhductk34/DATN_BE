@@ -30,7 +30,7 @@ class ExamRoomController extends Controller
                 'success' => true,
                 'status' => '200',
                 'data' => $examRooms,
-                'warning' => '',
+                'message' => '',
             ], 200);
 
         } catch (QueryException $e) {
@@ -38,7 +38,7 @@ class ExamRoomController extends Controller
                 'success' => false,
                 'status' => '500',
                 'data' => [],
-                'warning' => 'Không thể lấy dữ liệu từ cơ sở dữ liệu',
+                'message' => 'Không thể lấy dữ liệu từ cơ sở dữ liệu',
                 'error' => $e->getMessage(),
             ], 500);
         } catch (\Exception $e) {
@@ -46,7 +46,7 @@ class ExamRoomController extends Controller
                 'success' => false,
                 'status' => '500',
                 'data' => [],
-                'warning' => 'Đã xảy ra lỗi không xác định',
+                'message' => 'Đã xảy ra lỗi không xác định',
                 'error' => $e->getMessage(),
             ], 500);
         }
@@ -69,14 +69,14 @@ class ExamRoomController extends Controller
                 'success' => true,
                 'status' => '201',
                 'data' => $examRoom,
-                'warning' => '',
+                'message' => '',
             ], 201);
         } catch (ValidationException $e) {
             return response()->json([
                 'success' => false,
                 'status' => '422',
                 'data' => [],
-                'warning' => 'validation error',
+                'message' => 'validation error',
                 'error' => $e->errors()
             ], 422);
         } catch (\Exception $e) {
@@ -84,7 +84,7 @@ class ExamRoomController extends Controller
                 'success' => false,
                 'status' => '500',
                 'data' => [],
-                'warning' => 'Đã xảy ra lỗi không xác định',
+                'message' => 'Đã xảy ra lỗi không xác định',
                 'error' => $e->getMessage(),
             ], 500);
         }
@@ -120,7 +120,7 @@ class ExamRoomController extends Controller
                     'success' => false,
                     'status' => '404',
                     'data' => [],
-                    'warning' => 'Exam Room không tồn tại',
+                    'message' => 'Exam Room không tồn tại',
                 ], 404);
             }
 
@@ -133,7 +133,7 @@ class ExamRoomController extends Controller
                     'exam_session_time-start' => $examSessionTimeStart,
                     'exam_subject_name'=> $examSubjectName,
                 ],
-                'warning' => '',
+                'message' => '',
             ], 200);
 
         } catch (QueryException $e) {
@@ -141,7 +141,7 @@ class ExamRoomController extends Controller
                 'success' => false,
                 'status' => '500',
                 'data' => [],
-                'warning' => 'Không thể lấy dữ liệu từ cơ sở dữ liệu',
+                'message' => 'Không thể lấy dữ liệu từ cơ sở dữ liệu',
                 'error' => $e->getMessage(),
             ], 500);
         } catch (\Exception $e) {
@@ -149,7 +149,7 @@ class ExamRoomController extends Controller
                 'success' => false,
                 'status' => '500',
                 'data' => [],
-                'warning' => 'Đã xảy ra lỗi không xác định',
+                'message' => 'Đã xảy ra lỗi không xác định',
                 'error' => $e->getMessage(),
             ], 500);
         }
@@ -167,7 +167,7 @@ class ExamRoomController extends Controller
                 'success' => false,
                 'status' => '404',
                 'data' => '',
-                'warning'=> 'Không tìm thấy phòng',
+                'message'=> 'Không tìm thấy phòng',
                 'error' => '404 not found!'
             ], 404);
         }
@@ -184,7 +184,7 @@ class ExamRoomController extends Controller
                 'success' => true,
                 'status' => '200',
                 'data' => $examRoom,
-                'warning' => '',
+                'message' => '',
             ], 200);
 
         } catch (ValidationException $e) {
@@ -192,7 +192,7 @@ class ExamRoomController extends Controller
                 'success' => false,
                 'status' => '422',
                 'data' => [],
-                'warning' => 'validation error',
+                'message' => 'validation error',
                 'error' => $e->errors()
             ], 422);
         } catch (\Exception $e) {
@@ -200,7 +200,7 @@ class ExamRoomController extends Controller
                 'success' => false,
                 'status' => '500',
                 'data' => [],
-                'warning' => 'Đã xảy ra lỗi không xác định',
+                'message' => 'Đã xảy ra lỗi không xác định',
                 'error' => $e->getMessage(),
             ], 500);
         }
@@ -219,7 +219,7 @@ class ExamRoomController extends Controller
                 'success' => false,
                 'status' => '404',
                 'data' => '',
-                'warning'=> 'Không tìm thấy phòng',
+                'message'=> 'Không tìm thấy phòng',
                 'error' => '404 not found!'
             ], 404);
         }
@@ -230,14 +230,14 @@ class ExamRoomController extends Controller
                 'success' => true,
                 'status' => '200',
                 'data' => [],
-                'warning' => '',
+                'message' => '',
             ], 200);
         }catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'status' => '500',
                 'data' => [],
-                'warning' => 'Đã xảy ra lỗi không xác định',
+                'message' => 'Đã xảy ra lỗi không xác định',
                 'error' => $e->getMessage(),
             ], 500);
         }

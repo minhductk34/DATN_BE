@@ -22,7 +22,7 @@ class LecturersController extends Controller
                 'success' => true,
                 'status' => '200',
                 'data' => $lecturers,
-                'warning'=> '',
+                'message'=> '',
                 'error' => ''
             ], 200);
 
@@ -31,7 +31,7 @@ class LecturersController extends Controller
                 'success' => false,
                 'status' => '500',
                 'data' => [],
-                'warning' => 'Đã xảy ra lỗi không xác định',
+                'message' => 'Đã xảy ra lỗi không xác định',
                 'error' => $e->getMessage(),
             ], 500);
         }
@@ -67,7 +67,7 @@ class LecturersController extends Controller
                 'success' => true,
                 'message' => 'Lecturer created successfully!',
                 'data' => $lecturer,
-                'warning'=> '',
+                'message'=> '',
                 'error' => ''
             ], 201);
 
@@ -76,7 +76,7 @@ class LecturersController extends Controller
                 'success' => false,
                 'status' => '422',
                 'data' => [],
-                'warning' => 'validation error',
+                'message' => 'validation error',
                 'error' => $e->errors()
             ], 422);
         } catch (\Exception $e) {
@@ -84,7 +84,7 @@ class LecturersController extends Controller
                 'success' => false,
                 'status' => '500',
                 'data' => [],
-                'warning' => 'Đã xảy ra lỗi không xác định',
+                'message' => 'Đã xảy ra lỗi không xác định',
                 'error' => $e->getMessage(),
             ], 500);
         }
@@ -104,7 +104,7 @@ class LecturersController extends Controller
                     'success' => false,
                     'status' => '404',
                     'data' => [],
-                    'warning' => 'giảng viên không tồn tại',
+                    'message' => 'giảng viên không tồn tại',
                     'error' => '404 not found!'
                 ], 404);
             }
@@ -113,7 +113,7 @@ class LecturersController extends Controller
                 'success' => true,
                 'status' => '200',
                 'data' => $lecturer,
-                'warning'=> '',
+                'message'=> '',
                 'error' => ''
             ], 200);
 
@@ -122,7 +122,7 @@ class LecturersController extends Controller
                 'success' => false,
                 'status' => '500',
                 'data' => [],
-                'warning' => 'Đã xảy ra lỗi không xác định',
+                'message' => 'Đã xảy ra lỗi không xác định',
                 'error' => $e->getMessage(),
             ], 500);
         }
@@ -149,7 +149,7 @@ class LecturersController extends Controller
                 'success' => false,
                 'status' => '404',
                 'data' => '',
-                'warning'=> 'Không tìm thấy giảng viên',
+                'message'=> 'Không tìm thấy giảng viên',
                 'error' => '404 not found!'
             ], 404);
         }
@@ -168,7 +168,7 @@ class LecturersController extends Controller
                 'success' => true,
                 'message' => 'Lecturer updated successfully!',
                 'data' => $lecturer,
-                'warning'=> '',
+                'message'=> '',
                 'error' => ''
             ], 200);
 
@@ -177,7 +177,7 @@ class LecturersController extends Controller
                 'success' => false,
                 'status' => '422',
                 'data' => [],
-                'warning' => 'validation error',
+                'message' => 'validation error',
                 'error' => $e->errors()
             ], 422);
         } catch (\Exception $e) {
@@ -185,7 +185,7 @@ class LecturersController extends Controller
                 'success' => false,
                 'status' => '500',
                 'data' => [],
-                'warning' => 'Đã xảy ra lỗi không xác định',
+                'message' => 'Đã xảy ra lỗi không xác định',
                 'error' => $e->getMessage(),
             ], 500);
         }
@@ -204,7 +204,7 @@ class LecturersController extends Controller
                 'success' => false,
                 'status' => '404',
                 'data' => '',
-                'warning'=> 'Không tìm thấy giảng viên',
+                'message'=> 'Không tìm thấy giảng viên',
                 'error' => '404 not found!'
             ], 404);
         }
@@ -222,7 +222,7 @@ class LecturersController extends Controller
                 'success' => false,
                 'status' => '500',
                 'data' => [],
-                'warning' => 'Đã xảy ra lỗi không xác định',
+                'message' => 'Đã xảy ra lỗi không xác định',
                 'error' => $e->getMessage(),
             ], 500);
         }

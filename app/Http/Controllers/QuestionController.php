@@ -350,13 +350,13 @@ class QuestionController extends Controller
         ]);
     }
 
-    protected function jsonResponse($success = true, $data = null, $warning = '', $statusCode = 200)
+    protected function jsonResponse($success = true, $data = null, $message = '', $statusCode = 200)
     {
         return response()->json([
             'success' => $success,
             'status' => "$statusCode",
             'data' => $data,
-            'warning' => $warning
+            'message' => $message
         ], $statusCode);
     }
 
@@ -376,14 +376,14 @@ class QuestionController extends Controller
                     'exams' => $dataExam,
                     'subjects' => $dataExamSubjects
                 ],
-                'warning' => '',
+                'message' => '',
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'status' => '500',
                 'data' => [],
-                'warning' => $e->getMessage(),
+                'message' => $e->getMessage(),
             ], 500);
         }
     }
@@ -396,7 +396,7 @@ class QuestionController extends Controller
                     'success' => false,
                     'status' => '404',
                     'data' => [],
-                    'warning' => 'Exam not found',
+                    'message' => 'Exam not found',
                 ], 404);
             }
 
@@ -410,7 +410,7 @@ class QuestionController extends Controller
                     'success' => false,
                     'status' => '404',
                     'data' => [],
-                    'warning' => 'ExamSubject not found for the given exam_id',
+                    'message' => 'ExamSubject not found for the given exam_id',
                 ], 404);
             }
 
@@ -422,7 +422,7 @@ class QuestionController extends Controller
                     'success' => false,
                     'status' => '404',
                     'data' => [],
-                    'warning' => 'ExamContent not found for the given exam_subject_id',
+                    'message' => 'ExamContent not found for the given exam_subject_id',
                 ], 404);
             }
 
@@ -433,7 +433,7 @@ class QuestionController extends Controller
                     'success' => false,
                     'status' => '404',
                     'data' => [],
-                    'warning' => 'Questions not found for the given exam_content_id',
+                    'message' => 'Questions not found for the given exam_content_id',
                 ], 404);
             }
 
@@ -443,7 +443,7 @@ class QuestionController extends Controller
                 'success' => true,
                 'status' => '200',
                 'data' => $questionVersions,
-                'warning' => '',
+                'message' => '',
             ], 200);
 
         } catch (\Exception $e) {
@@ -451,7 +451,7 @@ class QuestionController extends Controller
                 'success' => false,
                 'status' => '500',
                 'data' => [],
-                'warning' => $e->getMessage(),
+                'message' => $e->getMessage(),
             ], 500);
         }
     }

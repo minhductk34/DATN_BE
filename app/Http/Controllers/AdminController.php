@@ -30,12 +30,12 @@ public function login(Request $request)
         $credentials = $request->only('username', 'password');
 
         if (empty($credentials['username']) || empty($credentials['password'])) {
-            Log::warning('Missing username or password');
+            Log::message('Missing username or password');
             return response()->json([
                 'success' => false,
                 'status' => 400,
                 'data' => [],
-                'warning' => 'username và password là bắt buộc.'
+                'message' => 'username và password là bắt buộc.'
             ], 400);
         }
 
@@ -43,22 +43,22 @@ public function login(Request $request)
         $admin = Admin::where('name', $credentials['username'])->first();
 
         if (!$admin) {
-            Log::warning('Admin not found', ['username' => $credentials['username']]);
+            Log::message('Admin not found', ['username' => $credentials['username']]);
             return response()->json([
                 'success' => false,
                 'status' => 404,
                 'data' => [],
-                'warning' => 'Tài khoản không tồn tại.'
+                'message' => 'Tài khoản không tồn tại.'
             ], 404);
         }
 
         if (!Hash::check($credentials['password'], $admin->password)) {
-            Log::warning('Incorrect password', ['username' => $credentials['username']]);
+            Log::message('Incorrect password', ['username' => $credentials['username']]);
             return response()->json([
                 'success' => false,
                 'status' => 401,
                 'data' => [],
-                'warning' => 'Mật khẩu không chính xác.'
+                'message' => 'Mật khẩu không chính xác.'
             ], 401);
         }
 
@@ -68,7 +68,7 @@ public function login(Request $request)
                 'success' => false,
                 'status' => 503,
                 'data' => [],
-                'warning' => 'Không thể kết nối đến hệ thống lưu trữ, vui lòng thử lại sau.'
+                'message' => 'Không thể kết nối đến hệ thống lưu trữ, vui lòng thử lại sau.'
             ], 503);
         }
 
@@ -78,12 +78,12 @@ public function login(Request $request)
         });
 
         if ($existingToken) {
-            Log::warning('User already logged in from another location', ['user_id' => $admin->id]);
+            Log::message('User already logged in from another location', ['user_id' => $admin->id]);
             return response()->json([
                 'success' => false,
                 'status' => 403,
                 'data' => [],
-                'warning' => 'Tài khoản này đã đăng nhập từ nơi khác.'
+                'message' => 'Tài khoản này đã đăng nhập từ nơi khác.'
             ], 403);
         }
 
@@ -125,7 +125,7 @@ public function login(Request $request)
             'success' => false,
             'status' => 500,
             'data' => [],
-            'warning' => 'Đã có lỗi xảy ra, vui lòng thử lại sau.',
+            'message' => 'Đã có lỗi xảy ra, vui lòng thử lại sau.',
             'error' => $e->getMessage()
         ], 500);
     }

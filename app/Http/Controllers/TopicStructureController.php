@@ -165,7 +165,7 @@ class TopicStructureController extends Controller
                 'success' => false,
                 'status' => "400",
                 'data' => [],
-                'warning' => 'Invalid Exam Subject ID provided'
+                'message' => 'Invalid Exam Subject ID provided'
             ], 400);
         }
 
@@ -204,7 +204,7 @@ ORDER BY ec.title, lv.Level;
                     'success' => false,
                     'status' => "404",
                     'data' => [],
-                    'warning' => 'Structure not found'
+                    'message' => 'Structure not found'
                 ], 404);
             }
 
@@ -222,7 +222,7 @@ ORDER BY ec.title, lv.Level;
                 'status' => "500",
                 'data' => [],
                 'error' => $e->getMessage(),
-                'warning' => 'Internal server error while processing your request'
+                'message' => 'Internal server error while processing your request'
             ], 500);
         }
     }
@@ -240,7 +240,7 @@ ORDER BY ec.title, lv.Level;
                 'success' => false,
                 'status' => "404",
                 'data' => [],
-                'warning' => 'Structure not found'
+                'message' => 'Structure not found'
             ], 404);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Failed to retrieve topic structure: ' . $e->getMessage()], 500);
@@ -262,7 +262,7 @@ ORDER BY ec.title, lv.Level;
                     'success' => false,
                     'status' => "404",
                     'data' => $query->toSql(),
-                    'warning' => 'Structure not found'
+                    'message' => 'Structure not found'
                 ], 404);
             }
 
@@ -270,14 +270,14 @@ ORDER BY ec.title, lv.Level;
                 'success' => true,
                 'status' => "200",
                 'data' => $topicStructures,
-                'warning' => ''
+                'message' => ''
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'status' => "500",
                 'data' => [],
-                'warning' => 'Failed to retrieve topic structures: ' . $e->getMessage()
+                'message' => 'Failed to retrieve topic structures: ' . $e->getMessage()
             ], 500);
         }
     }

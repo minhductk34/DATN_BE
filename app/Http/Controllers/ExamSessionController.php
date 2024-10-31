@@ -20,7 +20,7 @@ class ExamSessionController extends Controller
             'success' => true,
             'status' => '200',
             'data' => $examSessions,
-            'warning' => '',
+            'message' => '',
         ], 200);
     }
 
@@ -45,7 +45,7 @@ class ExamSessionController extends Controller
                 'success' => true,
                 'status' => '201',
                 'data' => $examSession,
-                'warning' => '',
+                'message' => '',
             ], 201);
 
         } catch (ValidationException $e) {
@@ -53,14 +53,14 @@ class ExamSessionController extends Controller
                 'success' => false,
                 'status' => '422',
                 'data' => [],
-                'warning' => $e->errors(),
+                'message' => $e->errors(),
             ], 422);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'status' => '500',
                 'data' => [],
-                'warning' => 'Đã xảy ra lỗi không xác định',
+                'message' => 'Đã xảy ra lỗi không xác định',
                 'error' => $e->getMessage(),
             ], 500);
         }
@@ -79,7 +79,7 @@ class ExamSessionController extends Controller
                 'success' => false,
                 'status' => '404',
                 'data' => [],
-                'warning' => 'Exam session does not exist',
+                'message' => 'Exam session does not exist',
             ], 404);
         }
 
@@ -87,7 +87,7 @@ class ExamSessionController extends Controller
             'success' => true,
             'status' => '200',
             'data' => $examSession,
-            'warning' => '',
+            'message' => '',
         ], 200);
     }
 
@@ -103,7 +103,7 @@ class ExamSessionController extends Controller
                 'success' => false,
                 'status' => '404',
                 'data' => [],
-                'warning' => 'Kỳ thi không tồn tại',
+                'message' => 'Kỳ thi không tồn tại',
             ], 404);
         }
 
@@ -120,7 +120,7 @@ class ExamSessionController extends Controller
                 'success' => true,
                 'status' => '200',
                 'data' => $examSession,
-                'warning' => '',
+                'message' => '',
             ], 200);
 
         } catch (ValidationException $e) {
@@ -128,14 +128,14 @@ class ExamSessionController extends Controller
                 'success' => false,
                 'status' => '422',
                 'data' => [],
-                'warning' => $e->errors(),
+                'message' => $e->errors(),
             ], 422);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'status' => '500',
                 'data' => [],
-                'warning' => 'Đã xảy ra lỗi không xác định',
+                'message' => 'Đã xảy ra lỗi không xác định',
                 'error' => $e->getMessage(),
             ], 500);
         }
@@ -153,7 +153,7 @@ class ExamSessionController extends Controller
                 'success' => false,
                 'status' => '404',
                 'data' => [],
-                'warning' => 'Exam session does not exist',
+                'message' => 'Exam session does not exist',
             ], 404);
         }
 
@@ -163,7 +163,7 @@ class ExamSessionController extends Controller
             'success' => true,
             'status' => '200',
             'data' => [],
-            'warning' => '',
+            'message' => '',
         ], 200);
     }
 }

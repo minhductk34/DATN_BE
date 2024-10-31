@@ -32,14 +32,14 @@ class ExamSubjectController extends Controller
                 'success' => true,
                 'status' => '200',
                 'data' => $examSubjects,
-                'warning' => '',
+                'message' => '',
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'status' => '422',
                 'data' => [],
-                'warning' => $e->getMessage(),
+                'message' => $e->getMessage(),
             ], 422);
         }
     }
@@ -234,13 +234,13 @@ class ExamSubjectController extends Controller
         }
     }
 
-    protected function jsonResponse($success = true, $data = null, $warning = '', $statusCode = 200)
+    protected function jsonResponse($success = true, $data = null, $message = '', $statusCode = 200)
     {
         return response()->json([
             'success' => $success,
             'status' => "$statusCode",
             'data' => $data,
-            'warning' => $warning
+            'message' => $message
         ], $statusCode);
     }
 }

@@ -61,7 +61,7 @@ class ExamSubjectDetailsController extends Controller
                     'success' => false,
                     'status' => "404",
                     'data' => [],
-                    'warning' => 'No exam subject details found for this exam_subject_id.'
+                    'message' => 'No exam subject details found for this exam_subject_id.'
                 ], 404);
             }
 
@@ -69,7 +69,7 @@ class ExamSubjectDetailsController extends Controller
                 'success' => true,
                 'status' => "200",
                 'data' => $examSubjectDetails,
-                'warning' => ''
+                'message' => ''
             ], 200);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Failed to retrieve exam subject details: ' . $e->getMessage()], 500);

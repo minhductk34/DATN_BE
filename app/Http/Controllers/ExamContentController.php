@@ -6,8 +6,10 @@ use App\Imports\ExamContentImport;
 use App\Models\Exam_content;
 use App\Models\ExamContent;
 use Dotenv\Exception\ValidationException;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class ExamContentController extends Controller
 {
@@ -27,7 +29,7 @@ class ExamContentController extends Controller
                     'success' => false,
                     'status' => 400,
                     'data' => [],
-                    'warning' => 'Invalid exam_content_id',
+                    'message' => 'Invalid exam_content_id',
                 ], 400);
             }
 
@@ -38,7 +40,7 @@ class ExamContentController extends Controller
                     'success' => false,
                     'status' => 404,
                     'data' => [],
-                    'warning' => 'No content found for the given content_id',
+                    'message' => 'No content found for the given content_id',
                 ], 404);
             }
 
@@ -61,7 +63,7 @@ class ExamContentController extends Controller
                 'success' => true,
                 'status' => 200,
                 'data' => $data,
-                'warning' => '',
+                'message' => '',
             ], 200);
         } catch (\Exception $e) {
 
@@ -69,7 +71,7 @@ class ExamContentController extends Controller
                 'success' => false,
                 'status' => '500',
                 'data' => [],
-                'warning' => 'An unexpected error occurred: ' . $e->getMessage(),
+                'message' => 'An unexpected error occurred: ' . $e->getMessage(),
             ], 500);
         }
     }
@@ -83,7 +85,7 @@ class ExamContentController extends Controller
                     'success' => false,
                     'status' => '400',
                     'data' => [],
-                    'warning' => 'Invalid exam_subject_id',
+                    'message' => 'Invalid exam_subject_id',
                 ], 400);
             }
 
@@ -97,7 +99,7 @@ class ExamContentController extends Controller
                     'success' => false,
                     'status' => '404',
                     'data' => [],
-                    'warning' => 'No content found for the given exam_subject_id',
+                    'message' => 'No content found for the given exam_subject_id',
                 ], 404);
             }
 
@@ -106,7 +108,7 @@ class ExamContentController extends Controller
                 'success' => true,
                 'status' => '200',
                 'data' => $content,
-                'warning' => '',
+                'message' => '',
             ], 200);
         } catch (\Exception $e) {
 
@@ -114,7 +116,7 @@ class ExamContentController extends Controller
                 'success' => false,
                 'status' => '500',
                 'data' => [],
-                'warning' => 'An unexpected error occurred: ' . $e->getMessage(),
+                'message' => 'An unexpected error occurred: ' . $e->getMessage(),
             ], 500);
         }
     }
@@ -145,21 +147,21 @@ class ExamContentController extends Controller
                 'success' => true,
                 'status' => 201,
                 'data' => $examSubject,
-                'warning' => 'Create exam content successfully'
+                'message' => 'Create exam content successfully'
             ], 201);
         } catch (ValidationException $e) {
             return response()->json([
                 'success' => false,
                 'status' => 422,
                 'data' => null,
-                'warning' => $e->getMessage()
+                'message' => $e->getMessage()
             ], 422);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'status' => 500,
                 'data' => null,
-                'warning' => $e->getMessage()
+                'message' => $e->getMessage()
             ], 500);
         }
     }
@@ -198,7 +200,7 @@ class ExamContentController extends Controller
                     'success' => false,
                     'status' => '422',
                     'data' => $errorMessages,
-                    'warning' => 'Có lỗi xảy ra trong quá trình nhập dữ liệu. Vui lòng kiểm tra lại file và thử lại.',
+                    'message' => 'Có lỗi xảy ra trong quá trình nhập dữ liệu. Vui lòng kiểm tra lại file và thử lại.',
                 ], 422);
             }
 
@@ -208,7 +210,7 @@ class ExamContentController extends Controller
                 'success' => true,
                 'status' => '200',
                 'data' => [],
-                'warning' => 'Nhập dữ liệu thành công.',
+                'message' => 'Nhập dữ liệu thành công.',
             ], 200);
         } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
             DB::rollBack();
@@ -229,7 +231,7 @@ class ExamContentController extends Controller
                 'success' => false,
                 'status' => '422',
                 'data' => $errorMessages,
-                'warning' => 'Có lỗi xảy ra trong quá trình nhập dữ liệu. Vui lòng kiểm tra lại file và thử lại.',
+                'message' => 'Có lỗi xảy ra trong quá trình nhập dữ liệu. Vui lòng kiểm tra lại file và thử lại.',
             ], 422);
         } catch (\Exception $e) {
             DB::rollBack();
@@ -238,7 +240,7 @@ class ExamContentController extends Controller
                 'success' => false,
                 'status' => '500',
                 'data' => [],
-                'warning' => 'Đã xảy ra lỗi, vui lòng thử lại sau.',
+                'message' => 'Đã xảy ra lỗi, vui lòng thử lại sau.',
             ], 500);
         }
     }
@@ -256,7 +258,7 @@ class ExamContentController extends Controller
                     'success' => false,
                     'status' => 400,
                     'data' => [],
-                    'warning' => 'Invalid exam_content_id',
+                    'message' => 'Invalid exam_content_id',
                 ], 400);
             }
 
@@ -269,7 +271,7 @@ class ExamContentController extends Controller
                     'success' => false,
                     'status' => 404,
                     'data' => [],
-                    'warning' => 'No content found for the given exam_content_id',
+                    'message' => 'No content found for the given exam_content_id',
                 ], 404);
             }
 
@@ -278,7 +280,7 @@ class ExamContentController extends Controller
                 'success' => true,
                 'status' => 200,
                 'data' => $content,
-                'warning' => '',
+                'message' => '',
             ], 200);
         } catch (\Exception $e) {
 
@@ -286,7 +288,7 @@ class ExamContentController extends Controller
                 'success' => false,
                 'status' => '500',
                 'data' => [],
-                'warning' => 'An unexpected error occurred: ' . $e->getMessage(),
+                'message' => 'An unexpected error occurred: ' . $e->getMessage(),
             ], 500);
         }
     }
@@ -306,19 +308,28 @@ class ExamContentController extends Controller
     {
         try {
             $validatedData = $request->validate([
-                'exam_subject_id' => 'required|string',
                 'title' => 'required|string|max:255',
             ]);
 
-            $examSubject = Exam_content::findOrFail($id);
+            $examSubject = Exam_content::select('id')->find($id);
 
+            if(!$examSubject){
+                $response = [
+                    'success' => false,
+                    'status' => 404,
+                    'data' => [],
+                    'message' => 'No content found for the given exam_content_id'
+                ];
+    
+                return response()->json($response, 404);
+            }
             $examSubject->update($validatedData);
 
             $response = [
                 'success' => true,
                 'status' => 200,
                 'data' => $examSubject,
-                'warning' => 'update exam contetn successfully'
+                'message' => 'update exam contetn successfully'
             ];
 
             return response()->json($response, 200);
@@ -327,14 +338,14 @@ class ExamContentController extends Controller
                 'success' => false,
                 'status' => 422,
                 'data' => null,
-                'warning' => $e->getMessage()
+                'message' => $e->getMessage()
             ], 422);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return response()->json([
                 'success' => false,
-                'status' => 422,
+                'status' => 500,
                 'data' => null,
-                'warning' => $e
+                'message' => $e->getMessage()
             ], 500);
         }
     }

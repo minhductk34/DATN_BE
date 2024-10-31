@@ -125,13 +125,13 @@ class ListeningController extends Controller
         }
     }
 
-    protected function jsonResponse($success = true, $data = null, $warning = '', $statusCode = 200)
+    protected function jsonResponse($success = true, $data = null, $message = '', $statusCode = 200)
     {
         return response()->json([
             'success' => $success,
             'status' => "$statusCode",
             'data' => $data,
-            'warning' => $warning
+            'message' => $message
         ], $statusCode);
     }
 }

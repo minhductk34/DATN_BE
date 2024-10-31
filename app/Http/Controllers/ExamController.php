@@ -134,7 +134,7 @@ class ExamController extends Controller
                 'success' => true,
                 'status' => '200',
                 'data' => $exams,
-                'warning' => '',
+                'message' => '',
             ], 200);
 
         } catch (\Exception $e) {
@@ -142,7 +142,7 @@ class ExamController extends Controller
                 'success' => false,
                 'status' => '422',
                 'data' => [],
-                'warning' => $e->getMessage(),
+                'message' => $e->getMessage(),
             ], 422);
         }
     }
