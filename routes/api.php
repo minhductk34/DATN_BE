@@ -35,6 +35,11 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 Route::prefix('admin')->group(function () {
 
     Route::post('/login', [AdminController::class, 'login']);
+    //kỳ thi
+    Route::prefix('/exam')->group(function () {
+        Route::get('/exam-with-exam-subject', [ExamController::class, 'getALLExamsWithExamSubjects']);
+        Route::get('/exam-subjects-with-content/{exam_id}', [ExamController::class, 'getExamSubjectsWithContent']);
+    });
     //Quản lý môn thi
     Route::prefix('exam-subjects')->group(function () {
         Route::get('/exam/{id}', [ExamSubjectController::class, 'getSubjectByExam']);

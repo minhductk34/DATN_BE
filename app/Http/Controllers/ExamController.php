@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 
 use App\Models\Exam;
+use App\Models\Exam_subject;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Facades\Excel;
@@ -30,7 +31,7 @@ class ExamController extends Controller
             'name' => 'required|string|max:255',
             'time_start' => 'required|date',
             'time_end' => 'required|date|after_or_equal:TimeStart',
-          
+
         ]);
 
         $exam = Exam::create($validated);
@@ -68,8 +69,8 @@ class ExamController extends Controller
         $validated = $request->validate([
             'name' => 'sometimes|string|max:255',
             'time_start' => 'sometimes|date',
-            'time_end' => 'sometimes|date|after_or_equal:time_start', 
-           
+            'time_end' => 'sometimes|date|after_or_equal:time_start',
+
         ]);
 
         $exam = Exam::findOrFail($id);
@@ -146,5 +147,69 @@ class ExamController extends Controller
             ], 422);
         }
     }
+    public function getALLExamsWithExamSubjects()
+    {
+        try {
+            $exams = Exam::with('exam_subjects')->has('exam_subjects')->get();
+
+            if ($exams->isEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'status' => "404",
+                    'data' => [],
+                    'message' => 'Structure not found'
+                ], 404);
+            }
+
+            return response()->json([
+                'success' => true,
+                'status' => '200',
+                'data' => $exams,
+                'message' => 'Data retrieved successfully'
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'status' => "500",
+                'data' => [],
+                'error' => $e->getMessage(),
+                'message' => 'Internal server error while processing your request'
+            ], 500);
+        }
+    }
+    public function getExamSubjectsWithContent($examId)
+    {
+        try {
+            $examSubjects = Exam_subject::with(['exam_content'])
+                ->where('exam_id', $examId)
+                ->whereHas('exam_content')
+                ->get();
+
+            if ($examSubjects->isEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'status' => "404",
+                    'data' => [],
+                    'message' => 'Structure not found'
+                ], 404);
+            }
+
+            return response()->json([
+                'success' => true,
+                'status' => '200',
+                'data' => $examSubjects,
+                'message' => 'Data retrieved successfully'
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'status' => "500",
+                'data' => [],
+                'error' => $e->getMessage(),
+                'message' => 'Internal server error while processing your request'
+            ], 500);
+        }
+    }
+
 
 }

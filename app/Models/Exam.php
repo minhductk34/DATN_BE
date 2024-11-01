@@ -21,6 +21,14 @@ class Exam extends Model
     ];
     public function candidate()
     {
-        return $this->hasMany(Candidate::class);
+        return $this->hasMany(Candidate::class,'exam_id', 'id');
+    }
+    public function exam_subjects()
+    {
+        return $this->hasMany(Exam_subject::class, 'exam_id', 'id');
+    }
+    public function exam_rooms()
+    {
+        return $this->hasMany(Exam_room::class, 'exam_id', 'id');
     }
 }

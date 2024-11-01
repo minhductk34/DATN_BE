@@ -29,7 +29,7 @@ class Exam_subject extends Model
 
     public function exam_content()
     {
-        return $this->belongsTo(Exam_content::class);
+        return $this->hasOne(Exam_content::class, 'exam_subject_id');
     }
     public function exam_room_detail()
     {
