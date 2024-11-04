@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ExamSubjectController;
 use App\Http\Controllers\ExamSubjectDetailsController;
 use App\Http\Controllers\ExamSessionController;
+use App\Http\Controllers\LecturersController;
 use App\Http\Controllers\ListeningController;
 use App\Http\Controllers\ListeningQuestionController;
 use App\Http\Controllers\ReadingController;
@@ -90,7 +91,7 @@ Route::prefix('admin')->group(function () {
         Route::get('/total/{id}', [TopicStructureController::class, 'getTotal']);
     });
     Route::resource('exam-room', ExamRoomController::class);
-    Route::resource('lecturer', \App\Http\Controllers\LecturersController::class);
+    Route::resource('lecturer', LecturersController::class);
     // ca thi
     Route::resource('/exam-session', ExamSessionController::class);
 
