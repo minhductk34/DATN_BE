@@ -159,7 +159,7 @@ class TopicStructureController extends Controller
 
     public function getTotal($id)
     {
-        // Kiểm tra tính hợp lệ của ID, đảm bảo ID không rỗng và là chuỗi hợp lệ
+        // Kiểm tra tính hợp lệ của ID
         if (empty($id) || !is_string($id)) {
             return response()->json([
                 'success' => false,
@@ -170,35 +170,35 @@ class TopicStructureController extends Controller
         }
 
         try {
-            // Thực thi câu truy vấn SQL với $id
+            // Truy vấn SQL
             $query = "
-                WITH Levels AS (
-    SELECT 'Easy' AS Level
-    UNION ALL
-    SELECT 'Medium'
-    UNION ALL
-    SELECT 'Difficult'
-)
-SELECT
-    ec.title,
-    lv.Level,
-    COALESCE(SUM(CASE WHEN qsv.Level = lv.Level THEN 1 ELSE 0 END), 0) AS total,
-    COALESCE(MAX(CASE WHEN ts.exam_content_id = ec.id AND ts.level = lv.Level THEN ts.Quality ELSE 0 END), 0) AS Quantity
-FROM Levels lv
-CROSS JOIN exam_contents ec
-LEFT JOIN topic_structures ts ON ts.exam_subject_id = ec.exam_subject_id AND ts.level = lv.Level
-LEFT JOIN exam_subject_details esd ON esd.exam_subject_id = ts.exam_subject_id
-LEFT JOIN questions qs ON qs.exam_content_id = ec.id
-LEFT JOIN question_versions qsv ON qsv.question_id = qs.id
-WHERE ts.exam_subject_id = ? OR ts.exam_subject_id IS NULL
-GROUP BY ec.title, lv.Level
-ORDER BY ec.title, lv.Level;
-            ";
+            WITH Levels AS (
+                SELECT 'Easy' AS Level
+                UNION ALL
+                SELECT 'Medium'
+                UNION ALL
+                SELECT 'Difficult'
+            )
+            SELECT
+                ec.title,
+                lv.level,
+                COALESCE(SUM(CASE WHEN qsv.Level = lv.Level THEN 1 ELSE 0 END), 0) AS total,
+                COALESCE(MAX(CASE WHEN ts.exam_content_id = ec.id AND ts.level = lv.level THEN ts.quantity ELSE 0 END), 0) AS quantity
+            FROM Levels lv
+            CROSS JOIN exam_contents ec
+            LEFT JOIN exam_structures ts ON ts.exam_subject_id = ec.exam_subject_id AND ts.level = lv.Level
+            LEFT JOIN exam_subject_details esd ON esd.exam_subject_id = ts.exam_subject_id
+            LEFT JOIN questions qs ON qs.exam_content_id = ec.id
+            LEFT JOIN question_versions qsv ON qsv.question_id = qs.id 
+            WHERE (ts.exam_subject_id = ? OR (ts.exam_subject_id IS NULL AND ec.exam_subject_id = ?))
+            GROUP BY ec.title, lv.level
+            ORDER BY ec.title, lv.level;
+        ";
 
-            // Lấy dữ liệu từ cơ sở dữ liệu với tham số $id
-            $result = DB::select($query, [$id]);
+            // Lấy dữ liệu từ cơ sở dữ liệu
+            $result = DB::select($query, [$id, $id]);
 
-            // Nếu không tìm thấy dữ liệu, trả về thông báo lỗi
+            // Nếu không có dữ liệu
             if (empty($result)) {
                 return response()->json([
                     'success' => false,
