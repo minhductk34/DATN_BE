@@ -91,6 +91,9 @@ Route::prefix('admin')->group(function () {
         Route::get('/total/{id}', [TopicStructureController::class, 'getTotal']);
     });
     Route::resource('exam-room', ExamRoomController::class);
+    Route::prefix('exam-room')->group(function () {
+        Route::get('/detail/{id}', [ExamRoomController::class, 'showDetail']);
+    });
     Route::resource('lecturer', LecturersController::class);
     // ca thi
     Route::resource('/exam-session', ExamSessionController::class);

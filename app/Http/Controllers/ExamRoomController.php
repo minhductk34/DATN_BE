@@ -32,7 +32,6 @@ class ExamRoomController extends Controller
                 'data' => $examRooms,
                 'message' => '',
             ], 200);
-
         } catch (QueryException $e) {
             return response()->json([
                 'success' => false,
@@ -94,26 +93,11 @@ class ExamRoomController extends Controller
     /**
      * Display the specified resource.
      */
+
     public function show($id)
     {
         try {
-            $examRoom = Exam_room::find($id);
-            $examRoomDetails = Exam_room_detail::query()->where('exam_room_id', $id)->get();
-
-            if ($examRoomDetails instanceof \Illuminate\Support\Collection && $examRoomDetails->count() > 1) {
-                $examRoomDetails = $examRoomDetails->first();
-            } elseif ($examRoomDetails->count() === 1) {
-                $examRoomDetails = $examRoomDetails->first();
-            } else {
-                $examRoomDetails = null;
-            }
-
-            $examSubjectName = Exam_subject::query()->where('id',$examRoomDetails->exam_subject_id)->first()->Name;
-            $examSession = Exam_session::query()->where('id',$examRoomDetails->exam_session_id)->select('Name','TimeStart')->first();
-
-            $examSessionName = $examSession->Name;
-            $examSessionTimeStart = $examSession->TimeStart;
-
+            $examRoom = Exam_room::query()->select('id', 'name')->withCount('candidates')->where('exam_id', $id)->get();
 
             if (!$examRoom) {
                 return response()->json([
@@ -127,15 +111,9 @@ class ExamRoomController extends Controller
             return response()->json([
                 'success' => true,
                 'status' => '200',
-                'data' => [
-                    'examRoom' => $examRoom,
-                    'exam_session_name' => $examSessionName,
-                    'exam_session_time-start' => $examSessionTimeStart,
-                    'exam_subject_name'=> $examSubjectName,
-                ],
+                'data' =>  $examRoom,
                 'message' => '',
             ], 200);
-
         } catch (QueryException $e) {
             return response()->json([
                 'success' => false,
@@ -155,6 +133,71 @@ class ExamRoomController extends Controller
         }
     }
 
+    public function showDetail($id)
+    {
+        try {
+            $examRoom = Exam_room::withCount('candidates')->find($id);
+
+            if (!$examRoom) {
+                return response()->json([
+                    'success' => false,
+                    'status' => '404',
+                    'data' => [],
+                    'message' => 'Exam Room không tồn tại',
+                ], 404);
+            }
+
+            $examRoomDetails = Exam_room_detail::query()->where('exam_room_id', $id)->get();
+
+            if ($examRoomDetails->isEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'status' => '404',
+                    'data' => [],
+                    'message' => 'Exam Room Details không tồn tại',
+                ], 404);
+            }
+
+            $examSubjectIds = $examRoomDetails->pluck('exam_subject_id')->unique();
+            $examSubjects = Exam_subject::query()->whereIn('id', $examSubjectIds)->get();
+
+            $examSessionIds = $examRoomDetails->pluck('exam_session_id')->unique();
+            $examSessions = Exam_session::query()
+                ->whereIn('id', $examSessionIds)
+                ->select('id', 'name', 'time_start', 'time_end')
+                ->get();
+
+            return response()->json([
+                'success' => true,
+                'status' => '200',
+                'data' => [
+                    'examRoom' => $examRoom,
+                    'exam_room_details' => $examRoomDetails,
+                    'exam_sessions' => $examSessions,
+                    'exam_subjects' => $examSubjects,
+                ],
+                'message' => '',
+            ], 200);
+        } catch (QueryException $e) {
+            return response()->json([
+                'success' => false,
+                'status' => '500',
+                'data' => [],
+                'message' => 'Không thể lấy dữ liệu từ cơ sở dữ liệu',
+                'error' => $e->getMessage(),
+            ], 500);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'status' => '500',
+                'data' => [],
+                'message' => 'Đã xảy ra lỗi không xác định',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+
     /**
      * Update the specified resource in storage.
      */
@@ -167,7 +210,7 @@ class ExamRoomController extends Controller
                 'success' => false,
                 'status' => '404',
                 'data' => '',
-                'message'=> 'Không tìm thấy phòng',
+                'message' => 'Không tìm thấy phòng',
                 'error' => '404 not found!'
             ], 404);
         }
@@ -186,7 +229,6 @@ class ExamRoomController extends Controller
                 'data' => $examRoom,
                 'message' => '',
             ], 200);
-
         } catch (ValidationException $e) {
             return response()->json([
                 'success' => false,
@@ -219,7 +261,7 @@ class ExamRoomController extends Controller
                 'success' => false,
                 'status' => '404',
                 'data' => '',
-                'message'=> 'Không tìm thấy phòng',
+                'message' => 'Không tìm thấy phòng',
                 'error' => '404 not found!'
             ], 404);
         }
@@ -232,7 +274,7 @@ class ExamRoomController extends Controller
                 'data' => [],
                 'message' => '',
             ], 200);
-        }catch (\Exception $e) {
+        } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'status' => '500',
@@ -241,7 +283,5 @@ class ExamRoomController extends Controller
                 'error' => $e->getMessage(),
             ], 500);
         }
-
     }
-
 }
