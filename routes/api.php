@@ -43,175 +43,178 @@ Route::prefix('admin')->group(function () {
         Route::put('/{id}', [ExamSubjectController::class, 'update']);
         Route::delete('/{id}', [ExamSubjectController::class, 'destroy']);
         Route::put('/restore/{id}', [ExamSubjectController::class, 'restore']);
-    Route::middleware('checkToken')->prefix('exam-subjects')->group(function () {
-        Route::get('/exam/{id}', [ExamSubjectController::class,'getSubjectByExam']);
-        Route::post('/', [ExamSubjectController::class,'store']);
-        Route::get('/{id}', [ExamSubjectController::class,'show']);
-        Route::put('/{id}', [ExamSubjectController::class,'update']);
-        Route::delete('/{id}', [ExamSubjectController::class,'destroy']);
-        Route::put('/restore/{id}', [ExamSubjectController::class,'restore']);
-        Route::put('/update-status/{id}', [ExamSubjectController::class,'updateStatus']);
-        Route::post('/import', [ExamSubjectController::class, 'importExcel']);
-    });
-    Route::prefix('exam-content')->group(function () {
-        //get data
-        Route::get('exam-subject/{id}', [ExamContentController::class, 'getContentByExam'])->name('exam-content-byExamSubject_id');
-        Route::get('/{id}', [ExamContentController::class, 'show'])->name('exam-content-byid');
-        Route::get('/{id}/question-counts', [ExamContentController::class, 'getQuestionCounts'])->name('question-count-by-level');
-        Route::post('/', [ExamContentController::class, 'store']);
-        Route::post('/import-excel-exam-content', [ExamContentController::class, 'importExcel']);
-        Route::put('/{id}', [ExamContentController::class, 'update']);
+        Route::middleware('checkToken')->prefix('exam-subjects')->group(function () {
+            Route::get('/exam/{id}', [ExamSubjectController::class, 'getSubjectByExam']);
+            Route::post('/', [ExamSubjectController::class, 'store']);
+            Route::get('/{id}', [ExamSubjectController::class, 'show']);
+            Route::put('/{id}', [ExamSubjectController::class, 'update']);
+            Route::delete('/{id}', [ExamSubjectController::class, 'destroy']);
+            Route::put('/restore/{id}', [ExamSubjectController::class, 'restore']);
+            Route::put('/update-status/{id}', [ExamSubjectController::class, 'updateStatus']);
+            Route::post('/import', [ExamSubjectController::class, 'importExcel']);
+        });
+        Route::prefix('exam-content')->group(function () {
+            //get data
+            Route::get('exam-subject/{id}',
+                [ExamContentController::class, 'getContentByExam'])->name('exam-content-byExamSubject_id');
+            Route::get('/{id}', [ExamContentController::class, 'show'])->name('exam-content-byid');
+            Route::get('/{id}/question-counts',
+                [ExamContentController::class, 'getQuestionCounts'])->name('question-count-by-level');
+            Route::post('/', [ExamContentController::class, 'store']);
+            Route::post('/import-excel-exam-content', [ExamContentController::class, 'importExcel']);
+            Route::put('/{id}', [ExamContentController::class, 'update']);
 
-        Route::put('/status/{id}', [ExamContentController::class, 'updateStatus']);
-        Route::delete('/delete/{id}', [ExamContentController::class, 'destroy']);
-    });
+            Route::put('/status/{id}', [ExamContentController::class, 'updateStatus']);
+            Route::delete('/delete/{id}', [ExamContentController::class, 'destroy']);
+        });
 
-    //Exams management
-    Route::middleware('checkToken')->prefix('exams-management')->group(function () {
-        Route::get('/', [ExamController::class, 'index']);
-        Route::post('/', [ExamController::class, 'store']);
-        Route::get('/{id}', [ExamController::class, 'show']);
-        Route::put('/{id}', [ExamController::class, 'update']);
-        Route::delete('/{id}', [ExamController::class, 'destroy']);
-        Route::put('/restore/{id}', [ExamController::class, 'restore']);
-        Route::post('/import', [ExamController::class, 'importExcel']);
-    });
+        //Exams management
+        Route::middleware('checkToken')->prefix('exams-management')->group(function () {
+            Route::get('/', [ExamController::class, 'index']);
+            Route::post('/', [ExamController::class, 'store']);
+            Route::get('/{id}', [ExamController::class, 'show']);
+            Route::put('/{id}', [ExamController::class, 'update']);
+            Route::delete('/{id}', [ExamController::class, 'destroy']);
+            Route::put('/restore/{id}', [ExamController::class, 'restore']);
+            Route::post('/import', [ExamController::class, 'importExcel']);
+        });
 
-    Route::prefix('topic-structures')->group(function () {
-        // Tạo mới topic structure
-        Route::post('/', [TopicStructureController::class, 'store']);
+        Route::prefix('topic-structures')->group(function () {
+            // Tạo mới topic structure
+            Route::post('/', [TopicStructureController::class, 'store']);
 
-        // Cập nhật topic structure
-        Route::put('{id}', [TopicStructureController::class, 'update']);
+            // Cập nhật topic structure
+            Route::put('{id}', [TopicStructureController::class, 'update']);
 
-        // Lấy thông tin topic structure theo ID
-        Route::get('{id}', [TopicStructureController::class, 'show']);
+            // Lấy thông tin topic structure theo ID
+            Route::get('{id}', [TopicStructureController::class, 'show']);
 
-        // Lấy thông tin topic structure theo exam_subject_id
-        Route::get('exam-subject/{exam_subject_id}', [TopicStructureController::class, 'showByExamSubjectId']);
+            // Lấy thông tin topic structure theo exam_subject_id
+            Route::get('exam-subject/{exam_subject_id}', [TopicStructureController::class, 'showByExamSubjectId']);
 
-        Route::get('/total/{id}', [TopicStructureController::class, 'getTotal']);
-    });
+            Route::get('/total/{id}', [TopicStructureController::class, 'getTotal']);
+        });
 
-    Route::middleware('checkToken')->resource('exam-room', ExamRoomController::class);
-    Route::middleware('checkToken')->resource('lecturer', \App\Http\Controllers\LecturersController::class);
-    // ca thi
-    Route::middleware('checkToken')->resource('/exam-session',ExamSessionController::class);
+        Route::middleware('checkToken')->resource('exam-room', ExamRoomController::class);
+        Route::middleware('checkToken')->resource('lecturer', \App\Http\Controllers\LecturersController::class);
+        // ca thi
+        Route::middleware('checkToken')->resource('/exam-session', ExamSessionController::class);
 
-    Route::middleware('checkToken')->prefix('questions')->group(function () {
-        //get data
-        Route::get('/', [QuestionController::class, 'index']);
-        Route::get('/{id}', [QuestionController::class, 'show']);
-        Route::get('/{id}/versions', [QuestionController::class, 'versions']);
-
-        // create data
-        Route::post('/', [QuestionController::class, 'store']);
-        Route::post('/import', [QuestionController::class, 'importExcel']);
-
-        // update data
-        Route::put('/{id}', [QuestionController::class, 'update']);
-        Route::put('/update/exel', [QuestionController::class, 'updateExcel']);
-        Route::patch('/restore/{id}', [QuestionController::class, 'restore']);
-
-        //delete data
-        Route::delete('/{id}', [QuestionController::class, 'destroy']);
-    });
-
-    Route::prefix('candidate')->group(function () {
-        Route::get('/getAll', [CandidateController::class, 'index']);
-        Route::get('/getById/{id}', [CandidateController::class, 'show']);
-        Route::post('/export-excel-password-candidate', [CandidateController::class, 'exportExcel']);
-        Route::post('/create', [CandidateController::class, 'store']);
-        Route::post('/import-excel-candidate', [CandidateController::class, 'importExcel']);
-        Route::put('/update/{id}', [CandidateController::class, 'update']);
-        Route::delete('/delete/{id}', [CandidateController::class, 'destroy']);
-        Route::get('/exam-room/{exam_room_id}', [CandidateController::class, 'countCandidateForExamRoom']);
-    });
-
-    Route::middleware('checkToken')->prefix('readings')->group(function () {
-        //get data
-        Route::get('/', [ReadingController::class, 'index']);
-        Route::get('/{id}', [ReadingController::class, 'show']);
-
-        // create data
-        Route::post('/', [ReadingController::class, 'store']);
-        Route::post('/import', [ReadingController::class, 'importExcel']);
-
-        // update data
-        Route::put('/{id}', [ReadingController::class, 'update']);
-
-        //delete data
-        Route::delete('/{id}', [ReadingController::class, 'destroy']);
-
-        // reading questions
         Route::middleware('checkToken')->prefix('questions')->group(function () {
             //get data
-            // Route::get('/', [ReadingQuestionController::class, 'index']);
-            Route::get('/{id}', [ReadingQuestionController::class, 'show']);
-            Route::get('/{id}/versions', [ReadingQuestionController::class, 'versions']);
+            Route::get('/', [QuestionController::class, 'index']);
+            Route::get('/{id}', [QuestionController::class, 'show']);
+            Route::get('/{id}/versions', [QuestionController::class, 'versions']);
 
             // create data
-            Route::post('/', [ReadingQuestionController::class, 'store']);
-            Route::post('/import', [ReadingQuestionController::class, 'importExcel']);
+            Route::post('/', [QuestionController::class, 'store']);
+            Route::post('/import', [QuestionController::class, 'importExcel']);
 
             // update data
-            Route::put('/{id}', [ReadingQuestionController::class, 'update']);
+            Route::put('/{id}', [QuestionController::class, 'update']);
+            Route::put('/update/exel', [QuestionController::class, 'updateExcel']);
+            Route::patch('/restore/{id}', [QuestionController::class, 'restore']);
 
             //delete data
-            Route::delete('/{id}', [ReadingQuestionController::class, 'destroy']);
+            Route::delete('/{id}', [QuestionController::class, 'destroy']);
         });
-    });
 
-    Route::middleware('checkToken')->prefix('listenings')->group(function () {
-        //get data
-        Route::get('/', [ListeningController::class, 'index']);
-        Route::get('/{id}', [ListeningController::class, 'show']);
+        Route::prefix('candidate')->group(function () {
+            Route::get('/getAll', [CandidateController::class, 'index']);
+            Route::get('/getById/{id}', [CandidateController::class, 'show']);
+            Route::post('/export-excel-password-candidate', [CandidateController::class, 'exportExcel']);
+            Route::post('/create', [CandidateController::class, 'store']);
+            Route::post('/import-excel-candidate', [CandidateController::class, 'importExcel']);
+            Route::put('/update/{id}', [CandidateController::class, 'update']);
+            Route::delete('/delete/{id}', [CandidateController::class, 'destroy']);
+            Route::get('/exam-room/{exam_room_id}', [CandidateController::class, 'countCandidateForExamRoom']);
+        });
 
-        // create data
-        Route::post('/', [ListeningController::class, 'store']);
-
-        // update data
-        Route::put('/{id}', [ListeningController::class, 'update']);
-
-        //delete data
-        Route::delete('/{id}', [ListeningController::class, 'destroy']);
-
-        // reading questions
-        Route::middleware('checkToken')->prefix('questions')->group(function () {
+        Route::middleware('checkToken')->prefix('readings')->group(function () {
             //get data
-            // Route::get('/', [ReadingQuestionController::class, 'index']);
-            Route::get('/{id}', [ListeningQuestionController::class, 'show']);
-            Route::get('/{id}/versions', [ListeningQuestionController::class, 'versions']);
+            Route::get('/', [ReadingController::class, 'index']);
+            Route::get('/{id}', [ReadingController::class, 'show']);
 
             // create data
-            Route::post('/', [ListeningQuestionController::class, 'store']);
-            Route::post('/import', [ListeningQuestionController::class, 'importExcel']);
+            Route::post('/', [ReadingController::class, 'store']);
+            Route::post('/import', [ReadingController::class, 'importExcel']);
 
             // update data
-            Route::put('/{id}', [ListeningQuestionController::class, 'update']);
+            Route::put('/{id}', [ReadingController::class, 'update']);
 
             //delete data
-            Route::delete('/{id}', [ListeningQuestionController::class, 'destroy']);
+            Route::delete('/{id}', [ReadingController::class, 'destroy']);
+
+            // reading questions
+            Route::middleware('checkToken')->prefix('questions')->group(function () {
+                //get data
+                // Route::get('/', [ReadingQuestionController::class, 'index']);
+                Route::get('/{id}', [ReadingQuestionController::class, 'show']);
+                Route::get('/{id}/versions', [ReadingQuestionController::class, 'versions']);
+
+                // create data
+                Route::post('/', [ReadingQuestionController::class, 'store']);
+                Route::post('/import', [ReadingQuestionController::class, 'importExcel']);
+
+                // update data
+                Route::put('/{id}', [ReadingQuestionController::class, 'update']);
+
+                //delete data
+                Route::delete('/{id}', [ReadingQuestionController::class, 'destroy']);
+            });
         });
+
+        Route::middleware('checkToken')->prefix('listenings')->group(function () {
+            //get data
+            Route::get('/', [ListeningController::class, 'index']);
+            Route::get('/{id}', [ListeningController::class, 'show']);
+
+            // create data
+            Route::post('/', [ListeningController::class, 'store']);
+
+            // update data
+            Route::put('/{id}', [ListeningController::class, 'update']);
+
+            //delete data
+            Route::delete('/{id}', [ListeningController::class, 'destroy']);
+
+            // reading questions
+            Route::middleware('checkToken')->prefix('questions')->group(function () {
+                //get data
+                // Route::get('/', [ReadingQuestionController::class, 'index']);
+                Route::get('/{id}', [ListeningQuestionController::class, 'show']);
+                Route::get('/{id}/versions', [ListeningQuestionController::class, 'versions']);
+
+                // create data
+                Route::post('/', [ListeningQuestionController::class, 'store']);
+                Route::post('/import', [ListeningQuestionController::class, 'importExcel']);
+
+                // update data
+                Route::put('/{id}', [ListeningQuestionController::class, 'update']);
+
+                //delete data
+                Route::delete('/{id}', [ListeningQuestionController::class, 'destroy']);
+            });
+        });
+
+        Route::middleware('checkToken')->prefix('exam-subject-details')->group(function () {
+            Route::get('/', [ExamSubjectDetailsController::class, 'index']);
+            Route::get('/{id}', [ExamSubjectDetailsController::class, 'show']);
+            Route::get('/exam-subject/{exam_subject_id}', [ExamSubjectDetailsController::class, 'showByExamSubjectId']);
+            Route::post('/', [ExamSubjectDetailsController::class, 'store']);
+            Route::put('/{id}', [ExamSubjectDetailsController::class, 'update']);
+            Route::delete('/{id}', [ExamSubjectDetailsController::class, 'destroy']);
+        });
+
     });
 
-    Route::middleware('checkToken')->prefix('exam-subject-details')->group(function () {
-        Route::get('/', [ExamSubjectDetailsController::class, 'index']);
-        Route::get('/{id}', [ExamSubjectDetailsController::class, 'show']);
-        Route::get('/exam-subject/{exam_subject_id}', [ExamSubjectDetailsController::class, 'showByExamSubjectId']);
-        Route::post('/', [ExamSubjectDetailsController::class, 'store']);
-        Route::put('/{id}', [ExamSubjectDetailsController::class, 'update']);
-        Route::delete('/{id}', [ExamSubjectDetailsController::class, 'destroy']);
-    });
 
-});
+    Route::prefix('client')->group(function () {
+        Route::prefix('questions')->group(function () {
+            Route::get('manageQuestions', [QuestionController::class, 'dataOptions']);
+            Route::post('manageQuestions/{examId}/{examSubjectId}', [QuestionController::class, 'dataQuestion']);
 
 
-Route::prefix('client')->group(function () {
-    Route::prefix('questions')->group(function () {
-        Route::get('manageQuestions', [QuestionController::class, 'dataOptions']);
-        Route::post('manageQuestions/{examId}/{examSubjectId}', [QuestionController::class, 'dataQuestion']);
-
-
+        });
     });
 });
