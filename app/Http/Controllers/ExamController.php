@@ -24,6 +24,7 @@ class ExamController extends Controller
     public function store(Request $request)
     {
         // Validate the request data
+
         $validated = $request->validate([
             'id' => 'required|string|unique:exams,id',
             'Name' => 'required|string|max:255',
