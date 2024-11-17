@@ -52,7 +52,6 @@ class ExamContentController extends Controller
             ], 200);
         } catch (\Exception $e) {
 
-
             return response()->json([
                 'success' => false,
                 'status' => '500',
