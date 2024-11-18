@@ -38,6 +38,9 @@ Route::prefix('admin')->group(function () {
     Route::post('/login', [AdminController::class, 'login']);
     //kỳ thi
     Route::prefix('/exam')->group(function () {
+        Route::resource('/', ExamController::class);
+        Route::get('/exam-rooms-in-exams/{id}', [ExamController::class, 'getExamRoomsInExams']);
+        Route::get('/get-all-with-status-true', [ExamController::class, 'getAllWithStatusTrue']);
         Route::get('/exam-with-exam-subject', [ExamController::class, 'getALLExamsWithExamSubjects']);
         Route::get('/exam-subjects-with-content/{exam_id}', [ExamController::class, 'getExamSubjectsWithContent']);
     });
@@ -119,13 +122,14 @@ Route::prefix('admin')->group(function () {
 
     Route::prefix('candidate')->group(function () {
         Route::get('/getAll', [CandidateController::class, 'index']);
-        Route::get('/getById/{id}', [CandidateController::class, 'show']);
+        Route::get('/detail-candidate/{id}', [CandidateController::class, 'show']);
         Route::post('/export-excel-password-candidate', [CandidateController::class, 'exportExcel']);
-        Route::post('/create', [CandidateController::class, 'store']);
+        Route::post('/store', [CandidateController::class, 'store']);
         Route::post('/import-excel-candidate', [CandidateController::class, 'importExcel']);
         Route::put('/update/{id}', [CandidateController::class, 'update']);
         Route::delete('/delete/{id}', [CandidateController::class, 'destroy']);
         Route::get('/exam-room/{exam_room_id}', [CandidateController::class, 'countCandidateForExamRoom']);
+        Route::get('/exam-room/candidate-in-exam-room/{exam_room_id}', [CandidateController::class, 'CandidateInExamRoom']);
     });
 
     Route::prefix('readings')->group(function () {

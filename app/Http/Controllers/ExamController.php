@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 
 use App\Models\Exam;
+use App\Models\Exam_room;
 use App\Models\Exam_subject;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -19,7 +20,31 @@ class ExamController extends Controller
         $exams = Exam::all();
         return response()->json($exams);
     }
-
+    public function getAllWithStatusTrue()
+    {
+        try {
+            $exams = Exam::query()
+                ->select('id','name','time_start','time_end')
+                ->where('status', '=', 1)
+                ->where('deleted_at',null)
+                ->orderBy('created_at', 'desc')
+                ->get();
+            return response()->json([
+                'success' => true,
+                'status' => '200',
+                'data' => $exams,
+                'message' => 'Data retrieved successfully'
+            ], 200);
+        }catch (\Exception $e){
+            return response()->json([
+                'success' => false,
+                'status' => "500",
+                'data' => [],
+                'error' => $e->getMessage(),
+                'message' => 'Internal server error while processing your request'
+            ], 500);
+        }
+    }
     /**
      * Show the form for creating a new resource.
      */
@@ -56,7 +81,7 @@ class ExamController extends Controller
     public function show($id)
     {
         $exam = Exam::findOrFail($id);
-        return response()->json($exam);
+        return response()->json("show");
     }
 
 
@@ -210,6 +235,33 @@ class ExamController extends Controller
             ], 500);
         }
     }
-
+    public function getExamRoomsInExams($examId)
+    {
+        try {
+            $exam_rooms = Exam_room::query()->where('exam_id', $examId)->orderBy('created_at', 'desc')->get();
+            if (!$exam_rooms) {
+                return response()->json([
+                    'success' => false,
+                    'status' => "404",
+                    'data' => [],
+                    'message' => 'Structure not found'
+                ], 404);
+            }
+            return response()->json([
+                'success' => true,
+                'status' => '200',
+                'data' => $exam_rooms,
+                'message' => 'Data retrieved successfully'
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'status' => "500",
+                'data' => [],
+                'error' => $e->getMessage(),
+                'message' => 'Internal server error while processing your request'
+            ], 500);
+        }
+    }
 
 }

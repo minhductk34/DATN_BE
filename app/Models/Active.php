@@ -12,7 +12,7 @@ class Active extends Model
     protected $fillable = [
         'exam_subject_id',
         'idcode',
-        'active',
+        'status',
         'reason',
         'admin_id',
     ];

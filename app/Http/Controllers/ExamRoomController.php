@@ -58,11 +58,41 @@ class ExamRoomController extends Controller
     {
         try {
             $validatedData = $request->validate([
-                'Name' => 'required|max:255',
+                'name' => 'required|max:255',
                 'exam_id' => 'required|exists:exams,id',
             ]);
 
             $examRoom = Exam_room::create($validatedData);
+
+            return response()->json([
+                'success' => true,
+                'status' => '201',
+                'data' => $examRoom,
+                'message' => '',
+            ], 201);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'status' => '422',
+                'data' => [],
+                'message' => 'validation error',
+                'error' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'status' => '500',
+                'data' => [],
+                'message' => 'Đã xảy ra lỗi không xác định',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+    public function createRoom($name,$exam_id)
+    {
+        try {
+
+            $examRoom = Exam_room::create(['name'=>$name,'exam_id'=>$exam_id]);
 
             return response()->json([
                 'success' => true,

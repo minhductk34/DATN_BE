@@ -22,7 +22,7 @@ class ActiveFactory extends Factory
         return [
             'exam_subject_id'=>Exam_subject::inRandomOrder()->first()->id,
             'idcode'=>Candidate::inRandomOrder()->first()->idcode,
-            'active'=>$this->faker->randomElement(['active','inactive']),
+            'status'=>$this->faker->boolean(),
             'reason'=>$this->faker->text(30),
             'admin_id'=>Admin::inRandomOrder()->first()->id,
             'created_at' => now(),

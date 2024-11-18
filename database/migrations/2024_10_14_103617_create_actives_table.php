@@ -17,7 +17,7 @@ return new class extends Migration
             $table->foreign('exam_subject_id')->references('id')->on('exam_subjects')->cascadeOnDelete()->cascadeOnUpdate();
             $table->string('idcode');
             $table->foreign('idcode')->references('idcode')->on('candidates')->cascadeOnDelete()->cascadeOnUpdate();
-            $table->enum('active',['active','inactive'])->default('Active');
+            $table->boolean('status')->default(true);
             $table->string('reason')->nullable();
             $table->string('admin_id')->nullable();
             $table->timestamps();
