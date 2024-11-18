@@ -34,9 +34,9 @@ class ExamSessionController extends Controller
     {
         try {
             $validatedData = $request->validate([
-                'Name' => 'required|string|max:255',
-                'TimeStart' => 'required|date',
-                'TimeEnd' => 'required|date',
+                'name' => 'required|string|max:255',
+                'time_start' => 'required|date',
+                'time_end' => 'required|date',
             ]);
 
             $examSession = Exam_session::create($validatedData);
@@ -109,9 +109,9 @@ class ExamSessionController extends Controller
 
         try {
             $validatedData = $request->validate([
-                'Name' => 'required|string|max:255',
-                'TimeStart' => 'required|date',
-                'TimeEnd' => 'required|date',
+                'name' => 'required|string|max:255',
+                'time_start' => 'required|date',
+                'time_end' => 'required|date',
             ]);
 
             $examSession->update($validatedData);
