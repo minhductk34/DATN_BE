@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "9000:9000"
+    environment:
+      - APP_ENV=production
+      - APP_KEY=base64:your-app-key  # Thay đổi APP_KEY nếu cần
+      - DB_CONNECTION=pgsql
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_DATABASE=datn_3cto
+      - DB_USERNAME=root
+      - DB_PASSWORD=NVvDuv5rqlTAmWeRJPZGTSMibGqDFfRR
+      - REDIS_HOST=red-crpc0frtq21c7398mgag
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=your_redis_password  # Nếu Redis có mật khẩu, nếu không có thì có thể bỏ qua
+
+  postgres:
+    image: postgres:13
+    restart: always
+    environment:
+      POSTGRES_DB: datn_3cto
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: NVvDuv5rqlTAmWeRJPZGTSMibGqDFfRR
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis:alpine
+    restart: always
+    environment:
+      REDIS_PASSWORD: your_redis_password  # Nếu Redis có mật khẩu, nếu không có thì có thể bỏ qua
+    ports:
+      - "6379:6379"

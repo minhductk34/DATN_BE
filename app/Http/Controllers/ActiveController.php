@@ -62,4 +62,41 @@ class ActiveController extends Controller
     {
         //
     }
+    public function updateStatus($candidate_id, $exam_subject_id)
+    {
+        try {
+            $active = Active::query()
+                ->where('idcode', $candidate_id)
+                ->where('exam_subject_id', $exam_subject_id)
+                ->first();
+
+            if (!$active) {
+                return response()->json([
+                    'success' => false,
+                    'status' => "404",
+                    'data' => [],
+                    'message' => 'Structure not found'
+                ], 404);
+            }
+            $active->status = !$active->status;
+
+            $active->save();
+
+            return response()->json([
+                'success' => true,
+                'status' => '200',
+                'data' => $active,
+                'message' => 'Update status successfully'
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'status' => "500",
+                'data' => [],
+                'error' => $e->getMessage(),
+                'message' => 'Internal server error while processing your request'
+            ], 500);
+        }
+
+    }
 }

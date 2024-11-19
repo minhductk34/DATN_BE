@@ -23,10 +23,10 @@ class UpdateReadingRequest extends FormRequest
         return [
             'id' => 'required|unique:readings,id,' . $id,
             'exam_content_id' => 'required|exists:exam_contents,id',
-            'Title' => 'required',
-            'Status' => 'required|in:true,false',
-            'Level' => 'nullable|in:Easy,Medium,Difficult',
-            'Image' => 'nullable|file|mimes:jpeg,jpg,png,gif,webp',
+            'title' => 'required',
+            'status' => 'required|in:true,false',
+            'level' => 'nullable|in:easy,medium,difficult',
+            'image' => 'nullable|file|mimes:jpeg,jpg,png,gif,webp',
         ];
     }
 
@@ -46,11 +46,11 @@ class UpdateReadingRequest extends FormRequest
     {
         return [
             'id' => 'Mã bài đọc',
-            'exam_content_id' => 'ID nội dung thi',
-            'Title' => 'Bài đọc',
-            'Status' => 'Trạng thái',
-            'Level' => 'Độ khó',
-            'Image' => 'Ảnh'
+            'exam_content_id' => 'iD nội dung thi',
+            'title' => 'Bài đọc',
+            'status' => 'Trạng thái',
+            'level' => 'Độ khó',
+            'image' => 'Ảnh'
         ];
     }
 

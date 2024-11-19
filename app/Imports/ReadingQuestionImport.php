@@ -34,12 +34,12 @@ class ReadingQuestionImport implements ToCollection, WithHeadingRow, WithValidat
 
                 $versions[] = [
                     'question_id' => $questionId,
-                    'Title' => $row['question'],
-                    'Answer_P' => $row['correct_answer'],
-                    'Answer_F1' => $row['option2'],
-                    'Answer_F2' => $row['option3'],
-                    'Answer_F3' => $row['option4'],
-                    'Level' => $row['level'],
+                    'title' => $row['question'],
+                    'answer_P' => $row['correct_answer'],
+                    'answer_F1' => $row['option2'],
+                    'answer_F2' => $row['option3'],
+                    'answer_F3' => $row['option4'],
+                    'level' => $row['level'],
                     'version' => 1,
                     'created_at' => now(),
                     'updated_at' => now(),
@@ -80,7 +80,7 @@ class ReadingQuestionImport implements ToCollection, WithHeadingRow, WithValidat
             '*.option2' => ['required', 'string', 'max:255'],
             '*.option3' => ['required', 'string', 'max:255'],
             '*.option4' => ['required', 'string', 'max:255'],
-            '*.level' => ['required', 'in:Easy,Medium,Difficult'],
+            '*.level' => ['required', 'in:easy,medium,difficult'],
         ];
     }
 

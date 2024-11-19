@@ -8,9 +8,9 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Admin extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory,softDeletes;
     protected $fillable = [
-        'Name',
-        'Password'
+        'name',
+        'password',
     ];
 }

@@ -42,8 +42,8 @@ class ExamContentImport implements ToModel, WithHeadingRow, WithValidation, Skip
     public function rules(): array
     {
         return [
-            // '*.id' => 'required|exists:exam_contents,id',
-            '*.exam_subject_id' => 'required|unique:exam_subjects,id',
+            '*.id' => 'required|unique:exam_contents,id',
+            '*.exam_subject_id' => 'required|exists:exam_subjects,id',
             '*.title' => 'required|string|max:255',
         ];
     }
@@ -64,7 +64,7 @@ class ExamContentImport implements ToModel, WithHeadingRow, WithValidation, Skip
     public function customValidationAttributes()
     {
         return [
-            // '*.id' => 'Mã nội dung thi',
+            '*.id' => 'Mã nội dung thi',
             '*.exam_subject_id' => 'Mã môn thi',
             '*.title' => 'Nội dung thi',
         ];

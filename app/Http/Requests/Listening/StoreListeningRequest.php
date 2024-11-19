@@ -21,10 +21,10 @@ class StoreListeningRequest extends FormRequest
         return [
             'id' => 'required|unique:listenings,id',
             'exam_content_id' => 'required|exists:exam_contents,id',
-            'Name' => 'required',
-            'Audio' => 'required|file|mimes:audio/mpeg,mpga,mp3,wav|max:10240',
-            'Status' => 'required|in:true,false',
-            'Level' => 'nullable|in:Easy,Medium,Difficult',
+            'name' => 'required',
+            'audio' => 'required|file|mimes:audio/mpeg,mpga,mp3,wav|max:10240',
+            'status' => 'required|in:true,false',
+            'level' => 'nullable|in:easy,medium,difficult',
         ];
     }
 
@@ -46,10 +46,10 @@ class StoreListeningRequest extends FormRequest
         return [
             'id' => 'Mã bài đọc',
             'exam_content_id' => 'ID nội dung thi',
-            'Name' => 'Tên bài nghe',
-            'Audio' => 'Bài nghe',
-            'Status' => 'Trạng thái',
-            'Level' => 'Độ khó',
+            'name' => 'Tên bài nghe',
+            'audio' => 'Bài nghe',
+            'status' => 'Trạng thái',
+            'level' => 'Độ khó',
         ];
     }
 

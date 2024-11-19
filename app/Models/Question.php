@@ -17,21 +17,16 @@ class Question extends Model
         'id',
         'current_version_id',
         'exam_content_id',
-        'Status',
+        'status',
     ];
 
     public function exam_content(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
-        return $this->belongsTo(ExamContent::class);
+        return $this->belongsTo(Exam_content::class);
     }
 
-    public function versions()
+    public function question_version()
     {
-        return $this->hasMany(QuestionVersion::class);
-    }
-
-    public function currentVersion()
-    {
-        return $this->belongsTo(QuestionVersion::class, 'current_version_id');
+        return $this->belongsTo(Question_version::class);
     }
 }

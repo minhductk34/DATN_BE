@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\ExamSubject\StoreExamSubjectRequest;
 use App\Http\Requests\ExamSubject\UpdateExamSubjectRequest;
+use App\Models\Exam_subject;
 use App\Models\ExamSubject;
 use Illuminate\Http\Request;
 use App\Imports\ExamSubjectImport;
@@ -14,6 +15,34 @@ class ExamSubjectController extends Controller
     /**
      * Lấy môn thi theo kì thi
      */
+    public function index()
+    {
+        $examSubjects = Exam_subject::all();
+
+        return $examSubjects;
+    }
+    function  getDataShow()
+    {
+        try {
+            $examSubjects = Exam_subject::query()
+                ->select('id', 'name', 'exam_id')
+                ->get();
+
+            return response()->json([
+                'success' => true,
+                'status' => '200',
+                'data' => $examSubjects,
+                'message' => '',
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'status' => '422',
+                'data' => [],
+                'message' => $e->getMessage(),
+            ], 422);
+        }
+    }
     public function getSubjectByExam($id)
     {
         try {
@@ -21,8 +50,8 @@ class ExamSubjectController extends Controller
                 return $this->jsonResponse(false, null, 'ID không hợp lệ', 400);
             }
 
-            $examSubjects = ExamSubject::query()
-                ->select('id', 'exam_id', 'Name', 'Status')
+            $examSubjects = Exam_subject::query()
+                ->select('id', 'exam_id', 'name', 'status')
                 ->where('exam_id', $id)
                 ->get();
 
@@ -44,9 +73,9 @@ class ExamSubjectController extends Controller
         try {
             $validatedData = $request->all();
 
-            $examSubject = ExamSubject::create($validatedData);
+            $examSubject = Exam_subject::create($validatedData);
 
-            return $this->jsonResponse(true, $examSubject, '', 201);
+            return $this->jsonResponse(true, $examSubject, 'create exam subject successfully', 201);
         } catch (\Exception $e) {
             return $this->jsonResponse(false, null, $e->getMessage(), 500);
         }
@@ -89,8 +118,7 @@ class ExamSubjectController extends Controller
 
             DB::commit();
 
-            return $this->jsonResponse(true, [], '', 200);
-
+            return $this->jsonResponse(true, [], 'import data successfully', 200);
         } catch (\Exception $e) {
             return $this->jsonResponse(false, null, $e->getMessage(), 500);
         }
@@ -106,8 +134,8 @@ class ExamSubjectController extends Controller
                 return $this->jsonResponse(false, null, 'ID không hợp lệ', 400);
             }
 
-            $examSubject = ExamSubject::with('contents')
-                ->select('id', 'exam_id', 'Name', 'Status')
+            $examSubject = Exam_subject::with('contents')
+                ->select('id', 'exam_id', 'name', 'status')
                 ->find($id);
 
             if (!$examSubject) {
@@ -128,7 +156,7 @@ class ExamSubjectController extends Controller
         try {
             $validatedData = $request->all();
 
-            $examSubject = ExamSubject::select('id')->find($id);
+            $examSubject = Exam_subject::select('id')->find($id);
 
             if (!$examSubject) {
                 return $this->jsonResponse(false, null, 'Không tìm thấy môn thi', 404);
@@ -136,7 +164,7 @@ class ExamSubjectController extends Controller
 
             $examSubject->update($validatedData);
 
-            return $this->jsonResponse(true, $examSubject, '', 200);
+            return $this->jsonResponse(true, $examSubject, 'update exam subject successfully', 200);
         } catch (\Exception $e) {
             return $this->jsonResponse(false, null, $e->getMessage(), 500);
         }
@@ -148,7 +176,7 @@ class ExamSubjectController extends Controller
     public function destroy($id)
     {
         try {
-            $examSubject = ExamSubject::query()->select('id')->find($id);
+            $examSubject = Exam_subject::query()->select('id')->find($id);
 
             if (!$examSubject) {
                 return $this->jsonResponse(false, null, 'Không tìm thấy môn thi', 404);
@@ -162,14 +190,32 @@ class ExamSubjectController extends Controller
         }
     }
 
+    public function updateStatus($id)
+    {
+        try {
+            $examSubject = Exam_subject::query()->find($id);
+
+            if (!$examSubject) {
+                return $this->jsonResponse(false, null, 'Không tìm thấy môn thi', 404);
+            }
+
+            $examSubject->status = $examSubject->status=='true' ? 'false' : 'true';
+
+            $examSubject->save();
+
+            return $this->jsonResponse(true, $examSubject->status, 'update status exam subject successfully', 200);
+        } catch (\Exception $e) {
+            return $this->jsonResponse(false, null, $e->getMessage(), 500);
+        }
+    }
     /**
      * Khôi phục môn thi bị xóa
      */
     public function restore($id)
     {
         try {
-            $examSubject = ExamSubject::withTrashed()
-                ->select('id', 'exam_id', 'Name', 'Status')
+            $examSubject = Exam_subject::withTrashed()
+                ->select('id', 'exam_id', 'name', 'status')
                 ->find($id);
 
             if (!$examSubject) {
@@ -188,13 +234,13 @@ class ExamSubjectController extends Controller
         }
     }
 
-    protected function jsonResponse($success = true, $data = null, $warning = '', $statusCode = 200)
+    protected function jsonResponse($success = true, $data = null, $message = '', $statusCode = 200)
     {
         return response()->json([
             'success' => $success,
             'status' => "$statusCode",
             'data' => $data,
-            'warning' => $warning
+            'message' => $message
         ], $statusCode);
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Candidate_question;
 use App\Models\CandidateQuestion;
 use Illuminate\Http\Request;
 
@@ -34,7 +35,7 @@ class CandidateQuestionController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(CandidateQuestion $candidate_question)
+    public function show(Candidate_question $candidate_question)
     {
         //
     }
@@ -42,7 +43,7 @@ class CandidateQuestionController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(CandidateQuestion $candidate_question)
+    public function edit(Candidate_question $candidate_question)
     {
         //
     }
@@ -50,7 +51,7 @@ class CandidateQuestionController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, CandidateQuestion $candidate_question)
+    public function update(Request $request, Candidate_question $candidate_question)
     {
         //
     }
@@ -58,7 +59,7 @@ class CandidateQuestionController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(CandidateQuestion $candidate_question)
+    public function destroy(Candidate_question $candidate_question)
     {
         //
     }

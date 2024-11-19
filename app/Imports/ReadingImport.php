@@ -38,9 +38,9 @@ class ReadingImport implements ToModel, WithHeadingRow, WithValidation, SkipsOnF
         return new Reading([
             'id' => $row['id'],
             'exam_content_id' => $row['exam_content_id'],
-            'Title' => $row['reading'],
-            'Level' => $row['level'],
-            'Image' => $image,
+            'title' => $row['reading'],
+            'level' => $row['level'],
+            'image' => $image,
         ]);
     }
 
@@ -50,7 +50,7 @@ class ReadingImport implements ToModel, WithHeadingRow, WithValidation, SkipsOnF
             '*.id' => 'required|unique:readings,id',
             '*.exam_content_id' => 'required|exists:exam_contents,id',
             '*.reading' => 'required',
-            '*.level' => 'nullable|in:Easy,Medium,Difficult',
+            '*.level' => 'nullable|in:easy,medium,difficult',
             '*.image' => 'nullable|file|mimes:jpeg,jpg,png,gif,webp',
         ];
     }

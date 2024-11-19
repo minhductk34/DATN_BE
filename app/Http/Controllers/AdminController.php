@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Log;
 
 class AdminController extends Controller
 {
@@ -20,79 +21,154 @@ class AdminController extends Controller
         //
     }
 
-    public function login(Request $request)
+
+public function login(Request $request)
 {
-    $credentials = $request->only('username', 'password');
+    try {
+        Log::debug('Login request received', ['request' => $request->all()]);
 
-    if (empty($credentials['username']) || empty($credentials['password'])) {
+        $credentials = $request->only('username', 'password');
+
+        if (empty($credentials['username']) || empty($credentials['password'])) {
+            Log::message('Missing username or password');
+            return response()->json([
+                'success' => false,
+                'status' => 400,
+                'data' => [],
+                'message' => 'username và password là bắt buộc.'
+            ], 400);
+        }
+
+        Log::debug('Searching for admin', ['username' => $credentials['username']]);
+        $admin = Admin::where('name', $credentials['username'])->first();
+
+        if (!$admin) {
+            Log::message('Admin not found', ['username' => $credentials['username']]);
+            return response()->json([
+                'success' => false,
+                'status' => 404,
+                'data' => [],
+                'message' => 'Tài khoản không tồn tại.'
+            ], 404);
+        }
+
+        if (!Hash::check($credentials['password'], $admin->password)) {
+            Log::message('Incorrect password', ['username' => $credentials['username']]);
+            return response()->json([
+                'success' => false,
+                'status' => 401,
+                'data' => [],
+                'message' => 'Mật khẩu không chính xác.'
+            ], 401);
+        }
+
+        if (!$this->checkRedisConnection()) {
+            Log::error('Redis connection failed');
+            return response()->json([
+                'success' => false,
+                'status' => 503,
+                'data' => [],
+                'message' => 'Không thể kết nối đến hệ thống lưu trữ, vui lòng thử lại sau.'
+            ], 503);
+        }
+
+        Log::debug('Checking existing token in Redis');
+        $existingToken = $this->retryRedisOperation(function () use ($admin) {
+            return Redis::hget('auth:' . $admin->id, 'token');
+        });
+
+        if ($existingToken) {
+            Log::message('User already logged in from another location', ['user_id' => $admin->id]);
+            return response()->json([
+                'success' => false,
+                'status' => 403,
+                'data' => [],
+                'message' => 'Tài khoản này đã đăng nhập từ nơi khác.'
+            ], 403);
+        }
+
+        $token = Str::random(60);
+        $expiresAt = now()->addHours(1)->timestamp;
+        $ttl = now()->addHours(1)->diffInSeconds(now());
+
+        $tokenData = [
+            'user_id' => $admin->id,
+            'expires_at' => $expiresAt,
+        ];
+
+        Log::debug('Storing token in Redis', ['token' => $token, 'ttl' => $ttl]);
+        $this->retryRedisOperation(function () use ($token, $tokenData, $admin, $ttl) {
+            Redis::hmset('tokens:' . $token, $tokenData);
+            Redis::hmset('auth:' . $admin->id, ['token' => $token, 'expires_at' => $ttl]);
+            Redis::expire('tokens:' . $token, $ttl);
+            Redis::expire('auth:' . $admin->id, $ttl);
+        });
+
+        $data = [
+            'id' => $admin->id,
+            'username' => $admin->name,
+        ];
+
+        Log::info('User logged in successfully', ['user_id' => $admin->id]);
+        return response()->json([
+            'success' => true,
+            'status' => 200,
+            'expires_at' => $expiresAt,
+            'token' => $token,
+            'data' => $data,
+        ], 200);
+
+    } catch (\Exception $e) {
+        Log::error('Login failed', ['error' => $e->getMessage()]);
+
         return response()->json([
             'success' => false,
-            'status' => '400',
+            'status' => 500,
             'data' => [],
-            'warning' => 'Username và password là bắt buộc'
-        ], 400);
+            'message' => 'Đã có lỗi xảy ra, vui lòng thử lại sau.',
+            'error' => $e->getMessage()
+        ], 500);
     }
-
-    $admin = Admin::where('name', $credentials['username'])->first();
-
-    if (!$admin) {
-        return response()->json([
-            'success' => false,
-            'status' => '404',
-            'data' => [],
-            'warning' => 'Tài khoản không tồn tại'
-        ], 404);
-    }
-
-    if (!Hash::check($credentials['password'], $admin->Password)) {
-        return response()->json([
-            'success' => false,
-            'status' => '401',
-            'data' => [],
-            'warning' => 'Mật khẩu không chính xác'
-        ], 401);
-    }
-
-    // Kiểm tra xem người dùng đã có token hợp lệ chưa
-    $existingToken = Redis::hget('auth:' . $admin->id, 'token');
-    if ($existingToken) {
-        return response()->json([
-            'success' => false,
-            'status' => '403',
-            'data' => [],
-            'warning' => 'Tài khoản này đã đăng nhập từ nơi khác'
-        ], 403);
-    }
-
-    // Tạo khóa lưu trữ token và thông tin người dùng
-    $token = Str::random(60);
-    $expiresAt = now()->addHours(1)->timestamp;
-    $ttl = now()->addHours(1)->diffInSeconds(now());
-
-    // Lưu thông tin token vào Redis hash
-    Redis::hset('tokens:' . $token, 'user_id', $admin->id);
-    Redis::hset('tokens:' . $token, 'expires_at', $expiresAt);
-
-    // Lưu token vào Redis hash với TTL
-    Redis::hset('auth:' . $admin->id, 'token', $token);
-    Redis::hset('auth:' . $admin->id, 'expires_at', $expiresAt);
-
-    // Đặt TTL cho các hash
-    Redis::expire('tokens:' . $token, $ttl);
-    Redis::expire('auth:' . $admin->id, $ttl);
-    $data = [
-        'id' => $admin->id,
-        'username' => $admin->Name,
-    ];
-
-    return response()->json([
-        'success' => true,
-        'status' => '200',
-        'expires_at' => $expiresAt,
-        'token' => $token,
-        'data' =>$data,
-    ], 200);
 }
+
+
+/**
+ * Kiểm tra kết nối đến Redis
+ */
+private function checkRedisConnection()
+{
+    try {
+        Redis::ping();
+        return true;
+    } catch (\Exception $e) {
+    
+        return false;
+    }
+}
+
+/**
+ * Thực hiện thao tác với Redis và tự động retry khi xảy ra lỗi
+ */
+private function retryRedisOperation(callable $operation, $maxRetries = 3)
+{
+    $attempts = 0;
+    while ($attempts < $maxRetries) {
+        try {
+            return $operation();
+        } catch (\Exception $e) {
+            $attempts++;
+            
+            if ($attempts >= $maxRetries) {
+              
+                throw $e;
+            }
+            // Đợi một thời gian ngắn trước khi thử lại (200ms)
+            usleep(200000); // 200,000 microsecond = 200ms
+        }
+    }
+    return null;
+}
+
 
 
 

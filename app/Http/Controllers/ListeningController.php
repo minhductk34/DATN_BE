@@ -21,7 +21,7 @@ class ListeningController extends Controller
 
             $listenings = Listening::query()
                 ->where('exam_content_id', $exam_content_id)
-                ->select('id', 'Name', 'Status', 'Level')
+                ->select('id', 'name', 'status', 'level')
                 ->get();
 
             if ($listenings->isEmpty()) {
@@ -36,12 +36,12 @@ class ListeningController extends Controller
 
     public function store(StoreListeningRequest $request)
     {
-        $validatedData = $request->except('Audio');
+        $validatedData = $request->except('audio');
 
         try {
-            if ($request->file('Audio')->isValid()) {
-                $path = $request->file('Audio')->store('audio', 'public');
-                $validatedData['Audio'] = $path;
+            if ($request->file('audio')->isValid()) {
+                $path = $request->file('audio')->store('audio', 'public');
+                $validatedData['audio'] = $path;
             }
 
             $listening = Listening::create($validatedData);
@@ -76,7 +76,7 @@ class ListeningController extends Controller
 
     public function update(UpdateListeningRequest $request, $id)
     {
-        $validatedData = $request->except('Audio');
+        $validatedData = $request->except('audio');
 
         try {
             $listening = Listening::find($id);
@@ -85,12 +85,12 @@ class ListeningController extends Controller
                 return $this->jsonResponse(false, null, 'Không tìm thấy bài nghe', 404);
             }
 
-            $oldAudio = $listening->Audio;
+            $oldAudio = $listening->audio;
             $newAudio = null;
 
-            if ($request->file('Audio')->isValid()) {
-                $newAudio = $request->file('Audio')->store('audio', 'public');
-                $validatedData['Audio'] = $newAudio;
+            if ($request->file('audio')->isValid()) {
+                $newAudio = $request->file('audio')->store('audio', 'public');
+                $validatedData['audio'] = $newAudio;
             }
 
             $listening->update($validatedData);
@@ -125,13 +125,13 @@ class ListeningController extends Controller
         }
     }
 
-    protected function jsonResponse($success = true, $data = null, $warning = '', $statusCode = 200)
+    protected function jsonResponse($success = true, $data = null, $message = '', $statusCode = 200)
     {
         return response()->json([
             'success' => $success,
             'status' => "$statusCode",
             'data' => $data,
-            'warning' => $warning
+            'message' => $message
         ], $statusCode);
     }
 }

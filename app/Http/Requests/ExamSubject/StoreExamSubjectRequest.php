@@ -26,8 +26,8 @@ class StoreExamSubjectRequest extends FormRequest
         return [
             'id' => 'required|unique:exam_subjects,id',
             'exam_id' => 'required|exists:exams,id',
-            'Name' => 'required|string|max:255',
-            'Status' => 'required|in:true,false',
+            'name' => 'required|string|max:255',
+            // 'status' => 'required|in:true,false',
         ];
     }
 
@@ -48,8 +48,8 @@ class StoreExamSubjectRequest extends FormRequest
         return [
             'id' => 'Mã môn thi',
             'exam_id' => 'ID kì thi',
-            'Name' => 'Tên môn thi',
-            'Status' => 'Trạng thái',
+            'name' => 'Tên môn thi',
+            'status' => 'Trạng thái',
         ];
     }
 

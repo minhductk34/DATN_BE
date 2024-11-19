@@ -7,10 +7,20 @@ use App\Http\Requests\Questions\StoreQuestionRequest;
 use App\Http\Requests\Questions\UpdateQuestionRequest;
 use App\Imports\QuestionImport;
 use App\Imports\QuestionUpdate;
+use App\Models\Exam;
+use App\Models\Exam_content;
+use App\Models\Exam_subject;
+use App\Models\ExamContent;
+use App\Models\ExamSubject;
 use App\Models\Question;
+use App\Models\Question_version;
+use App\Models\QuestionVersion;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use App\Http\Controllers\ExamController;
+use App\Http\Controllers\ExamSubjectController;
+use App\Http\Controllers\ExamContentController;
 
 class QuestionController extends Controller
 {
@@ -30,7 +40,7 @@ class QuestionController extends Controller
                         ->on('questions.current_version_id', '=', 'question_versions.id');
                 })
                 ->where('questions.exam_content_id', $exam_content_id)
-                ->select('questions.id', 'question_versions.Title', 'questions.Status')
+                ->select('questions.id', 'question_versions.title', 'questions.status')
                 ->get();
 
             if ($questions->isEmpty()) {
@@ -60,11 +70,11 @@ class QuestionController extends Controller
 
     public function store(StoreQuestionRequest $request)
     {
-        $validatedData = $request->except(['Image_Title', 'Image_P', 'Image_F1', 'Image_F2', 'Image_F3']);
+        $validatedData = $request->except(['image_Title', 'image_P', 'image_F1', 'image_F2', 'image_F3']);
         $imagePaths = [];
 
         try {
-            $imageFields = ['Image_Title', 'Image_P', 'Image_F1', 'Image_F2', 'Image_F3'];
+            $imageFields = ['image_Title', 'image_P', 'image_F1', 'image_F2', 'image_F3'];
 
             foreach ($imageFields as $field) {
                 if ($request->hasFile($field)) {
@@ -154,6 +164,25 @@ class QuestionController extends Controller
         }
     }
 
+    public function showByIdContent($id)
+    {
+        try {
+            if (!is_string($id) || empty(trim($id))) {
+                return $this->jsonResponse(false, null, 'ID nội dung thi không hợp lệ', 400);
+            }
+
+            $question = Question::with('currentVersion')->where('exam_content_id', $id)->get();
+
+            if (!$question) {
+                return $this->jsonResponse(false, $id, 'Không tìm thấy câu hỏi', 404);
+            }
+
+            return $this->jsonResponse(true, $question, '', 200);
+        } catch (\Exception $e) {
+            return $this->jsonResponse(false, null, $e->getMessage(), 500);
+        }
+    }
+
     public function update(UpdateQuestionRequest $request, $id)
     {
         $question  = Question::find($id);
@@ -162,11 +191,11 @@ class QuestionController extends Controller
             return $this->jsonResponse(false, null, 'Không tìm thấy câu hỏi', 404);
         }
 
-        $validatedData = $request->except(['Image_Title', 'Image_P', 'Image_F1', 'Image_F2', 'Image_F3']);
+        $validatedData = $request->except(['image_Title', 'image_P', 'image_F1', 'image_F2', 'image_F3']);
         $imagePaths = [];
 
         try {
-            $imageFields = ['Image_Title', 'Image_P', 'Image_F1', 'Image_F2', 'Image_F3'];
+            $imageFields = ['image_Title', 'image_P', 'image_F1', 'image_F2', 'image_F3'];
 
             foreach ($imageFields as $field) {
                 if ($request->hasFile($field)) {
@@ -203,6 +232,25 @@ class QuestionController extends Controller
                 }
             }
 
+            return $this->jsonResponse(false, null, $e->getMessage(), 500);
+        }
+    }
+
+    public function updateStatus($id)
+    {
+        try {
+            $examSubject = Question::query()->find($id);
+
+            if (!$examSubject) {
+                return $this->jsonResponse(false, null, 'Không tìm thấy câu hỏi', 404);
+            }
+
+            $examSubject->status = $examSubject->status == 'true' ? 'false' : 'true';
+
+            $examSubject->save();
+
+            return $this->jsonResponse(true, $examSubject->status, 'update status question successfully', 200);
+        } catch (\Exception $e) {
             return $this->jsonResponse(false, null, $e->getMessage(), 500);
         }
     }
@@ -286,29 +334,127 @@ class QuestionController extends Controller
     private function createQuestionVersion(Question $question, array $data, int $version)
     {
         return $question->versions()->create([
-            'Title' => $data['Title'],
-            'Image_Title' => $data['Image_Title'] ?? null,
-            'Answer_P' => $data['Answer_P'],
-            'Image_P' => $data['Image_P'] ?? null,
-            'Answer_F1' => $data['Answer_F1'],
-            'Image_F1' => $data['Image_F1'] ?? null,
-            'Answer_F2' => $data['Answer_F2'],
-            'Image_F2' => $data['Image_F2'] ?? null,
-            'Answer_F3' => $data['Answer_F3'],
-            'Image_F3' => $data['Image_F3'] ?? null,
-            'Level' => $data['Level'],
+            'title' => $data['title'],
+            'image_Title' => $data['image_Title'] ?? null,
+            'answer_P' => $data['answer_P'],
+            'image_P' => $data['image_P'] ?? null,
+            'answer_F1' => $data['answer_F1'],
+            'image_F1' => $data['image_F1'] ?? null,
+            'answer_F2' => $data['answer_F2'],
+            'image_F2' => $data['image_F2'] ?? null,
+            'answer_F3' => $data['answer_F3'],
+            'image_F3' => $data['image_F3'] ?? null,
+            'level' => $data['level'],
             'version' => $version,
             'is_active' => true,
         ]);
     }
 
-    protected function jsonResponse($success = true, $data = null, $warning = '', $statusCode = 200)
+    protected function jsonResponse($success = true, $data = null, $message = '', $statusCode = 200)
     {
         return response()->json([
             'success' => $success,
             'status' => "$statusCode",
             'data' => $data,
-            'warning' => $warning
+            'message' => $message
         ], $statusCode);
     }
+
+    public function dataOptions()
+    {
+        try {
+            $examController = new ExamController();
+            $examSubjectController = new ExamSubjectController();
+
+            $dataExam = $examController->getDataShow()->getData()->data;
+            $dataExamSubjects = $examSubjectController->getDataShow()->getData()->data;
+
+            return response()->json([
+                'success' => true,
+                'status' => '200',
+                'data' => [
+                    'exams' => $dataExam,
+                    'subjects' => $dataExamSubjects
+                ],
+                'message' => '',
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'status' => '500',
+                'data' => [],
+                'message' => $e->getMessage(),
+            ], 500);
+        }
+    }
+    public function dataQuestion($examId, $examSubjectId)
+    {
+        try {
+            $exam = Exam::find($examId);
+            if (!$exam) {
+                return response()->json([
+                    'success' => false,
+                    'status' => '404',
+                    'data' => [],
+                    'message' => 'Exam not found',
+                ], 404);
+            }
+
+            $examSubject = Exam_subject::where('id', $examSubjectId)
+                ->where('exam_id', $examId)
+                ->select('id')
+                ->first();
+
+            if (!$examSubject) {
+                return response()->json([
+                    'success' => false,
+                    'status' => '404',
+                    'data' => [],
+                    'message' => 'ExamSubject not found for the given exam_id',
+                ], 404);
+            }
+
+            $examContent = Exam_content::where('exam_subject_id', $examSubjectId)
+                ->get();
+
+            if ($examContent->isEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'status' => '404',
+                    'data' => [],
+                    'message' => 'ExamContent not found for the given exam_subject_id',
+                ], 404);
+            }
+
+            $questionIds = Question::whereIn('exam_content_id', $examContent->pluck('id'))->pluck('id'); // Lấy tất cả các câu hỏi
+
+            if ($questionIds->isEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'status' => '404',
+                    'data' => [],
+                    'message' => 'Questions not found for the given exam_content_id',
+                ], 404);
+            }
+
+            $questionVersions = Question_version::whereIn('question_id', $questionIds)->get(); // Lấy tất cả các phiên bản câu hỏi
+
+            return response()->json([
+                'success' => true,
+                'status' => '200',
+                'data' => $questionVersions,
+                'message' => '',
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'status' => '500',
+                'data' => [],
+                'message' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+
 }
