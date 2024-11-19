@@ -22,6 +22,8 @@ class Exam_contentFactory extends Factory
             'exam_subject_id'=>Exam_subject::inRandomOrder()->first()->id,
             'title'=>$this->faker->text('30'),
             'status'=>$this->faker->boolean(),
+            'url_listening'=>$this->faker->url(),
+            'description'=>$this->faker->text(200),
             'created_at' => now(),
             'updated_at' => now(),
             'deleted_at' => null,

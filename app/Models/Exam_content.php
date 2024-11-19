@@ -17,6 +17,8 @@ class Exam_content extends Model
         'exam_subject_id',
         'title',
         'status',
+        'url_listening',
+        'description',
     ];
     public function exam_subject(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
