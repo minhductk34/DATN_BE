@@ -25,7 +25,7 @@ class Question extends Model
         return $this->belongsTo(Exam_content::class);
     }
 
-    public function question_version()
+    public function version()
     {
         return $this->belongsTo(Question_version::class);
     }

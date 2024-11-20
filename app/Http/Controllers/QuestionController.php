@@ -332,8 +332,9 @@ class QuestionController extends Controller
 
     private function createQuestionVersion(Question $question, array $data, int $version)
     {
-        return $question->versions()->create([
+        return $question->version()->create([
             'title' => $data['title'],
+            'question_id'=>$question->id,
             'image_Title' => $data['image_Title'] ?? null,
             'answer_P' => $data['answer_P'],
             'image_P' => $data['image_P'] ?? null,
