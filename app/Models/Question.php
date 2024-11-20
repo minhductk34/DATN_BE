@@ -29,4 +29,8 @@ class Question extends Model
     {
         return $this->belongsTo(Question_version::class);
     }
+    public function currentVersion()
+    {
+        return $this->belongsTo(Question_version::class, 'current_version_id');
+    }
 }
