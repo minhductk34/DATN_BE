@@ -25,12 +25,11 @@ use App\Http\Controllers\ExamContentController;
 class QuestionController extends Controller
 {
     //Quản lý câu hỏi
-    public function index(Request $request)
+    public function index($id,Request $request)
     {
         try {
-            $exam_content_id = $request->input('exam_content_id');
-
-            if (! $exam_content_id) {
+        
+            if (!$id) {
                 return $this->jsonResponse(false, null, 'Hãy chọn nội dung thi', 400);
             }
 
@@ -39,7 +38,7 @@ class QuestionController extends Controller
                     $join->on('questions.id', '=', 'question_versions.question_id')
                         ->on('questions.current_version_id', '=', 'question_versions.id');
                 })
-                ->where('questions.exam_content_id', $exam_content_id)
+                ->where('questions.exam_content_id', $id)
                 ->select('questions.id', 'question_versions.title', 'questions.status')
                 ->get();
 

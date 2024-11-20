@@ -103,7 +103,7 @@ Route::prefix('admin')->group(function () {
 
     Route::prefix('questions')->group(function () {
         //get data
-        Route::get('/', [QuestionController::class, 'index']);
+        Route::get('/exam-content/{id}', [QuestionController::class, 'index']);
         Route::get('/{id}', [QuestionController::class, 'show']);
         Route::get('/{id}/versions', [QuestionController::class, 'versions']);
 
