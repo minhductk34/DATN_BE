@@ -206,13 +206,15 @@ class QuestionController extends Controller
 
             return DB::transaction(function () use ($question, $validatedData) {
                 // Đánh dấu phiên bản cũ là không hoạt động
-                $question->currentVersion->update(['is_active' => false]);
+                $question->currentVersion->each(function ($version) {
+                    $version->update(['is_active' => false]);
+                });                
 
                 // Tạo phiên bản mới
                 $newVersion = $this->createQuestionVersion(
                     $question,
                     $validatedData,
-                    $question->versions()->max('version') + 1
+                    $question->currentVersion()->max('version') + 1
                 );
 
                 // Cập nhật question
