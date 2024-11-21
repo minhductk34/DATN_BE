@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\CandidatesExport;
 use App\Imports\CandidatesImport;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Log;
 
@@ -253,7 +254,11 @@ class CandidateController extends Controller
     {
         try {
             // Lấy dữ liệu từ cơ sở dữ liệu và nhóm theo phòng thi
-            $candidatesByRoom = Candidate::all()->groupBy('exam_room_id');
+            $candidatesByRoom = DB::table('candidates')
+            ->join('passwords', 'passwords.idcode', '=', 'candidates.idcode')
+            ->select('candidates.exam_room_id', 'passwords.idcode', 'passwords.password')
+            ->orderBy('candidates.exam_room_id')
+            ->get();
 
             if ($candidatesByRoom->isEmpty() || $candidatesByRoom == []) {
                 return response()->json(['error' => 'Không có dữ liệu'], 400);
