@@ -31,6 +31,6 @@ class Question extends Model
     }
     public function currentVersion()
     {
-        return $this->belongsTo(Question_version::class, 'current_version_id');
+        return $this->hasMany(Question_version::class, 'question_id');
     }
 }
