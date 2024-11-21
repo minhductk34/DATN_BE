@@ -18,9 +18,10 @@ class CandidatesExport implements WithMultipleSheets
 
     public function sheets(): array
     {
-        $sheets = [];
+        $rooms = $this->candidatesByRoom->groupBy('name_room');
 
-        foreach ($this->candidatesByRoom as $room => $candidates) {
+        $sheets = [];
+        foreach ($rooms as $room => $candidates) {
             $sheets[] = new CandidatesByRoomSheet($room, $candidates);
         }
 
@@ -41,18 +42,13 @@ class CandidatesByRoomSheet implements FromCollection, WithTitle, WithHeadings
 
     public function collection()
     {
+       
         return collect($this->candidates)->map(function ($candidate) {
             return [
-                $candidate->Idcode,
-                $candidate->exam_id,
-                $candidate->Fullname,
-                $candidate->Image,
-                $candidate->DOB,
-                $candidate->Address,
-                $candidate->exam_room_id,
-                $candidate->Password,
-                $candidate->Email,
-                $candidate->Status
+                $candidate->name_room,
+                $candidate->idcode,
+                $candidate->name_candidate,
+                $candidate->password,
             ];
         });
     }
@@ -65,16 +61,10 @@ class CandidatesByRoomSheet implements FromCollection, WithTitle, WithHeadings
     public function headings(): array
     {
         return [
-            'Idcode',
-            'Exam ID',
-            'Fullname',
-            'Image',
-            'DOB',
-            'Address',
-            'Examination Room',
-            'Password',
-            'Email',
-            'Status'
+            'Phòng thi',
+            'Mã số thí sinh',
+            'Tên thí sinh',
+            'Mật khẩu',
         ];
     }
 }

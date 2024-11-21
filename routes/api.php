@@ -123,7 +123,7 @@ Route::prefix('admin')->group(function () {
     Route::prefix('candidate')->group(function () {
         Route::get('/getAll', [CandidateController::class, 'index']);
         Route::get('/detail-candidate/{id}', [CandidateController::class, 'show']);
-        Route::post('/export-excel-password-candidate', [CandidateController::class, 'exportExcel']);
+        Route::get('/export-excel-password-candidate', [CandidateController::class, 'exportExcel']);
         Route::post('/store', [CandidateController::class, 'store']);
         Route::post('/import-excel-candidate', [CandidateController::class, 'importExcel']);
         Route::put('/update/{id}', [CandidateController::class, 'update']);

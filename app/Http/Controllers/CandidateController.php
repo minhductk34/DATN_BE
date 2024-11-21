@@ -255,11 +255,16 @@ class CandidateController extends Controller
         try {
             // Lấy dữ liệu từ cơ sở dữ liệu và nhóm theo phòng thi
             $candidatesByRoom = DB::table('candidates')
-            ->join('passwords', 'passwords.idcode', '=', 'candidates.idcode')
-            ->select('candidates.exam_room_id', 'passwords.idcode', 'passwords.password')
-            ->orderBy('candidates.exam_room_id')
-            ->get();
-
+    ->join('passwords', 'passwords.idcode', '=', 'candidates.idcode')
+    ->join('exam_rooms', 'exam_rooms.id', '=', 'candidates.exam_room_id')
+    ->select(
+        'exam_rooms.name as name_room',
+        'passwords.idcode',
+        'candidates.name as name_candidate',
+        'passwords.password'
+    )
+    ->orderBy('candidates.exam_room_id')
+    ->get(); 
             if ($candidatesByRoom->isEmpty() || $candidatesByRoom == []) {
                 return response()->json(['error' => 'Không có dữ liệu'], 400);
             }
