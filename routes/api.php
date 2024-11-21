@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\PasswordController;
 use App\Http\Controllers\QuestionController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\CandidateController;
@@ -131,7 +132,9 @@ Route::prefix('admin')->group(function () {
         Route::get('/exam-room/{exam_room_id}', [CandidateController::class, 'countCandidateForExamRoom']);
         Route::get('/exam-room/candidate-in-exam-room/{exam_room_id}', [CandidateController::class, 'CandidateInExamRoom']);
     });
-
+    Route::prefix('/password')->group(function () {
+        Route::post('/actionExport', [PasswordController::class, 'actionExport']);
+    });
     Route::prefix('readings')->group(function () {
         //get data
         Route::get('/', [ReadingController::class, 'index']);

@@ -8,6 +8,7 @@ use App\Models\Exam;
 use App\Models\Exam_room;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
@@ -82,7 +83,7 @@ class CandidateController extends Controller
                 'address' => $validated['address'],
                 'email' => $validated['email'],
                 'status' => true,
-                'password' => Hash::make($validated['password'])
+                'password' => Crypt::encrypt($validated['password'])
             ]);
 
             return response()->json([
@@ -253,20 +254,91 @@ class CandidateController extends Controller
     public function exportExcel(Request $request)
     {
         try {
-            // Lấy dữ liệu từ cơ sở dữ liệu và nhóm theo phòng thi
-            $candidatesByRoom = DB::table('candidates')
-            ->join('passwords', 'passwords.idcode', '=', 'candidates.idcode')
-            ->select('candidates.exam_room_id', 'passwords.idcode', 'passwords.password')
-            ->orderBy('candidates.exam_room_id')
-            ->get();
+            $validated = $request->validate([
+                'action' => 'nullable|string|max:20',
+                'id' => 'nullable|string|max:100',
+            ]);
+            if ($validated['action'] == 'exam' && !empty($validated['id'])) {
+                $exam = Exam::find($validated['id']);
+                if (!$exam){
+                    return response()->json([
+                        'success' => false,
+                        'status' => "404",
+                        'data' => [],
+                        'message' => 'Exam not found'
+                    ], 404);
+                }
+                $data = DB::table('candidates')
+                ->join('passwords', 'passwords.idcode', '=', 'candidates.idcode')
+                ->join('exam_rooms', 'exam_rooms.id', '=', 'candidates.exam_room_id')
+                ->select(
+                    'exam_rooms.name as name_room',
+                    'passwords.idcode',
+                    'candidates.name as name_candidate',
+                    'passwords.password'
+                )
+                ->where('candidates.exam_id', $validated['id'])
+                ->orderBy('candidates.exam_room_id')
+                ->get();
+                $data->each(function ($item) {
+                    $item->password = Crypt::decrypt($item->password);
+                });
+            } elseif ($validated['action'] == 'exam_room' && !empty($validated['id'])) {
+                $exam = Exam_room::find($validated['id']);
+                if (!$exam){
+                    return response()->json([
+                        'success' => false,
+                        'status' => "404",
+                        'data' => [],
+                        'message' => 'Exam room not found'
+                    ], 404);
+                }
+                $data = DB::table('candidates')
+                ->join('passwords', 'passwords.idcode', '=', 'candidates.idcode')
+                ->join('exam_rooms', 'exam_rooms.id', '=', 'candidates.exam_room_id')
+                ->select(
+                    'exam_rooms.name as name_room',
+                    'passwords.idcode',
+                    'candidates.name as name_candidate',
+                    'passwords.password'
+                )->where('candidates.exam_room_id', $validated['id'])
+                ->orderBy('candidates.exam_room_id')
+                ->get();
+                $data->each(function ($item) {
+                    $item->password = Crypt::decrypt($item->password);
+                });
 
-            if ($candidatesByRoom->isEmpty() || $candidatesByRoom == []) {
-                return response()->json(['error' => 'Không có dữ liệu'], 400);
+            } elseif (empty($validated['action']) && empty($validated['id'])) {
+                $data = DB::table('candidates')
+                ->join('passwords', 'passwords.idcode', '=', 'candidates.idcode')
+                ->join('exam_rooms', 'exam_rooms.id', '=', 'candidates.exam_room_id')
+                ->select(
+                    'exam_rooms.name as name_room',
+                    'passwords.idcode',
+                    'candidates.name as name_candidate',
+                    'passwords.password'
+                )
+                ->orderBy('candidates.exam_room_id')
+                ->get();
+                $data->each(function ($item) {
+                    $item->password = Crypt::decrypt($item->password);
+                });
+
+            } else {
+                return response()->json([
+                    'success' => false,
+                    'status' => '422',
+                    'data' => [],
+                    'message' => 'validation error',
+                    'error' => "wrong action passed in, there are actions like 'exam id + action', 'exam room id + action' and 'empty + empty'",
+                ], 422);
             }
 
             $fileName = 'danh_sach_ung_vien_' . now()->format('Y_m_d_H_i_s') . '.xlsx';
-
-            return Excel::download(new CandidatesExport($candidatesByRoom), $fileName);
+//            \Log::info('Total data count: ' . $data->count());
+//            \Log::info('Data first few items: ' . json_encode($data->take(5)));
+            return Excel::download(new CandidatesExport($data), $fileName);
+//            return response()->json($data);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }
