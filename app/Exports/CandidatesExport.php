@@ -42,7 +42,6 @@ class CandidatesByRoomSheet implements FromCollection, WithTitle, WithHeadings
 
     public function collection()
     {
-
         return collect($this->candidates)->map(function ($candidate) {
             return [
                 $candidate->name_room,
