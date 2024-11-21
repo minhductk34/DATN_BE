@@ -218,3 +218,7 @@ Route::prefix('admin')->group(function () {
         });
     });
 });
+
+Route::prefix('client')->group(function () {
+    Route::post('/login', [CandidateController::class, 'login']);
+});

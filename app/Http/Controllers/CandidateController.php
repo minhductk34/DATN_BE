@@ -14,15 +14,149 @@ use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\CandidatesExport;
 use App\Imports\CandidatesImport;
+use App\Models\Password;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Redis;
+use Illuminate\Support\Str;
 
 class CandidateController extends Controller
 {
     /**
      * Lấy danh sách tất cả các ứng viên.
      */
+
+    public function login(Request $request)
+    {
+        try {
+            $credentials = $request->only('username', 'password');
+
+            if (empty($credentials['username']) || empty($credentials['password'])) {
+                return response()->json([
+                    'success' => false,
+                    'status' => 400,
+                    'data' => [],
+                    'message' => 'username và password là bắt buộc.'
+                ], 400);
+            }
+
+            $admin = Password::query()->with('candidate')->where('idcode', $credentials['username'])->first();
+
+            if (!$admin) {
+
+                return response()->json([
+                    'success' => false,
+                    'status' => 404,
+                    'data' => [],
+                    'message' => 'Tài khoản không tồn tại.'
+                ], 404);
+            }
+
+            if (!Hash::check($credentials['password'], $admin->password)) {
+
+                return response()->json([
+                    'success' => false,
+                    'status' => 401,
+                    'data' => [],
+                    'message' => 'Mật khẩu không chính xác.'
+                ], 401);
+            }
+
+            if (!$this->checkRedisConnection()) {
+                return response()->json([
+                    'success' => false,
+                    'status' => 503,
+                    'data' => [],
+                    'message' => 'Không thể kết nối đến hệ thống lưu trữ, vui lòng thử lại sau.'
+                ], 503);
+            }
+
+            $existingToken = $this->retryRedisOperation(function () use ($admin) {
+                return Redis::hget('auth:' . $admin->idcode, 'token');
+            });
+
+            // dd($existingToken);
+
+            if ($existingToken) {
+                return response()->json([
+                    'success' => false,
+                    'status' => 403,
+                    'data' => [],
+                    'message' => 'Tài khoản này đã đăng nhập từ nơi khác.'
+                ], 403);
+            }
+
+            
+            $token = str::random(60);
+            $expiresAt = now()->addHours(1)->timestamp;
+            $ttl = now()->addHours(1)->diffInSeconds(now());
+
+            $tokenData = [
+                'id_code' => $admin->idcode,
+                'expires_at' => $expiresAt,
+            ];
+
+            $this->retryRedisOperation(function () use ($token, $tokenData, $admin, $ttl) {
+                Redis::hmset('tokens:' . $token, $tokenData);
+                Redis::hmset('auth:' . $admin->idcode, ['token' => $token, 'expires_at' => $ttl]);
+                Redis::expire('tokens:' . $token, $ttl);
+                Redis::expire('auth:' . $admin->idcode, $ttl);
+            });
+
+            $data = [
+                'idcode' => $admin->idcode,
+            ];
+
+            return response()->json([
+                'success' => true,
+                'status' => 200,
+                'expires_at' => $expiresAt,
+                'token' => $token,
+                'data' => $data,
+            ], 200);
+        } catch (\Exception $e) {
+
+            return response()->json([
+                'success' => false,
+                'status' => 500,
+                'data' => [],
+                'message' => 'Đã có lỗi xảy ra, vui lòng thử lại sau.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    private function checkRedisConnection()
+    {
+        try {
+            Redis::ping();
+            return true;
+        } catch (\Exception $e) {
+
+            return false;
+        }
+    }
+
+    private function retryRedisOperation(callable $operation, $maxRetries = 3)
+    {
+        $attempts = 0;
+        while ($attempts < $maxRetries) {
+            try {
+                return $operation();
+            } catch (\Exception $e) {
+                $attempts++;
+
+                if ($attempts >= $maxRetries) {
+
+                    throw $e;
+                }
+                
+                usleep(200000); 
+            }
+        }
+        return null;
+    }
+
     public function index()
     {
         $candidates = Candidate::all();
@@ -94,7 +228,6 @@ class CandidateController extends Controller
                 ],
                 'message' => 'Candidate created successfully'
             ], 200);
-
         } catch (ValidationException $e) {
             return response()->json([
                 'success' => false,
@@ -121,7 +254,7 @@ class CandidateController extends Controller
     public function show($id)
     {
         try {
-            $candidate = Candidate::query()->with('exam','exam_room')->find($id);
+            $candidate = Candidate::query()->with('exam', 'exam_room')->find($id);
             if (!$candidate) {
                 return response()->json([
                     'success' => false,
@@ -144,12 +277,11 @@ class CandidateController extends Controller
                 'success' => true,
                 'status' => '200',
                 'data' => [
-                    'candidate'=>$candidate,
+                    'candidate' => $candidate,
                     'actives' => $actives
                 ],
                 'message' => 'Data retrieved successfully'
             ], 200);
-
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -169,8 +301,8 @@ class CandidateController extends Controller
 
         try {
             $candidate = Candidate::query()
-            ->where('Idcode', $id)
-            ->first();
+                ->where('Idcode', $id)
+                ->first();
 
             // Validate dữ liệu từ request
             $validated = $request->validate([
@@ -260,7 +392,7 @@ class CandidateController extends Controller
             ]);
             if ($validated['action'] == 'exam' && !empty($validated['id'])) {
                 $exam = Exam::find($validated['id']);
-                if (!$exam){
+                if (!$exam) {
                     return response()->json([
                         'success' => false,
                         'status' => "404",
@@ -269,23 +401,23 @@ class CandidateController extends Controller
                     ], 404);
                 }
                 $data = DB::table('candidates')
-                ->join('passwords', 'passwords.idcode', '=', 'candidates.idcode')
-                ->join('exam_rooms', 'exam_rooms.id', '=', 'candidates.exam_room_id')
-                ->select(
-                    'exam_rooms.name as name_room',
-                    'passwords.idcode',
-                    'candidates.name as name_candidate',
-                    'passwords.password'
-                )
-                ->where('candidates.exam_id', $validated['id'])
-                ->orderBy('candidates.exam_room_id')
-                ->get();
+                    ->join('passwords', 'passwords.idcode', '=', 'candidates.idcode')
+                    ->join('exam_rooms', 'exam_rooms.id', '=', 'candidates.exam_room_id')
+                    ->select(
+                        'exam_rooms.name as name_room',
+                        'passwords.idcode',
+                        'candidates.name as name_candidate',
+                        'passwords.password'
+                    )
+                    ->where('candidates.exam_id', $validated['id'])
+                    ->orderBy('candidates.exam_room_id')
+                    ->get();
                 $data->each(function ($item) {
                     $item->password = Crypt::decrypt($item->password);
                 });
             } elseif ($validated['action'] == 'exam_room' && !empty($validated['id'])) {
                 $exam = Exam_room::find($validated['id']);
-                if (!$exam){
+                if (!$exam) {
                     return response()->json([
                         'success' => false,
                         'status' => "404",
@@ -294,36 +426,34 @@ class CandidateController extends Controller
                     ], 404);
                 }
                 $data = DB::table('candidates')
-                ->join('passwords', 'passwords.idcode', '=', 'candidates.idcode')
-                ->join('exam_rooms', 'exam_rooms.id', '=', 'candidates.exam_room_id')
-                ->select(
-                    'exam_rooms.name as name_room',
-                    'passwords.idcode',
-                    'candidates.name as name_candidate',
-                    'passwords.password'
-                )->where('candidates.exam_room_id', $validated['id'])
-                ->orderBy('candidates.exam_room_id')
-                ->get();
+                    ->join('passwords', 'passwords.idcode', '=', 'candidates.idcode')
+                    ->join('exam_rooms', 'exam_rooms.id', '=', 'candidates.exam_room_id')
+                    ->select(
+                        'exam_rooms.name as name_room',
+                        'passwords.idcode',
+                        'candidates.name as name_candidate',
+                        'passwords.password'
+                    )->where('candidates.exam_room_id', $validated['id'])
+                    ->orderBy('candidates.exam_room_id')
+                    ->get();
                 $data->each(function ($item) {
                     $item->password = Crypt::decrypt($item->password);
                 });
-
             } elseif (empty($validated['action']) && empty($validated['id'])) {
                 $data = DB::table('candidates')
-                ->join('passwords', 'passwords.idcode', '=', 'candidates.idcode')
-                ->join('exam_rooms', 'exam_rooms.id', '=', 'candidates.exam_room_id')
-                ->select(
-                    'exam_rooms.name as name_room',
-                    'passwords.idcode',
-                    'candidates.name as name_candidate',
-                    'passwords.password'
-                )
-                ->orderBy('candidates.exam_room_id')
-                ->get();
+                    ->join('passwords', 'passwords.idcode', '=', 'candidates.idcode')
+                    ->join('exam_rooms', 'exam_rooms.id', '=', 'candidates.exam_room_id')
+                    ->select(
+                        'exam_rooms.name as name_room',
+                        'passwords.idcode',
+                        'candidates.name as name_candidate',
+                        'passwords.password'
+                    )
+                    ->orderBy('candidates.exam_room_id')
+                    ->get();
                 $data->each(function ($item) {
                     $item->password = Crypt::decrypt($item->password);
                 });
-
             } else {
                 return response()->json([
                     'success' => false,
@@ -335,10 +465,10 @@ class CandidateController extends Controller
             }
 
             $fileName = 'danh_sach_ung_vien_' . now()->format('Y_m_d_H_i_s') . '.xlsx';
-//            \Log::info('Total data count: ' . $data->count());
-//            \Log::info('Data first few items: ' . json_encode($data->take(5)));
+            //            \Log::info('Total data count: ' . $data->count());
+            //            \Log::info('Data first few items: ' . json_encode($data->take(5)));
             return Excel::download(new CandidatesExport($data), $fileName);
-//            return response()->json($data);
+            //            return response()->json($data);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }
@@ -364,14 +494,13 @@ class CandidateController extends Controller
             'Email.unique' => 'Email đã tồn tại.',
             'Status.required' => 'Trạng thái là bắt buộc.',
         ];
-
     }
 
     public function countCandidateForExamRoom($examRoomId)
     {
         try {
             $candidateCount = Candidate::where('exam_room_id', $examRoomId)->count();
-            $examRoom =Exam_room::query()->where('id', $examRoomId)->select('id','Name')->first();
+            $examRoom = Exam_room::query()->where('id', $examRoomId)->select('id', 'Name')->first();
             return response()->json([
                 'success' => true,
                 'status' => '200',
@@ -379,7 +508,6 @@ class CandidateController extends Controller
                 'exam_room_name' => $examRoom->Name,
                 'candidate_count' => $candidateCount,
             ], 200);
-
         } catch (QueryException $e) {
             return response()->json([
                 'success' => false,
@@ -414,7 +542,7 @@ class CandidateController extends Controller
                 ], 404);
             }
 
-            $candidates->transform(function($candidate) {
+            $candidates->transform(function ($candidate) {
                 $candidate->image = Storage::url($candidate->image);
                 return $candidate;
             });
@@ -425,7 +553,6 @@ class CandidateController extends Controller
                 'data' => $candidates,
                 'message' => 'Data retrieved successfully'
             ], 200);
-
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
