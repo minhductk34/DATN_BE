@@ -86,7 +86,7 @@ class CandidateController extends Controller
                 ], 403);
             }
 
-            
+
             $token = str::random(60);
             $expiresAt = now()->addHours(1)->timestamp;
             $ttl = now()->addHours(1)->diffInSeconds(now());
@@ -150,8 +150,8 @@ class CandidateController extends Controller
 
                     throw $e;
                 }
-                
-                usleep(200000); 
+
+                usleep(200000);
             }
         }
         return null;
@@ -217,14 +217,27 @@ class CandidateController extends Controller
                 'address' => $validated['address'],
                 'email' => $validated['email'],
                 'status' => true,
-                'password' => Crypt::encrypt($validated['password'])
             ]);
-
+            Password::create([
+                'idcode' => $candidate->idcode,
+                'password' => Crypt::encrypt($validated['password'])]);
+            $data = [
+                'idcode' => $validated['idcode'],
+                'exam_id' => $exam->id,
+                'exam_room_id' => $examRoom->id,
+                'name' => $validated['name'],
+                'image' => $imagePath,
+                'dob' => $validated['dob'],
+                'address' => $validated['address'],
+                'email' => $validated['email'],
+                'status' => true,
+                'password' => $validated['password'],
+            ];
             return response()->json([
                 'success' => true,
                 'status' => '200',
                 'data' => [
-                    'candidate' => $candidate,
+                    'candidate' => $data,
                 ],
                 'message' => 'Candidate created successfully'
             ], 200);
