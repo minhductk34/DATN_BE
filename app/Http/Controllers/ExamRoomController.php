@@ -314,4 +314,37 @@ class ExamRoomController extends Controller
             ], 500);
         }
     }
+    public function updateExamRoomWithExamRoomDetail(Request $request)
+    {
+        try {
+            $validatedData = $request->validate([
+                'name' => 'required|string|max:50',
+                'exam_id' => 'required|exists:exams,id'
+            ]);
+            return response()->json([
+                'success' => true,
+                'status' => '200',
+                'data' => [
+                    'candidate' => $data,
+                ],
+                'message' => 'Candidate created successfully'
+            ], 200);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'status' => "422",
+                'data' => [$request->all()],
+                'error' => $e->getMessage(),
+                'message' => 'Validation error'
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'status' => "500",
+                'data' => [],
+                'error' => $e->getMessage(),
+                'message' => 'Internal server error while processing your request'
+            ], 500);
+        }
+    }
 }
