@@ -235,6 +235,38 @@ class ExamController extends Controller
             ], 500);
         }
     }
+    
+    public function getALLExamsWithExamSubjectsById($id)
+    {
+        try {
+            $exams = Exam::query()->where('id','=',$id)->with('exam_subjects')->has('exam_subjects')->get();
+
+            if ($exams->isEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'status' => "404",
+                    'data' => [],
+                    'message' => 'Structure not found'
+                ], 404);
+            }
+
+            return response()->json([
+                'success' => true,
+                'status' => '200',
+                'data' => $exams,
+                'message' => 'Data retrieved successfully'
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'status' => "500",
+                'data' => [],
+                'error' => $e->getMessage(),
+                'message' => 'Internal server error while processing your request'
+            ], 500);
+        }
+    }
+
     public function getExamRoomsInExams($examId)
     {
         try {

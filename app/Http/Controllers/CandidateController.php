@@ -93,6 +93,7 @@ class CandidateController extends Controller
 
             $tokenData = [
                 'id_code' => $admin->idcode,
+                'id_exam'=>$admin->candidate->exam_id,
                 'expires_at' => $expiresAt,
             ];
 
@@ -105,6 +106,7 @@ class CandidateController extends Controller
 
             $data = [
                 'idcode' => $admin->idcode,
+                'id_exam'=>$admin->candidate->exam_id,
             ];
 
             return response()->json([
