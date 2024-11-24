@@ -19,9 +19,7 @@ class LecturersController extends Controller
             return response()->json([
                 'success' => true,
                 'status' => '200',
-                'data' => [
-                    'candidate' => $lecturers,
-                ],
+                'data' => $lecturers,
                 'message' => 'Candidate created successfully'
             ], 200);
         } catch (\Exception $e) {
@@ -53,9 +51,7 @@ class LecturersController extends Controller
             return response()->json([
                 'success' => true,
                 'status' => '200',
-                'data' => [
-                    'candidate' => $lecturer,
-                ],
+                'data' => $lecturer,
                 'message' => 'Lecturer created successfully!'
             ], 201);
         } catch (ValidationException $e) {
@@ -98,9 +94,7 @@ class LecturersController extends Controller
             return response()->json([
                 'success' => true,
                 'status' => '200',
-                'data' => [
-                    'candidate' => $lecturer,
-                ],
+                'data' => $lecturer,
                 'message' => 'Candidate show successfully'
             ], 200);
         } catch (\Exception $e) {
