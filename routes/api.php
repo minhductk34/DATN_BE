@@ -224,5 +224,5 @@ Route::prefix('admin')->group(function () {
 Route::prefix('client')->group(function () {
     Route::post('/login', [CandidateController::class, 'login']);
 
-    Route::get('/exam/{id}', [CandidateQuestionController::class, 'exam']);
+    Route::post('/exam', [CandidateQuestionController::class, 'exam']);
 });

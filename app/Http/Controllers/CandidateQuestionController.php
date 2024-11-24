@@ -20,12 +20,17 @@ class CandidateQuestionController extends Controller
         //
     }
 
-    public function exam($id)
+    public function exam(Request $request)
     {
-        $exam_subject_detail = Exam_subject_detail::query()->where('exam_subject_id', '=', $id)->first();
+        $validated = $request->validate([
+            'id_subject' => 'required|exists:exam_subjects,id',
+            'idCode' => 'required|exists:candidates,idcode'
+        ]);
+        
+        $exam_subject_detail = Exam_subject_detail::query()->where('exam_subject_id', '=', $validated['id_subject'])->first();
 
         // Kiểm tra xem câu hỏi đã tồn tại trong bảng Candidate_question chưa
-        $questionCandidate = Candidate_question::query()->where('idCode', 'ST01')->get();
+        $questionCandidate = Candidate_question::query()->where('idCode', $validated['idCode'])->get();
 
         // Nếu có kết quả, trả về dữ liệu
         if ($questionCandidate->isNotEmpty()) {
@@ -107,13 +112,24 @@ class CandidateQuestionController extends Controller
                     }
                 }
             }
+
             // Trả về kết quả đã nhóm
-            return $result;
+            $data = [
+                'time' => $exam_subject_detail->time,
+                'question' => $result,
+            ];
+            
+
+            // Trả về dữ liệu ứng viên đã được xử lý
+            return response()->json([
+                'message' => 'Featch question successfully',
+                'data' => $data,
+            ], 200);
             
         } else {
         
             // Lấy cấu trúc bài thi
-            $exam_structure = Exam_structure::query()->where('exam_subject_id', '=', $id)->get();
+            $exam_structure = Exam_structure::query()->where('exam_subject_id', '=', $validated['id_subject'])->get();
 
             // Nhóm câu hỏi theo exam_content_id
             $groupedByLever = $exam_structure->groupBy('exam_content_id');
@@ -209,14 +225,24 @@ class CandidateQuestionController extends Controller
             foreach ($candidate as $key => $value) {
                 Candidate_question::create([
                     'question_id' => $value['question_id'],
-                    'idcode' => 'ST01', // Ví dụ, bạn có thể thay đổi 'ST01' bằng mã idcode thực tế
+                    'idcode' => $validated['idCode'], // Ví dụ, bạn có thể thay đổi 'ST01' bằng mã idcode thực tế
                     'numerical_order' => $value['numerical_order'],
                     'answer_P' => $value['answer_P'],
                 ]);
             }
 
+            
+            $data = [
+                'time' => $exam_subject_detail->time,
+                'question' => $result,
+            ];
+            
+
             // Trả về dữ liệu ứng viên đã được xử lý
-            return $result;
+            return response()->json([
+                'message' => 'Featch question successfully',
+                'data' => $data,
+            ], 200);
         }
     }
 
