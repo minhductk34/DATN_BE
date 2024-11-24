@@ -44,9 +44,8 @@ class LecturersController extends Controller
                 'name' => 'required|string|max:255',
                 'email' => 'required|string|email|max:255|unique:lecturers',
                 'profile' => 'nullable|string',
-                'status' => 'boolean',
             ]);
-
+            $validated['status'] = true;
             $lecturer = Lecturer::create($validated);
             return response()->json([
                 'success' => true,
