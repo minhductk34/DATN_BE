@@ -43,7 +43,7 @@ class LecturersController extends Controller
                 'idcode' => 'required|string|unique:lecturers',
                 'name' => 'required|string|max:255',
                 'email' => 'required|string|email|max:255|unique:lecturers',
-                'profile' => 'nullable|string',
+                'profile' => 'file',
             ]);
             $validated['status'] = true;
             $lecturer = Lecturer::create($validated);
@@ -128,7 +128,7 @@ class LecturersController extends Controller
             $validated = $request->validate([
                 'name' => 'required|string|max:255',
                 'email' => 'required|string|email|max:255|unique:lecturers,email,' . $idcode . ',idcode',
-                'profile' => 'nullable|string',
+                'profile' => 'file',
                 'status' => 'boolean',
             ]);
 
