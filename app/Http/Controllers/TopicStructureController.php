@@ -42,19 +42,16 @@ class TopicStructureController extends Controller
 
                 // Cập nhật bản ghi hiện tại
                 $topicStructure->update([
-                    'Time' => $validated['time'],
-                    'Quantity' => $validated['total'],
+                    'time' => $validated['time'],
+                    'quantity' => $validated['total'],
                 ]);
-
-
             } else {
                 // Nếu là tạo mới (checkCreateStruct = false), tạo bản ghi mới
                 $topicStructure = Exam_subject_detail::create([
                     'exam_subject_id' => $validated['subject'], // Thêm exam_subject_id để liên kết
-                   'Time' => $validated['time'],
-                    'Quantity' => $validated['total'],
+                    'time' => $validated['time'],
+                    'quantity' => $validated['total'],
                 ]);
-
             }
             // Tạo mảng để chứa tất cả các levels từ modules
             $allLevels = [];
@@ -76,11 +73,11 @@ class TopicStructureController extends Controller
             // Lặp qua từng level để truy vấn các topic_structures liên quan
             foreach ($allLevels as $level => $value) {
                 // Truy vấn dữ liệu liên quan từ `topic_structures`
-                $relatedTopics = DB::table('topic_structures')
-                    ->join('exam_contents', 'exam_contents.id', '=', 'topic_structures.exam_content_id')
-                    ->select('topic_structures.*') // Lấy tất cả các trường từ topic_structures
+                $relatedTopics = DB::table('exam_structures')
+                    ->join('exam_contents', 'exam_contents.id', '=', 'exam_structures.exam_content_id')
+                    ->select('exam_structures.*') // Lấy tất cả các trường từ topic_structures
                     ->where('exam_contents.title', $value['title']) // Điều kiện: tiêu đề phải khớp
-                    ->where('topic_structures.Level', $value['Level']) // Điều kiện: level phải khớp
+                    ->where('exam_structures.level', $value['level']) // Điều kiện: level phải khớp
                     ->get(); // Thực thi truy vấn và lấy kết quả
 
                 // Kiểm tra nếu có dữ liệu trong $relatedTopics
@@ -88,27 +85,27 @@ class TopicStructureController extends Controller
                     // Không có dữ liệu, thực hiện hành động khác (ví dụ: tạo mới)
                     // Bạn có thể thêm logic tạo mới ở đây
                     $content = Exam_content::query()
-                    ->where('title',$value['title'])
-                    ->where('exam_subject_id',$validated['subject'])
-                    ->first();
+                        ->where('title', $value['title'])
+                        ->where('exam_subject_id', $validated['subject'])
+                        ->first();
                     Exam_structure::create([
                         'exam_content_id' => $content->id,
                         'exam_subject_id' => $validated['subject'],
-                        'Level' => $value['Level'],
-                        'Quality' => $value['Quantity'],
+                        'level' => $value['level'],
+                        'quantity' => $value['quantity'],
                     ]);
                 } else {
                     // Duyệt qua từng topic đã tìm thấy
                     foreach ($relatedTopics as $topic) {
                         $existingTopic = Exam_structure::query()
                             ->where('exam_content_id', $topic->exam_content_id)
-                            ->where('Level', $topic->Level)
+                            ->where('level', $topic->Level)
                             ->first();
 
                         if ($existingTopic) {
                             // Cập nhật số lượng nếu topic đã tồn tại
                             $existingTopic->update([
-                                'Quality' => $value['Quantity'],
+                                'quantyity' => $value['Quantity'],
                             ]);
                         }
                     }
@@ -173,26 +170,62 @@ class TopicStructureController extends Controller
             // Truy vấn SQL
             $query = "
             WITH Levels AS (
-                SELECT 'Easy' AS Level
-                UNION ALL
-                SELECT 'Medium'
-                UNION ALL
-                SELECT 'Difficult'
-            )
-            SELECT
-                ec.title,
-                lv.level,
-                COALESCE(SUM(CASE WHEN qsv.Level = lv.Level THEN 1 ELSE 0 END), 0) AS total,
-                COALESCE(MAX(CASE WHEN ts.exam_content_id = ec.id AND ts.level = lv.level THEN ts.quantity ELSE 0 END), 0) AS quantity
-            FROM Levels lv
-            CROSS JOIN exam_contents ec
-            LEFT JOIN exam_structures ts ON ts.exam_subject_id = ec.exam_subject_id AND ts.level = lv.Level
-            LEFT JOIN exam_subject_details esd ON esd.exam_subject_id = ts.exam_subject_id
-            LEFT JOIN questions qs ON qs.exam_content_id = ec.id
-            LEFT JOIN question_versions qsv ON qsv.question_id = qs.id 
-            WHERE (ts.exam_subject_id = ? OR (ts.exam_subject_id IS NULL AND ec.exam_subject_id = ?))
-            GROUP BY ec.title, lv.level
-            ORDER BY ec.title, lv.level;
+    SELECT 'Easy' AS Level
+    UNION ALL
+    SELECT 'Medium'
+    UNION ALL
+    SELECT 'Difficult'
+),
+FilteredQuestions AS (
+    -- Lấy câu hỏi duy nhất với phiên bản mới nhất
+    SELECT 
+        qs.exam_content_id,
+        qsv.level, -- Sử dụng level từ question_versions
+        COUNT(DISTINCT qs.id) AS question_count -- Đếm số lượng câu hỏi duy nhất
+    FROM 
+        questions qs
+    LEFT JOIN question_versions qsv 
+        ON qsv.question_id = qs.id
+    LEFT JOIN (
+        SELECT 
+            question_id, 
+            MAX(version) AS latest_version
+        FROM 
+            question_versions
+        GROUP BY 
+            question_id
+    ) latest_qsv 
+        ON latest_qsv.question_id = qsv.question_id
+        AND qsv.version = latest_qsv.latest_version
+    GROUP BY 
+        qs.exam_content_id, 
+        qsv.level
+)
+SELECT
+    ec.title,
+    lv.level,
+    -- Lấy trực tiếp giá trị từ FilteredQuestions
+    COALESCE(fq.question_count, 0) AS total,
+    -- Lấy số lượng câu hỏi cần thiết từ bảng exam_structures
+    COALESCE(MAX(CASE WHEN ts.exam_content_id = ec.id AND ts.level = lv.level THEN ts.quantity ELSE 0 END), 0) AS quantity
+FROM Levels lv
+CROSS JOIN exam_contents ec -- Kết hợp tất cả các mức độ với nội dung thi
+LEFT JOIN exam_structures ts 
+    ON ts.exam_subject_id = ec.exam_subject_id 
+    AND ts.level = lv.Level
+LEFT JOIN FilteredQuestions fq 
+    ON fq.exam_content_id = ec.id 
+    AND fq.level = lv.Level 
+    WHERE (ts.exam_subject_id = ? OR (ts.exam_subject_id IS NULL AND ec.exam_subject_id = ?))
+GROUP BY 
+    ec.title, 
+    lv.level, 
+    fq.question_count
+ORDER BY 
+    ec.title, 
+    lv.level;
+
+
         ";
 
             // Lấy dữ liệu từ cơ sở dữ liệu

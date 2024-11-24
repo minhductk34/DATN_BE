@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Candidate_question;
 use App\Models\CandidateQuestion;
+use App\Models\Exam_subject;
+use App\Models\Exam_subject_detail;
 use Illuminate\Http\Request;
 
 class CandidateQuestionController extends Controller
@@ -14,6 +16,11 @@ class CandidateQuestionController extends Controller
     public function index()
     {
         //
+    }
+
+    public function exam($id)
+    {
+        Exam_subject_detail:query()->where('id','=', $id);
     }
 
     /**

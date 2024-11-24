@@ -4,6 +4,7 @@ use App\Http\Controllers\PasswordController;
 use App\Http\Controllers\QuestionController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\CandidateController;
+use App\Http\Controllers\CandidateQuestionController;
 use App\Http\Controllers\ExamContentController;
 use App\Http\Controllers\ExamController;
 use App\Http\Controllers\TopicStructureController;
@@ -44,6 +45,7 @@ Route::prefix('admin')->group(function () {
         Route::get('/get-all-with-status-true', [ExamController::class, 'getAllWithStatusTrue']);
         Route::get('/exam-with-exam-subject', [ExamController::class, 'getALLExamsWithExamSubjects']);
         Route::get('/exam-subjects-with-content/{exam_id}', [ExamController::class, 'getExamSubjectsWithContent']);
+        Route::get('/exam-with-exam-subject/{id}', [ExamController::class, 'getALLExamsWithExamSubjectsById']);
     });
     //Quản lý môn thi
     Route::prefix('exam-subjects')->group(function () {
@@ -221,4 +223,6 @@ Route::prefix('admin')->group(function () {
 
 Route::prefix('client')->group(function () {
     Route::post('/login', [CandidateController::class, 'login']);
+
+    Route::get('/exam/{id}', [CandidateQuestionController::class, 'exam']);
 });

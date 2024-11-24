@@ -15,6 +15,6 @@ class Password extends Model
     ];
     public function candidate()
     {
-        return $this->belongsTo(Candidate::class);
+        return $this->hasOne(Candidate::class, 'idcode', 'idcode'); 
     }
 }
