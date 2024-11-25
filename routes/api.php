@@ -225,4 +225,20 @@ Route::prefix('client')->group(function () {
     Route::post('/login', [CandidateController::class, 'login']);
 
     Route::post('/exam', [CandidateQuestionController::class, 'exam']);
+
+    Route::get('/info/{id}', [CandidateController::class, 'info']);
+});
+
+
+Route::prefix('exam')->group(function () {
+    Route::post('/submit', [CandidateQuestionController::class, 'update']);
+
+    Route::post('/finish', [CandidateQuestionController::class, 'finish']);
+
+    Route::get('/scoreboard/{id}', [CandidateController::class, 'info']);
+
+    Route::get('/history/{id}', [CandidateController::class, 'info']);
+
+    Route::get('/result/{idcode}', [CandidateController::class, 'info']);
+
 });
