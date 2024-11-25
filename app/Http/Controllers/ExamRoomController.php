@@ -247,12 +247,17 @@ class ExamRoomController extends Controller
 
         try {
             $validatedData = $request->validate([
-                'Name' => 'required|max:255',
-                'exam_id' => 'required|exists:exams,id'
+                'exam_room_name' => 'required|max:255',
+                'exam_id' => 'required|exists:exams,id',
+                'exam_session_id' => 'required',
+                'exam_subject_id' => 'required|exists:exam_subjects,id',
             ]);
 
-            $examRoom->update($validatedData);
-
+            $examRoom->update([
+                'name' => $validatedData['exam_room_name'],
+                'exam_id' => $validatedData['exam_id'],
+            ]);
+            
             return response()->json([
                 'success' => true,
                 'status' => '200',
@@ -314,30 +319,26 @@ class ExamRoomController extends Controller
             ], 500);
         }
     }
-    public function updateExamRoomWithExamRoomDetail(Request $request)
+    public function dataSelectUpdate($id)
     {
         try {
-            $validatedData = $request->validate([
-                'name' => 'required|string|max:50',
-                'exam_id' => 'required|exists:exams,id'
-            ]);
+            $exam_room_details = Exam_room_detail::query()->where('exam_room_id', $id)->first();
+            $exam = new ExamController();
+            $exam_subject = new ExamSubjectController();
+            $exam_session = new ExamSessionController();
+            $data = [
+              'exam_room_details' => $exam_room_details,
+              'exam' => $exam->index(),
+              'exam_subject' => $exam_subject->index(),
+              'exam_session' => $exam_session->index(),
+            ];
             return response()->json([
                 'success' => true,
                 'status' => '200',
-                'data' => [
-                    'candidate' => $data,
-                ],
+                'data' => $data,
                 'message' => 'Candidate created successfully'
             ], 200);
-        } catch (ValidationException $e) {
-            return response()->json([
-                'success' => false,
-                'status' => "422",
-                'data' => [$request->all()],
-                'error' => $e->getMessage(),
-                'message' => 'Validation error'
-            ], 422);
-        } catch (\Exception $e) {
+        }  catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'status' => "500",
