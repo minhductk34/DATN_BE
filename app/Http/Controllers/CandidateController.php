@@ -308,6 +308,36 @@ class CandidateController extends Controller
         }
     }
 
+
+    public function info($id){
+        try {
+            $candidate = Candidate::query()->find($id);
+            if (!$candidate) {
+                return response()->json([
+                    'success' => false,
+                    'status' => "404",
+                    'data' => [],
+                    'message' => 'Candidate not found'
+                ], 404);
+            }
+
+            return response()->json([
+                'success' => true,
+                'status' => '200',
+                'data' => $candidate,
+                'message' => 'Data retrieved successfully'
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'status' => "500",
+                'data' => [],
+                'error' => $e->getMessage(),
+                'message' => 'Internal server error while processing your request'
+            ], 500);
+        }
+    }
+
     /**
      * Cập nhật thông tin của ứng viên.
      */
