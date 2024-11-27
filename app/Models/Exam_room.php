@@ -20,4 +20,7 @@ class Exam_room extends Model
     {
         return $this->hasMany(Candidate::class);
     }
+    public function examRoomDetail() {
+        return $this->hasOne(Exam_room_detail::class, 'exam_room_id');
+    }
 }

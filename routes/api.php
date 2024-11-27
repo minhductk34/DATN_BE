@@ -99,6 +99,7 @@ Route::prefix('admin')->group(function () {
     Route::resource('exam-room', ExamRoomController::class);
     Route::prefix('exam-room')->group(function () {
         Route::get('/detail/{id}', [ExamRoomController::class, 'showDetail']);
+        Route::get('/data-select-update/{id}',[ExamRoomController::class, 'dataSelectUpdate']);
     });
     Route::resource('lecturer', LecturersController::class);
     // ca thi

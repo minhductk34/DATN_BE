@@ -247,21 +247,30 @@ class ExamRoomController extends Controller
 
         try {
             $validatedData = $request->validate([
-                'exam_room_name' => 'required|max:255',
+                'name' => 'required',
                 'exam_id' => 'required|exists:exams,id',
-                'exam_session_id' => 'required',
-                'exam_subject_id' => 'required|exists:exam_subjects,id',
+                'exam_session_id' => 'required|exists:exam_sessions,id',
+                'exam_subject_id' => 'required|exists:exam_subjects,id'
             ]);
 
             $examRoom->update([
-                'name' => $validatedData['exam_room_name'],
+                'name' => $validatedData['name'],
                 'exam_id' => $validatedData['exam_id'],
             ]);
-            
+
+            $exam_room_detail = Exam_room_detail::where('exam_room_id', $examRoom->id)
+                ->update([
+                    'exam_subject_id' => $validatedData['exam_subject_id'],
+                    'exam_session_id' => $validatedData['exam_session_id'],
+                ]);
+            $data = [
+                'exam_room' => $examRoom,
+                'exam_room_detail' => $exam_room_detail,
+            ];
             return response()->json([
                 'success' => true,
                 'status' => '200',
-                'data' => $examRoom,
+                'data' => $data,
                 'message' => '',
             ], 200);
         } catch (ValidationException $e) {
@@ -319,32 +328,29 @@ class ExamRoomController extends Controller
             ], 500);
         }
     }
-    public function dataSelectUpdate($id)
-    {
+    public function dataSelectUpdate($id) {
         try {
-            $exam_room_details = Exam_room_detail::query()->where('exam_room_id', $id)->first();
-            $exam = new ExamController();
-            $exam_subject = new ExamSubjectController();
-            $exam_session = new ExamSessionController();
-            $data = [
-              'exam_room_details' => $exam_room_details,
-              'exam' => $exam->index(),
-              'exam_subject' => $exam_subject->index(),
-              'exam_session' => $exam_session->index(),
-            ];
+            $exam_room = Exam_room::with('examRoomDetail')->find($id);
+            $exam = Exam::select('id','name')->get();
+            $exam_sessions = Exam_session::select('id', 'name')->get();
+            $exam_subjects = Exam_subject::select('id', 'name')->get();
+
             return response()->json([
                 'success' => true,
-                'status' => '200',
-                'data' => $data,
-                'message' => 'Candidate created successfully'
-            ], 200);
-        }  catch (\Exception $e) {
+                'data' => [
+                    'exam_room' => $exam_room,
+                    'exam' => $exam,
+                    'exam_sessions' => $exam_sessions,
+                    'exam_subjects' => $exam_subjects
+                ]
+            ]);
+        } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'status' => "500",
+                'status' => '500',
                 'data' => [],
+                'message' => 'Đã xảy ra lỗi không xác định',
                 'error' => $e->getMessage(),
-                'message' => 'Internal server error while processing your request'
             ], 500);
         }
     }
