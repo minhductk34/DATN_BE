@@ -35,8 +35,9 @@ class CandidateQuestionController extends Controller
 
         // Nếu có kết quả, trả về dữ liệu
         if ($questionCandidate->isNotEmpty()) {
-            $point = Point::query()->where('exam_subject_id', '=', $validated['id_subject'])->where('idCode', $validated['idCode'])->first();
-            if ($point->isNotEmpty()) {
+            $point = Point::query()->where('exam_subject_id', '=', $validated['id_subject'])->where('idCode','=', $validated['idCode'])->first();
+            
+            if ($point) {
                 return response()->json([
                     'message' => 'Exam successfully',
                     'data' => $point,
