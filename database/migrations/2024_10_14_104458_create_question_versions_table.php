@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('question_versions', function (Blueprint $table) {
             $table->id();
-            $table->string('question_id');
+            $table->unsignedBigInteger('question_id');
             $table->foreign('question_id')->references('id')->on('questions')->onDelete('cascade');
             $table->string('title');
             $table->string('image_title')->nullable();

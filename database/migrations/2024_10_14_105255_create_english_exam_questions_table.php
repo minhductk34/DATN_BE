@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('english_exam_questions', function (Blueprint $table) {
             $table->id();
-            $table->string('question_id')->nullable();
+            $table->unsignedBigInteger('question_id')->nullable();
             $table->foreign('question_id')->references('id')->on('questions')->cascadeOnDelete()->cascadeOnUpdate();
             $table->string('reading_question_id')->nullable();
             $table->foreign('reading_question_id')->references('id')->on('reading_questions')->cascadeOnDelete()->cascadeOnUpdate();
