@@ -11,7 +11,6 @@ class Question extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'id',
         'current_version_id',
         'exam_content_id',
         'status',
