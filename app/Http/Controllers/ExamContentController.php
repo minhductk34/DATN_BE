@@ -189,8 +189,8 @@ class ExamContentController extends Controller
         try {
             $validatedData = $request->validate([
                 'title' => 'required|string|max:255',
-                'url_listening' => 'required|string',
-                'description' => 'required|string',
+                'url_listening' => 'nullable|string',
+                'description' => 'nullable|string',
             ]);
 
             $examContent = Exam_content::find($id);
