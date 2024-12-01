@@ -22,6 +22,6 @@ class Exam_room_detail extends Model
         return $this->belongsTo(Exam_subject::class,'exam_subject_id','id');
     }
     public function exam_session(){
-        return $this->belongsToMany(Exam_session::class);
+        return $this->belongsTo(Exam_session::class);
     }
 }

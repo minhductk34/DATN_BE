@@ -8,13 +8,9 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Question extends Model
 {
-    public $incrementing = false;
-    protected $keyType = 'string';
-    protected $primaryKey = 'id';
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'id',
         'current_version_id',
         'exam_content_id',
         'status',

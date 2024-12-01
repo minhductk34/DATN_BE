@@ -4,23 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Imports\ExamContentImport;
 use App\Models\Exam_content;
-use App\Models\ExamContent;
 use Dotenv\Exception\ValidationException;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 
 class ExamContentController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
-    {
-        //
-    }
-
     public function getQuestionCounts($id)
     {
         try {
@@ -45,13 +35,13 @@ class ExamContentController extends Controller
             }
 
             $questionCounts = $content->questions()
-            ->join('question_versions', function ($join) {
-                $join->on('questions.current_version_id', '=', 'question_versions.id');
-            })
-            ->select('question_versions.level', DB::raw('count(*) as count'))
-            ->groupBy('question_versions.level')
-            ->pluck('count', 'level')
-            ->toArray();
+                ->join('question_versions', function ($join) {
+                    $join->on('questions.current_version_id', '=', 'question_versions.id');
+                })
+                ->select('question_versions.level', DB::raw('count(*) as count'))
+                ->groupBy('question_versions.level')
+                ->pluck('count', 'level')
+                ->toArray();
 
             $data = [
                 'easy' => $questionCounts['Easy'] ?? 0,
@@ -66,10 +56,9 @@ class ExamContentController extends Controller
                 'message' => '',
             ], 200);
         } catch (\Exception $e) {
-
             return response()->json([
                 'success' => false,
-                'status' => '500',
+                'status' => 500,
                 'data' => [],
                 'message' => 'An unexpected error occurred: ' . $e->getMessage(),
             ], 500);
@@ -79,59 +68,45 @@ class ExamContentController extends Controller
     public function getContentByExam($id)
     {
         try {
-
             if (!is_string($id) || empty(trim($id))) {
                 return response()->json([
                     'success' => false,
-                    'status' => '400',
+                    'status' => 400,
                     'data' => [],
                     'message' => 'Invalid exam_subject_id',
                 ], 400);
             }
 
             $content = Exam_content::query()
-                ->select('id', 'exam_subject_id', 'title', 'status')
+                ->select('id', 'exam_subject_id', 'title', 'status', 'url_listening', 'description')
                 ->where('exam_subject_id', $id)
                 ->get();
 
             if ($content->isEmpty()) {
                 return response()->json([
                     'success' => false,
-                    'status' => '404',
+                    'status' => 404,
                     'data' => [],
                     'message' => 'No content found for the given exam_subject_id',
                 ], 404);
             }
 
-
             return response()->json([
                 'success' => true,
-                'status' => '200',
+                'status' => 200,
                 'data' => $content,
                 'message' => '',
             ], 200);
         } catch (\Exception $e) {
-
             return response()->json([
                 'success' => false,
-                'status' => '500',
+                'status' => 500,
                 'data' => [],
                 'message' => 'An unexpected error occurred: ' . $e->getMessage(),
             ], 500);
         }
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
         try {
@@ -139,14 +114,16 @@ class ExamContentController extends Controller
                 'id' => 'required|string',
                 'exam_subject_id' => 'required|string',
                 'title' => 'required|string|max:255',
+                'url_listening' => 'required|string',
+                'description' => 'required|string',
             ]);
 
-            $examSubject = Exam_content::create($validatedData);
+            $examContent = Exam_content::create($validatedData);
 
             return response()->json([
                 'success' => true,
                 'status' => 201,
-                'data' => $examSubject,
+                'data' => $examContent,
                 'message' => 'Create exam content successfully'
             ], 201);
         } catch (ValidationException $e) {
@@ -156,6 +133,125 @@ class ExamContentController extends Controller
                 'data' => null,
                 'message' => $e->getMessage()
             ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'status' => 500,
+                'data' => null,
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function show($id)
+    {
+        try {
+            if (!is_string($id) || empty(trim($id))) {
+                return response()->json([
+                    'success' => false,
+                    'status' => 400,
+                    'data' => [],
+                    'message' => 'Invalid exam_content_id',
+                ], 400);
+            }
+
+            $content = Exam_content::query()
+                ->where('id', $id)
+                ->first();
+
+            if (!$content) {
+                return response()->json([
+                    'success' => false,
+                    'status' => 404,
+                    'data' => [],
+                    'message' => 'No content found for the given exam_content_id',
+                ], 404);
+            }
+
+            return response()->json([
+                'success' => true,
+                'status' => 200,
+                'data' => $content,
+                'message' => '',
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'status' => 500,
+                'data' => [],
+                'message' => 'An unexpected error occurred: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function update($id, Request $request)
+    {
+        try {
+            $validatedData = $request->validate([
+                'title' => 'required|string|max:255',
+                'url_listening' => 'required|string',
+                'description' => 'required|string',
+            ]);
+
+            $examContent = Exam_content::find($id);
+
+            if (!$examContent) {
+                return response()->json([
+                    'success' => false,
+                    'status' => 404,
+                    'data' => [],
+                    'message' => 'No content found for the given exam_content_id'
+                ], 404);
+            }
+
+            $examContent->update($validatedData);
+
+            return response()->json([
+                'success' => true,
+                'status' => 200,
+                'data' => $examContent,
+                'message' => 'Update exam content successfully'
+            ], 200);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'status' => 422,
+                'data' => null,
+                'message' => $e->getMessage()
+            ], 422);
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'status' => 500,
+                'data' => null,
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function updateStatus($id)
+    {
+        try {
+            $examContent = Exam_content::find($id);
+
+            if (!$examContent) {
+                return response()->json([
+                    'success' => false,
+                    'status' => 404,
+                    'data' => null,
+                    'message' => 'No content found for the given exam_content_id'
+                ], 404);
+            }
+
+            $examContent->status = !$examContent->status;
+            $examContent->save();
+
+            return response()->json([
+                'success' => true,
+                'status' => 200,
+                'data' => $examContent->status,
+                'message' => 'Update status exam content successfully'
+            ], 200);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -198,7 +294,7 @@ class ExamContentController extends Controller
 
                 return response()->json([
                     'success' => false,
-                    'status' => '422',
+                    'status' => 422,
                     'data' => $errorMessages,
                     'message' => 'Có lỗi xảy ra trong quá trình nhập dữ liệu. Vui lòng kiểm tra lại file và thử lại.',
                 ], 422);
@@ -208,7 +304,7 @@ class ExamContentController extends Controller
 
             return response()->json([
                 'success' => true,
-                'status' => '200',
+                'status' => 200,
                 'data' => [],
                 'message' => 'Nhập dữ liệu thành công.',
             ], 200);
@@ -229,7 +325,7 @@ class ExamContentController extends Controller
 
             return response()->json([
                 'success' => false,
-                'status' => '422',
+                'status' => 422,
                 'data' => $errorMessages,
                 'message' => 'Có lỗi xảy ra trong quá trình nhập dữ liệu. Vui lòng kiểm tra lại file và thử lại.',
             ], 422);
@@ -238,142 +334,10 @@ class ExamContentController extends Controller
 
             return response()->json([
                 'success' => false,
-                'status' => '500',
+                'status' => 500,
                 'data' => [],
                 'message' => 'Đã xảy ra lỗi, vui lòng thử lại sau.',
             ], 500);
         }
-    }
-
-
-    /**
-     * Display the specified resource.
-     */
-    public function show($id)
-    {
-        try {
-
-            if (!is_string($id) || empty(trim($id))) {
-                return response()->json([
-                    'success' => false,
-                    'status' => 400,
-                    'data' => [],
-                    'message' => 'Invalid exam_content_id',
-                ], 400);
-            }
-
-            $content = Exam_content::query()
-                ->where('id', $id)
-                ->get();
-
-            if ($content->isEmpty()) {
-                return response()->json([
-                    'success' => false,
-                    'status' => 404,
-                    'data' => [],
-                    'message' => 'No content found for the given exam_content_id',
-                ], 404);
-            }
-
-
-            return response()->json([
-                'success' => true,
-                'status' => 200,
-                'data' => $content,
-                'message' => '',
-            ], 200);
-        } catch (\Exception $e) {
-
-            return response()->json([
-                'success' => false,
-                'status' => '500',
-                'data' => [],
-                'message' => 'An unexpected error occurred: ' . $e->getMessage(),
-            ], 500);
-        }
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Exam_content $exam_content)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update($id, Request $request)
-    {
-        try {
-            $validatedData = $request->validate([
-                'title' => 'required|string|max:255',
-            ]);
-
-            $examSubject = Exam_content::select('id')->find($id);
-
-            if(!$examSubject){
-                $response = [
-                    'success' => false,
-                    'status' => 404,
-                    'data' => [],
-                    'message' => 'No content found for the given exam_content_id'
-                ];
-    
-                return response()->json($response, 404);
-            }
-            $examSubject->update($validatedData);
-
-            $response = [
-                'success' => true,
-                'status' => 200,
-                'data' => $examSubject,
-                'message' => 'update exam contetn successfully'
-            ];
-
-            return response()->json($response, 200);
-        } catch (ValidationException $e) {
-            return response()->json([
-                'success' => false,
-                'status' => 422,
-                'data' => null,
-                'message' => $e->getMessage()
-            ], 422);
-        } catch (Exception $e) {
-            return response()->json([
-                'success' => false,
-                'status' => 500,
-                'data' => null,
-                'message' => $e->getMessage()
-            ], 500);
-        }
-    }
-
-    public function updateStatus($id)
-    {
-        try {
-            $examSubject = Exam_content::query()->find($id);
-
-            if (!$examSubject) {
-                return $this->jsonResponse(false, null, 'Không tìm thấy môn thi', 404);
-            }
-
-            $examSubject->Status = $examSubject->Status == 'true' ? 'false' : 'true';
-
-            $examSubject->save();
-
-            return $this->jsonResponse(true, $examSubject->Status, 'update status exam content successfully', 200);
-        } catch (\Exception $e) {
-            return $this->jsonResponse(false, null, $e->getMessage(), 500);
-        }
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Exam_content $exam_content)
-    {
-        //
     }
 }

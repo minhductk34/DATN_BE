@@ -101,6 +101,7 @@ Route::prefix('admin')->group(function () {
     Route::resource('exam-room', ExamRoomController::class);
     Route::prefix('exam-room')->group(function () {
         Route::get('/detail/{id}', [ExamRoomController::class, 'showDetail']);
+        Route::get('/data-select-update/{id}',[ExamRoomController::class, 'dataSelectUpdate']);
     });
     Route::resource('lecturer', LecturersController::class);
     // ca thi
@@ -128,7 +129,7 @@ Route::prefix('admin')->group(function () {
     Route::prefix('candidate')->group(function () {
         Route::get('/getAll', [CandidateController::class, 'index']);
         Route::get('/detail-candidate/{id}', [CandidateController::class, 'show']);
-        Route::get('/export-excel-password-candidate', [CandidateController::class, 'exportExcel']);
+        Route::post('/export-excel-password-candidate', [CandidateController::class, 'exportExcel']);
         Route::post('/store', [CandidateController::class, 'store']);
         Route::post('/import-excel-candidate', [CandidateController::class, 'importExcel']);
         Route::put('/update/{id}', [CandidateController::class, 'update']);
