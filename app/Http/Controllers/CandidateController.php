@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\StudentSubmitted;
 use App\Models\Active;
 use App\Models\Candidate;
 use App\Models\Exam;
@@ -611,5 +612,29 @@ class CandidateController extends Controller
                 'message' => 'Internal server error while processing your request'
             ], 500);
         }
+    }
+
+    public function updateStatus(Candidate $candidate, $status)
+    {
+        $candidate->update(['status' => $status]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Cập nhật trạng thái thành công.',
+            'data' => [],
+        ]);
+    }
+
+    public function finish(Candidate $candidate)
+    {
+        $candidate->update(['status' => 2]);
+
+        broadcast(new StudentSubmitted($candidate->exam_room_id, $candidate))->toOthers();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Cập nhật trạng thái thành công.',
+            'data' => [],
+        ]);
     }
 }

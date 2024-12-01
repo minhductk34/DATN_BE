@@ -19,7 +19,7 @@ class Exam_room_detail extends Model
         return $this->belongsTo(Exam_room::class);
     }
     public function exam_subject(){
-        return $this->belongsTo(Exam_subject::class);
+        return $this->belongsTo(Exam_subject::class,'exam_subject_id','id');
     }
     public function exam_session(){
         return $this->belongsTo(Exam_session::class);

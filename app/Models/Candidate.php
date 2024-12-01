@@ -5,12 +5,13 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Foundation\Auth\User as Authenticatable;
 
-class Candidate extends Model
+class Candidate extends Authenticatable
 {
     use HasFactory, SoftDeletes;
     public $incrementing = false;
-    protected $primaryKey = 'Idcode';
+    protected $primaryKey = 'idcode';
     protected $keyType = 'string';
 
     protected $fillable = [

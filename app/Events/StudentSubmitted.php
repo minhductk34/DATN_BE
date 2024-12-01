@@ -10,22 +10,34 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class StudentLeftRoom implements ShouldBroadcast
+class StudentSubmitted implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public $room;
+    public $roomId;
     public $student;
 
-    public function __construct($room, $student)
+    public function __construct($roomId, $student)
     {
-        $this->room = $room;
+        $this->roomId = $roomId;
         $this->student = $student;
     }
 
     public function broadcastOn()
     {
-        return new PresenceChannel('room.' . $this->room->id);
+        return new PresenceChannel('presence-room.' . $this->roomId);
+    }
+
+    public function broadcastAs()
+    {
+        return "student.submitted";
+    }
+
+    public function broadcastWith()
+    {
+        return [
+            'id' => $this->student->idcode,
+            'name' => $this->student->name,
+        ];
     }
 }
-

@@ -19,6 +19,8 @@ use App\Http\Controllers\ListeningController;
 use App\Http\Controllers\ListeningQuestionController;
 use App\Http\Controllers\ReadingController;
 use App\Http\Controllers\ReadingQuestionController;
+use App\Http\Controllers\CustomBroadcastController;
+use App\Http\Controllers\RoomStatusController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -236,10 +238,25 @@ Route::prefix('exam')->group(function () {
 
     Route::post('/finish', [CandidateQuestionController::class, 'finish']);
 
+    Route::post('/update-status/{id}', [CandidateQuestionController::class, 'updateStatus']);
+
     Route::get('/scoreboard/{id}', [CandidateController::class, 'info']);
 
     Route::get('/history/{id}', [CandidateController::class, 'info']);
 
     Route::get('/result/{idcode}', [CandidateController::class, 'info']);
-
 });
+
+Route::post('/custom-broadcasting/auth-client', [CustomBroadcastController::class, 'authenticateClient']);
+Route::post('/custom-broadcasting/auth-admin', [CustomBroadcastController::class, 'authenticateAdmin']);
+
+Route::prefix('/room-status')->group(function () {
+    // Lấy danh sách phòng thi
+    Route::get('/rooms', [RoomStatusController::class, 'index']);
+    
+    // Lấy danh sách sinh viên trong phòng
+    Route::get('/rooms/{roomId}/students', [RoomStatusController::class, 'getStudents']);
+});
+
+Route::put('/candidate/{candidate}/update-status/{status}', [CandidateController::class, 'updateStatus']);
+Route::put('/candidate/{candidate}/finish', [CandidateController::class, 'finish']);
