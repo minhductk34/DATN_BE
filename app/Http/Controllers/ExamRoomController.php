@@ -12,6 +12,7 @@ use App\Models\ExamRoom;
 use App\Models\ExamRoomDetail;
 use App\Models\ExamSession;
 use App\Models\ExamSubject;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
@@ -166,6 +167,7 @@ class ExamRoomController extends Controller
     public function showDetail($id)
     {
         try {
+            // Tìm phòng thi và đếm số lượng thí sinh
             $examRoom = Exam_room::withCount('candidates')->find($id);
 
             if (!$examRoom) {
@@ -177,7 +179,10 @@ class ExamRoomController extends Controller
                 ], 404);
             }
 
-            $examRoomDetails = Exam_room_detail::query()->where('exam_room_id', $id)->get();
+            // Lấy chi tiết phòng thi
+            $examRoomDetails = Exam_room_detail::with(['exam_subject', 'exam_session'])
+                ->where('exam_room_id', $id)
+                ->get();
 
             if ($examRoomDetails->isEmpty()) {
                 return response()->json([
@@ -188,26 +193,49 @@ class ExamRoomController extends Controller
                 ], 404);
             }
 
+            // Lấy danh sách môn thi
             $examSubjectIds = $examRoomDetails->pluck('exam_subject_id')->unique();
             $examSubjects = Exam_subject::query()->whereIn('id', $examSubjectIds)->get();
 
+            // Lấy danh sách ca thi
             $examSessionIds = $examRoomDetails->pluck('exam_session_id')->unique();
             $examSessions = Exam_session::query()
                 ->whereIn('id', $examSessionIds)
                 ->select('id', 'name', 'time_start', 'time_end')
                 ->get();
 
+            // Format dữ liệu cho response
+            $formattedSubjects = $examRoomDetails->map(function ($detail) {
+                return [
+                    'id' => $detail->id,
+                    'subject_name' => $detail->exam_subject->name,
+                    'session_name' => $detail->exam_session->name,
+                    'time_start' => $detail->exam_session->time_start,
+                    'time_end' => $detail->exam_session->time_end,
+                    'exam_date' => $detail->exam_date,
+                    'exam_subject_id' => $detail->exam_subject_id,
+                    'exam_session_id' => $detail->exam_session_id
+                ];
+            });
+
             return response()->json([
                 'success' => true,
                 'status' => '200',
                 'data' => [
-                    'examRoom' => $examRoom,
+                    'examRoom' => [
+                        'id' => $examRoom->id,
+                        'name' => $examRoom->name,
+                        'exam_id' => $examRoom->exam_id,
+                        'candidates_count' => $examRoom->candidates_count
+                    ],
+                    'examSubjects' => $formattedSubjects,
                     'exam_room_details' => $examRoomDetails,
                     'exam_sessions' => $examSessions,
                     'exam_subjects' => $examSubjects,
                 ],
                 'message' => '',
             ], 200);
+
         } catch (QueryException $e) {
             return response()->json([
                 'success' => false,
@@ -233,61 +261,50 @@ class ExamRoomController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $examRoom = Exam_room::find($id);
-
-        if (!$examRoom) {
-            return response()->json([
-                'success' => false,
-                'status' => '404',
-                'data' => '',
-                'message' => 'Không tìm thấy phòng',
-                'error' => '404 not found!'
-            ], 404);
-        }
-
         try {
-            $validatedData = $request->validate([
-                'name' => 'required',
-                'exam_id' => 'required|exists:exams,id',
-                'exam_session_id' => 'required|exists:exam_sessions,id',
-                'exam_subject_id' => 'required|exists:exam_subjects,id'
+            // Validate input
+            $request->validate([
+                'name' => 'required|string',
+                'exam_session_id' => 'required|exists:exam_sessions,id'
             ]);
 
+            // Cập nhật tên phòng thi
+            $examRoom = Exam_room::findOrFail($id);
             $examRoom->update([
-                'name' => $validatedData['name'],
-                'exam_id' => $validatedData['exam_id'],
+                'name' => $request->name
             ]);
 
-            $exam_room_detail = Exam_room_detail::where('exam_room_id', $examRoom->id)
-                ->update([
-                    'exam_subject_id' => $validatedData['exam_subject_id'],
-                    'exam_session_id' => $validatedData['exam_session_id'],
+            // Cập nhật ca thi trong exam_room_detail
+            $examRoomDetail = Exam_room_detail::where('exam_room_id', $id)->first();
+            if ($examRoomDetail) {
+                $examRoomDetail->update([
+                    'exam_session_id' => $request->exam_session_id
                 ]);
-            $data = [
-                'exam_room' => $examRoom,
-                'exam_room_detail' => $exam_room_detail,
-            ];
+            }
+
             return response()->json([
                 'success' => true,
                 'status' => '200',
-                'data' => $data,
-                'message' => '',
-            ], 200);
-        } catch (ValidationException $e) {
+                'message' => 'Cập nhật thành công',
+                'data' => [
+                    'examRoom' => $examRoom,
+                    'examRoomDetail' => $examRoomDetail
+                ]
+            ]);
+
+        } catch (ModelNotFoundException $e) {
             return response()->json([
                 'success' => false,
-                'status' => '422',
-                'data' => [],
-                'message' => 'validation error',
-                'error' => $e->errors()
-            ], 422);
+                'status' => '404',
+                'message' => 'Không tìm thấy phòng thi',
+                'data' => []
+            ], 404);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'status' => '500',
-                'data' => [],
-                'message' => 'Đã xảy ra lỗi không xác định',
-                'error' => $e->getMessage(),
+                'message' => 'Lỗi khi cập nhật phòng thi: ' . $e->getMessage(),
+                'data' => []
             ], 500);
         }
     }
@@ -330,18 +347,22 @@ class ExamRoomController extends Controller
     }
     public function dataSelectUpdate($id) {
         try {
-            $exam_room = Exam_room::with('examRoomDetail')->find($id);
-            $exam = Exam::select('id','name')->get();
-            $exam_sessions = Exam_session::select('id', 'name')->get();
-            $exam_subjects = Exam_subject::select('id', 'name')->get();
+            $exam_room = Exam_room::select('exam_rooms.*')
+                ->with('examRoomDetail')
+                ->join('exams', 'exam_rooms.exam_id', '=', 'exams.id')
+                ->leftJoin('exam_subjects', 'exams.id', '=', 'exam_subjects.exam_id')
+                ->where('exam_rooms.id', $id)
+                ->first();
 
             return response()->json([
                 'success' => true,
                 'data' => [
                     'exam_room' => $exam_room,
-                    'exam' => $exam,
-                    'exam_sessions' => $exam_sessions,
-                    'exam_subjects' => $exam_subjects
+                    'exam' => Exam::select('id', 'name')->get(),
+                    'exam_sessions' => Exam_session::select('id', 'name')->get(),
+                    'exam_subjects' => Exam_subject::where('exam_id', $exam_room->exam_id)
+                        ->select('id', 'name')
+                        ->get()
                 ]
             ]);
         } catch (\Exception $e) {
@@ -350,7 +371,7 @@ class ExamRoomController extends Controller
                 'status' => '500',
                 'data' => [],
                 'message' => 'Đã xảy ra lỗi không xác định',
-                'error' => $e->getMessage(),
+                'error' => $e->getMessage()
             ], 500);
         }
     }
