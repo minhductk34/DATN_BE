@@ -114,8 +114,8 @@ class ExamContentController extends Controller
                 'id' => 'required|string',
                 'exam_subject_id' => 'required|string',
                 'title' => 'required|string|max:255',
-                'url_listening' => 'required|string',
-                'description' => 'required|string',
+                'url_listening' => 'nullable|string',
+                'description' => 'nullable|string',
             ]);
 
             $examContent = Exam_content::create($validatedData);
