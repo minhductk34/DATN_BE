@@ -53,15 +53,17 @@ class CandidateController extends Controller
                 ], 404);
             }
 
-            if (!Hash::check($credentials['password'], $admin->password)) {
-
-                return response()->json([
-                    'success' => false,
-                    'status' => 401,
-                    'data' => [],
-                    'message' => 'Mật khẩu không chính xác.'
-                ], 401);
-            }
+         
+                    $decryptedPassword = Crypt::decrypt($admin->password); 
+                    if ($credentials['password'] !== $decryptedPassword) {
+                        return response()->json([
+                            'success' => false,
+                            'status' => 401,
+                            'data' => [],
+                            'message' => 'Mật khẩu không chính xác.'
+                        ], 401);
+                    }
+ 
 
             if (!$this->checkRedisConnection()) {
                 return response()->json([
