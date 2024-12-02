@@ -2,7 +2,9 @@
 
 namespace Database\Seeders;
 
+use App\Models\Exam;
 use App\Models\Exam_room;
+use Faker\Factory as Faker;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -13,6 +15,15 @@ class ExamRoomSeeder extends Seeder
      */
     public function run(): void
     {
-        Exam_room::factory()->count(1000)->create();
+        $faker = Faker::create();
+        for ($i = 1; $i < 501; $i++) {
+            Exam_room::create([
+                'exam_id'=> $i,
+                'name'=>$faker->name(),
+                'created_at' => now(),
+                'updated_at' => now(),
+                'deleted_at' => null,
+            ]);
+        }
     }
 }

@@ -23,6 +23,7 @@ class Candidate extends Authenticatable
         'dob',
         'address',
         'email',
+        'create_by',
         'status'
     ];
     public function exam(){

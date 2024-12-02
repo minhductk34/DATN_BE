@@ -14,6 +14,7 @@ class Exam_room_detail extends Model
         'exam_subject_id',
         'exam_session_id',
         'exam_date',
+        'exam_end'
     ];
     public function exam_room(){
         return $this->belongsTo(Exam_room::class);

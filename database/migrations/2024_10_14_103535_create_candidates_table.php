@@ -22,6 +22,7 @@ return new class extends Migration
             $table->date('dob');
             $table->string('address')->nullable();
             $table->string('email')->unique();
+            $table->string('create_by')->nullable();
             $table->boolean('status')->default(true);
             $table->timestamps();
             $table->softDeletes();

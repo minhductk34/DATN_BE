@@ -20,6 +20,7 @@ class AdminFactory extends Factory
         return [
             'name'=>'admin',
             'password'=>Hash::make(12345678),
+            'vip'=>1,
             'created_at' => now(),
             'updated_at' => now(),
             'deleted_at' => null,

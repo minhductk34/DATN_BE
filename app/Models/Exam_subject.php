@@ -19,6 +19,7 @@ class Exam_subject extends Model
         'id',
         'exam_id',
         'name',
+        'create_by',
         'status',
     ];
 

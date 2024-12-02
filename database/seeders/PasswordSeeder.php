@@ -16,15 +16,22 @@ class PasswordSeeder extends Seeder
      */
     public function run(): void
     {
-        $candidate = Candidate::all();
-//        Password::factory()->count(1000)->create();
-        foreach ($candidate as $value) {
-            Password::create(['idcode' => $value->idcode,
+//        $candidate = Candidate::all();
+////        Password::factory()->count(1000)->create();
+//        foreach ($candidate as $value) {
+//            Password::create(['idcode' => $value->idcode,
+//                'password' => Crypt::encrypt('12345678'),
+//                'created_at' => now(),
+//                'updated_at' => now(),
+//                'deleted_at' => null,]);
+//        }
+        for ($i = 1; $i < 501; $i++) {
+            Password::create([
+                'idcode' => $i,
                 'password' => Crypt::encrypt('12345678'),
                 'created_at' => now(),
                 'updated_at' => now(),
                 'deleted_at' => null,]);
         }
-
     }
 }

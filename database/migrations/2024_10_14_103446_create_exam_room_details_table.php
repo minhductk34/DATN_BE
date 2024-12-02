@@ -20,6 +20,7 @@ return new class extends Migration
             $table->unsignedBigInteger('exam_session_id');
             $table->foreign('exam_session_id')->references('id')->on('exam_sessions')->cascadeOnDelete()->cascadeOnUpdate();
             $table->dateTime('exam_date');
+            $table->dateTime('exam_end');
             $table->timestamps();
             $table->softDeletes();
         });

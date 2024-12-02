@@ -2,7 +2,9 @@
 
 namespace Database\Seeders;
 
+use App\Models\Reading_question;
 use App\Models\Reading_question_version;
+use Faker\Factory as Faker;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -13,6 +15,22 @@ class ReadingQuestionVersionSeeder extends Seeder
      */
     public function run(): void
     {
-        Reading_question_version::factory()->count(1000)->create();
+        $faker = Faker::create();
+        for ($i = 1; $i < 501; $i++) {
+            Reading_question_version::create([
+                'reading_question_id'=>$i,
+                'version'=>$faker->numberBetween(1,10),
+                'title'=>$faker->text(30),
+                'answer_P'=>$faker->text(30),
+                'answer_F1'=>$faker->text(30),
+                'answer_F2'=>$faker->text(30),
+                'answer_F3'=>$faker->text(30),
+                'status'=>$faker->boolean(),
+                'level'=>$faker->randomElement(['easy', 'medium', 'difficult']),
+                'created_at' => now(),
+                'updated_at' => now(),
+                'deleted_at' => null,
+            ]);
+        }
     }
 }

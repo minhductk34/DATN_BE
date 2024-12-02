@@ -34,9 +34,9 @@ class DatabaseSeeder extends Seeder
             QuestionSeeder::class,
             ListeningQuestionSeeder::class,
             ReadingQuestionSeeder::class,
-//            QuestionVersionSeeder::class,
-//            ListeningQuestionVersionSeeder::class,
-//            ReadingQuestionVersionSeeder::class,
+            QuestionVersionSeeder::class,
+            ListeningQuestionVersionSeeder::class,
+            ReadingQuestionVersionSeeder::class,
             CandidateQuestionSeeder::class,
             EnglishExamQuestionSeeder::class
         ]);

@@ -14,8 +14,6 @@ class Point extends Model
         'idcode',
         'point',
         'number_of_correct_sentences',
-        'time_start',
-        'time_end',
     ];
     public function exam_subject(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {

@@ -25,7 +25,7 @@ class ExamController extends Controller
         try {
             $exams = Exam::query()
                 ->select('id','name','time_start','time_end')
-                ->where('status', '=', 1)
+//                ->where('status', '=', 1)
                 ->where('deleted_at',null)
                 ->orderBy('created_at', 'desc')
                 ->get();
@@ -235,7 +235,7 @@ class ExamController extends Controller
             ], 500);
         }
     }
-    
+
     public function getALLExamsWithExamSubjectsById($id)
     {
         try {
