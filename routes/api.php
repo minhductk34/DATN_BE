@@ -101,7 +101,7 @@ Route::prefix('admin')->group(function () {
     Route::resource('exam-room', ExamRoomController::class);
     Route::prefix('exam-room')->group(function () {
         Route::get('/detail/{id}', [ExamRoomController::class, 'showDetail']);
-        Route::get('/data-select-update/{id}',[ExamRoomController::class, 'dataSelectUpdate']);
+        Route::get('/data-select-update/{exam_room_id}/{exam_subject_id}', [ExamRoomController::class, 'dataSelectUpdate']); // Thêm route này
     });
     Route::resource('lecturer', LecturersController::class);
     // ca thi
@@ -137,6 +137,8 @@ Route::prefix('admin')->group(function () {
         Route::get('/exam-room/{exam_room_id}', [CandidateController::class, 'countCandidateForExamRoom']);
         Route::get('/exam-room/candidate-in-exam-room/{exam_room_id}', [CandidateController::class, 'CandidateInExamRoom']);
     });
+    Route::post('active/toggle', [CandidateController::class, 'toggleActiveStatus']);
+
     Route::prefix('/password')->group(function () {
         Route::post('/actionExport', [PasswordController::class, 'actionExport']);
     });
@@ -253,7 +255,7 @@ Route::post('/custom-broadcasting/auth-admin', [CustomBroadcastController::class
 Route::prefix('/room-status')->group(function () {
     // Lấy danh sách phòng thi
     Route::get('/rooms', [RoomStatusController::class, 'index']);
-    
+
     // Lấy danh sách sinh viên trong phòng
     Route::get('/rooms/{roomId}/students', [RoomStatusController::class, 'getStudents']);
 });

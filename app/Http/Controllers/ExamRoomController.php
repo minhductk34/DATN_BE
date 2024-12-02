@@ -181,42 +181,27 @@ class ExamRoomController extends Controller
 
             // Lấy chi tiết phòng thi
             $examRoomDetails = Exam_room_detail::with(['exam_subject', 'exam_session'])
+                ->whereHas('exam_subject', function($query) use ($examRoom) {
+                    $query->where('exam_id', $examRoom->exam_id);
+                })
                 ->where('exam_room_id', $id)
                 ->get();
-
-            if ($examRoomDetails->isEmpty()) {
-                return response()->json([
-                    'success' => false,
-                    'status' => '404',
-                    'data' => [],
-                    'message' => 'Exam Room Details không tồn tại',
-                ], 404);
+            // Lấy danh sách môn thi
+            $examSubjects = Exam_subject::query()->where('exam_id', $examRoom->exam_id)->get();
+            $formattedExamSubjects = [];
+            foreach ($examSubjects as $subject) {
+                $isSubjectInRoomDetails = $examRoomDetails->firstWhere('exam_subject_id', $subject->id);
+                $formattedExamSubjects[] = [
+                    'id' => $subject->id,
+                    'name' => $subject->name,
+                    'time_start' => $isSubjectInRoomDetails ? $isSubjectInRoomDetails->exam_session->time_start : null,
+                    'time_end' => $isSubjectInRoomDetails ? $isSubjectInRoomDetails->exam_session->time_end : null,
+                    'exam_date' => $isSubjectInRoomDetails ? $isSubjectInRoomDetails->exam_date : null,
+                ];
             }
 
-            // Lấy danh sách môn thi
-            $examSubjectIds = $examRoomDetails->pluck('exam_subject_id')->unique();
-            $examSubjects = Exam_subject::query()->whereIn('id', $examSubjectIds)->get();
-
             // Lấy danh sách ca thi
-            $examSessionIds = $examRoomDetails->pluck('exam_session_id')->unique();
-            $examSessions = Exam_session::query()
-                ->whereIn('id', $examSessionIds)
-                ->select('id', 'name', 'time_start', 'time_end')
-                ->get();
-
-            // Format dữ liệu cho response
-            $formattedSubjects = $examRoomDetails->map(function ($detail) {
-                return [
-                    'id' => $detail->id,
-                    'subject_name' => $detail->exam_subject->name,
-                    'session_name' => $detail->exam_session->name,
-                    'time_start' => $detail->exam_session->time_start,
-                    'time_end' => $detail->exam_session->time_end,
-                    'exam_date' => $detail->exam_date,
-                    'exam_subject_id' => $detail->exam_subject_id,
-                    'exam_session_id' => $detail->exam_session_id
-                ];
-            });
+            $examSessions = Exam_session::all();
 
             return response()->json([
                 'success' => true,
@@ -228,10 +213,9 @@ class ExamRoomController extends Controller
                         'exam_id' => $examRoom->exam_id,
                         'candidates_count' => $examRoom->candidates_count
                     ],
-                    'examSubjects' => $formattedSubjects,
                     'exam_room_details' => $examRoomDetails,
                     'exam_sessions' => $examSessions,
-                    'exam_subjects' => $examSubjects,
+                    'exam_subjects' => $formattedExamSubjects,
                 ],
                 'message' => '',
             ], 200);
@@ -264,47 +248,56 @@ class ExamRoomController extends Controller
         try {
             // Validate input
             $request->validate([
-                'name' => 'required|string',
-                'exam_session_id' => 'required|exists:exam_sessions,id'
+                'exam_subject_id' => 'required|exists:exam_subjects,id',
+                'exam_session_id' => 'required|exists:exam_sessions,id',
+                'exam_date' => 'required|date'
             ]);
 
-            // Cập nhật tên phòng thi
+            // Tìm phòng thi
             $examRoom = Exam_room::findOrFail($id);
-            $examRoom->update([
-                'name' => $request->name
-            ]);
 
-            // Cập nhật ca thi trong exam_room_detail
-            $examRoomDetail = Exam_room_detail::where('exam_room_id', $id)->first();
-            if ($examRoomDetail) {
-                $examRoomDetail->update([
-                    'exam_session_id' => $request->exam_session_id
-                ]);
-            }
+            // Tìm kiếm hoặc thêm mới Exam_room_detail
+            $examRoomDetail = Exam_room_detail::updateOrCreate(
+                [
+                    'exam_room_id' => $id,
+                    'exam_subject_id' => $request->exam_subject_id
+                ],
+                [
+                    'exam_session_id' => $request->exam_session_id,
+                    'exam_date' => $request->exam_date
+                ]
+            );
 
             return response()->json([
                 'success' => true,
-                'status' => '200',
+                'status' => 200,
                 'message' => 'Cập nhật thành công',
                 'data' => [
-                    'examRoom' => $examRoom,
-                    'examRoomDetail' => $examRoomDetail
+                    'exam_room_detail' => $examRoomDetail
                 ]
             ]);
 
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'success' => false,
-                'status' => '404',
+                'status' => 404,
                 'message' => 'Không tìm thấy phòng thi',
-                'data' => []
+                'data' => null
             ], 404);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'status' => 422,
+                'message' => 'Dữ liệu không hợp lệ',
+                'errors' => $e->errors(),
+                'data' => null
+            ], 422);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'status' => '500',
+                'status' => 500,
                 'message' => 'Lỗi khi cập nhật phòng thi: ' . $e->getMessage(),
-                'data' => []
+                'data' => null
             ], 500);
         }
     }
@@ -345,24 +338,21 @@ class ExamRoomController extends Controller
             ], 500);
         }
     }
-    public function dataSelectUpdate($id) {
+    public function dataSelectUpdate($exam_room_id, $exam_subject_id)
+    {
         try {
-            $exam_room = Exam_room::select('exam_rooms.*')
-                ->with('examRoomDetail')
-                ->join('exams', 'exam_rooms.exam_id', '=', 'exams.id')
-                ->leftJoin('exam_subjects', 'exams.id', '=', 'exam_subjects.exam_id')
-                ->where('exam_rooms.id', $id)
+            $exam_room_detail = Exam_room_detail::query()
+                ->where('exam_room_id', $exam_room_id)
+                ->where('exam_subject_id', $exam_subject_id)
                 ->first();
+
+            $exam_session = $exam_room_detail->exam_session;
 
             return response()->json([
                 'success' => true,
                 'data' => [
-                    'exam_room' => $exam_room,
-                    'exam' => Exam::select('id', 'name')->get(),
-                    'exam_sessions' => Exam_session::select('id', 'name')->get(),
-                    'exam_subjects' => Exam_subject::where('exam_id', $exam_room->exam_id)
-                        ->select('id', 'name')
-                        ->get()
+                    'exam_session' => $exam_session || null,
+                    'exam_date' => $exam_room_detail->exam_date || null,
                 ]
             ]);
         } catch (\Exception $e) {

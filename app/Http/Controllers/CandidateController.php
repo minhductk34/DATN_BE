@@ -7,6 +7,7 @@ use App\Models\Active;
 use App\Models\Candidate;
 use App\Models\Exam;
 use App\Models\Exam_room;
+use App\Models\Exam_subject;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
@@ -289,12 +290,15 @@ class CandidateController extends Controller
                 ->with('exam_subject')
                 ->get();
 
+            $exam_subject = Exam_subject::query()->where('exam_id',$candidate->exam_id)->get();
+
             return response()->json([
                 'success' => true,
                 'status' => '200',
                 'data' => [
                     'candidate' => $candidate,
-                    'actives' => $actives
+                    'actives' => $actives,
+                    'exam_subject' => $exam_subject,
                 ],
                 'message' => 'Data retrieved successfully'
             ], 200);
@@ -308,7 +312,51 @@ class CandidateController extends Controller
             ], 500);
         }
     }
+    public function toggleActiveStatus(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'exam_subject_id' => 'required|exists:exam_subjects,id',
+                'idcode' => 'required|exists:candidates,idcode',
+            ]);
 
+            // Tìm active record nếu đã tồn tại
+            $active = Active::where('exam_subject_id', $validated['exam_subject_id'])
+                ->where('idcode', $validated['idcode'])
+                ->first();
+
+            if ($active) {
+                $active->status = !$active->status;
+                $active->save();
+            } else {
+                // Nếu chưa tồn tại thì tạo mới với status = true
+                $active = Active::create([
+                    'exam_subject_id' => $validated['exam_subject_id'],
+                    'idcode' => $validated['idcode'],
+                    'status' => true
+                ]);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Cập nhật trạng thái thành công',
+                'data' => $active
+            ]);
+
+        } catch (ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Dữ liệu không hợp lệ',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Có lỗi xảy ra',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
 
     public function info($id){
         try {
