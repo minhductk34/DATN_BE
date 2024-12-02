@@ -10,11 +10,11 @@ class Lecturer extends Model
 {
     use HasFactory,softDeletes;
     public $incrementing = false;
-    protected $primaryKey = 'Idcode';
+    protected $primaryKey = 'idcode';
     protected $keyType = 'string';
 
     protected $fillable = [
-        'Idcode',
+        'idcode',
         'name',
         'profile',
         'email',

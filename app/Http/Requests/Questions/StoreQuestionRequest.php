@@ -18,7 +18,6 @@ class StoreQuestionRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'id' => 'required|unique:questions,id|max:255',
             'exam_content_id' => 'required|exists:exam_contents,id|max:255',
             'title' => 'required|string|max:255',
             'image_title' => 'nullable|file|mimes:jpeg,jpg,png,gif,webp',

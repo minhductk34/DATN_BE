@@ -3,10 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Lecturer;
-use App\Models\Lecturers;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
-
 
 class LecturersController extends Controller
 {
@@ -22,28 +20,17 @@ class LecturersController extends Controller
                 'success' => true,
                 'status' => '200',
                 'data' => $lecturers,
-                'message'=> '',
-                'error' => ''
+                'message' => 'Candidate created successfully'
             ], 200);
-
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'status' => '500',
+                'status' => "500",
                 'data' => [],
-                'message' => 'Đã xảy ra lỗi không xác định',
                 'error' => $e->getMessage(),
+                'message' => 'Internal server error while processing your request'
             ], 500);
         }
-    }
-
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
     }
 
     /**
@@ -53,58 +40,52 @@ class LecturersController extends Controller
     {
         try {
             $validated = $request->validate([
-                'Idcode' => 'required|string|unique:lecturers',
-                'Fullname' => 'required|string|max:255',
-                'Email' => 'required|string|email|max:255|unique:lecturers',
-                'Profile' => 'nullable|string',
-                'Status' => 'required|in:Active,Inactive',
+                'idcode' => 'required|string|unique:lecturers',
+                'name' => 'required|string|max:255',
+                'email' => 'required|string|email|max:255|unique:lecturers',
+                'profile' => 'file',
             ]);
-
-            // Tạo mới một Lecturer
+            $validated['status'] = true;
             $lecturer = Lecturer::create($validated);
-
             return response()->json([
                 'success' => true,
-                'message' => 'Lecturer created successfully!',
+                'status' => '200',
                 'data' => $lecturer,
-                'message'=> '',
-                'error' => ''
+                'message' => 'Lecturer created successfully!'
             ], 201);
-
         } catch (ValidationException $e) {
             return response()->json([
                 'success' => false,
                 'status' => '422',
                 'data' => [],
-                'message' => 'validation error',
+                'message' => 'Validation error',
                 'error' => $e->errors()
             ], 422);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'status' => '500',
+                'status' => "500",
                 'data' => [],
-                'message' => 'Đã xảy ra lỗi không xác định',
                 'error' => $e->getMessage(),
+                'message' => 'Internal server error while processing your request'
             ], 500);
         }
     }
 
-
     /**
      * Display the specified resource.
      */
-    public function show($id)
+    public function show(string $idcode)
     {
         try {
-            $lecturer = Lecturer::find($id);
+            $lecturer = Lecturer::find($idcode);
 
             if (!$lecturer) {
                 return response()->json([
                     'success' => false,
                     'status' => '404',
                     'data' => [],
-                    'message' => 'giảng viên không tồn tại',
+                    'message' => 'Giảng viên không tồn tại',
                     'error' => '404 not found!'
                 ], 404);
             }
@@ -113,53 +94,42 @@ class LecturersController extends Controller
                 'success' => true,
                 'status' => '200',
                 'data' => $lecturer,
-                'message'=> '',
-                'error' => ''
+                'message' => 'Candidate show successfully'
             ], 200);
-
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'status' => '500',
+                'status' => "500",
                 'data' => [],
-                'message' => 'Đã xảy ra lỗi không xác định',
                 'error' => $e->getMessage(),
+                'message' => 'Internal server error while processing your request'
             ], 500);
         }
-    }
-
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Lecturer $lecturers)
-    {
-        //
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, string $idcode)
     {
-        $lecturer = Lecturer::find($id);
+        $lecturer = Lecturer::find($idcode);
 
         if (!$lecturer) {
             return response()->json([
                 'success' => false,
                 'status' => '404',
                 'data' => '',
-                'message'=> 'Không tìm thấy giảng viên',
+                'message' => 'Không tìm thấy giảng viên',
                 'error' => '404 not found!'
             ], 404);
         }
 
         try {
             $validated = $request->validate([
-                'Fullname' => 'required|string|max:255',
-                'Email' => 'required|string|email|max:255|unique:lecturers,Email,' . $id . ',Idcode',
-                'Profile' => 'nullable|string',
-                'Status' => 'required|in:Active,Inactive',
+                'name' => 'required|string|max:255',
+                'email' => 'required|string|email|max:255|unique:lecturers,email,' . $idcode . ',idcode',
+                'profile' => 'file',
+                'status' => 'boolean',
             ]);
 
             $lecturer->update($validated);
@@ -168,43 +138,40 @@ class LecturersController extends Controller
                 'success' => true,
                 'message' => 'Lecturer updated successfully!',
                 'data' => $lecturer,
-                'message'=> '',
                 'error' => ''
             ], 200);
-
         } catch (ValidationException $e) {
             return response()->json([
                 'success' => false,
-                'status' => '422',
-                'data' => [],
-                'message' => 'validation error',
-                'error' => $e->errors()
+                'status' => "422",
+                'data' => '',
+                'error' => $e->getMessage(),
+                'message' => 'Validation error'
             ], 422);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'status' => '500',
+                'status' => "500",
                 'data' => [],
-                'message' => 'Đã xảy ra lỗi không xác định',
                 'error' => $e->getMessage(),
+                'message' => 'Internal server error while processing your request'
             ], 500);
         }
     }
 
-
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy($id)
+    public function destroy(string $idcode)
     {
-        $lecturer = Lecturer::find($id);
+        $lecturer = Lecturer::find($idcode);
 
         if (!$lecturer) {
             return response()->json([
                 'success' => false,
                 'status' => '404',
                 'data' => '',
-                'message'=> 'Không tìm thấy giảng viên',
+                'message' => 'Không tìm thấy giảng viên',
                 'error' => '404 not found!'
             ], 404);
         }
@@ -216,16 +183,14 @@ class LecturersController extends Controller
                 'success' => true,
                 'message' => 'Lecturer deleted successfully!',
             ], 200);
-
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'status' => '500',
+                'status' => "500",
                 'data' => [],
-                'message' => 'Đã xảy ra lỗi không xác định',
                 'error' => $e->getMessage(),
+                'message' => 'Internal server error while processing your request'
             ], 500);
         }
     }
-
 }

@@ -25,12 +25,11 @@ use App\Http\Controllers\ExamContentController;
 class QuestionController extends Controller
 {
     //Quản lý câu hỏi
-    public function index(Request $request)
+    public function index($id,Request $request)
     {
         try {
-            $exam_content_id = $request->input('exam_content_id');
-
-            if (! $exam_content_id) {
+        
+            if (!$id) {
                 return $this->jsonResponse(false, null, 'Hãy chọn nội dung thi', 400);
             }
 
@@ -39,7 +38,7 @@ class QuestionController extends Controller
                     $join->on('questions.id', '=', 'question_versions.question_id')
                         ->on('questions.current_version_id', '=', 'question_versions.id');
                 })
-                ->where('questions.exam_content_id', $exam_content_id)
+                ->where('questions.exam_content_id', $id)
                 ->select('questions.id', 'question_versions.title', 'questions.status')
                 ->get();
 
@@ -207,13 +206,15 @@ class QuestionController extends Controller
 
             return DB::transaction(function () use ($question, $validatedData) {
                 // Đánh dấu phiên bản cũ là không hoạt động
-                $question->currentVersion->update(['is_active' => false]);
+                $question->currentVersion->each(function ($version) {
+                    $version->update(['is_active' => false]);
+                });                
 
                 // Tạo phiên bản mới
                 $newVersion = $this->createQuestionVersion(
                     $question,
                     $validatedData,
-                    $question->versions()->max('version') + 1
+                    $question->currentVersion()->max('version') + 1
                 );
 
                 // Cập nhật question
@@ -333,8 +334,9 @@ class QuestionController extends Controller
 
     private function createQuestionVersion(Question $question, array $data, int $version)
     {
-        return $question->versions()->create([
+        return $question->version()->create([
             'title' => $data['title'],
+            'question_id'=>$question->id,
             'image_Title' => $data['image_Title'] ?? null,
             'answer_P' => $data['answer_P'],
             'image_P' => $data['image_P'] ?? null,

@@ -8,13 +8,9 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Question extends Model
 {
-    public $incrementing = false;
-    protected $keyType = 'string';
-    protected $primaryKey = 'id';
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'id',
         'current_version_id',
         'exam_content_id',
         'status',
@@ -25,8 +21,12 @@ class Question extends Model
         return $this->belongsTo(Exam_content::class);
     }
 
-    public function question_version()
+    public function version()
     {
         return $this->belongsTo(Question_version::class);
+    }
+    public function currentVersion()
+    {
+        return $this->hasMany(Question_version::class, 'question_id');
     }
 }

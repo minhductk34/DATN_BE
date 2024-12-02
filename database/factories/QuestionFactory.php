@@ -22,7 +22,6 @@ class QuestionFactory extends Factory
         $examContent = Exam_content::inRandomOrder()->first();
 
         return [
-            'id' => $this->faker->uuid(),
             'current_version_id' => $questionVersion ? $questionVersion->id : null,
             'exam_content_id' => $examContent ? $examContent->id : null,
             'status' => $this->faker->boolean(),

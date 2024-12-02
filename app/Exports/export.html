@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Export Excel</title>
+</head>
+<body>
+    <h1>Xuất danh sách ứng viên</h1>
+    <!-- Nút bấm để gọi API, thêm type="button" để tránh gửi form -->
+    <button id="exportExcelButton" type="button">Tải file Excel</button>
+
+    <script>
+        // Sử dụng async/await để xử lý sự kiện click
+        document.getElementById('exportExcelButton').addEventListener('click', async function (event) {
+            // Ngừng việc làm mới trang (hoặc sự kiện mặc định khác)
+            event.preventDefault();
+            event.stopPropagation();
+
+            try {
+                // Gửi yêu cầu tải file Excel
+                const response = await fetch('http://datn_be.com/api/admin/candidate/export-excel-password-candidate', {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                    },
+                });
+
+                // Kiểm tra phản hồi từ API
+                if (!response.ok) {
+                    throw new Error('Không thể tải file Excel. Lỗi: ' + response.statusText);
+                }
+
+                // Chuyển phản hồi sang Blob
+                const blob = await response.blob();
+
+                // Tạo URL và tự động tải file
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'danh_sach_ung_vien.xlsx'; 
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+
+            } catch (error) {
+            
+                console.error('Lỗi: ', error);
+                alert('Lỗi: ' + error.message);
+                console.log(response);
+                
+            }
+        });
+    </script>
+</body>
+</html>

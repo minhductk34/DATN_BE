@@ -30,7 +30,7 @@ public function login(Request $request)
         $credentials = $request->only('username', 'password');
 
         if (empty($credentials['username']) || empty($credentials['password'])) {
-            Log::message('Missing username or password');
+            // Log::message('Missing username or password');
             return response()->json([
                 'success' => false,
                 'status' => 400,
@@ -43,7 +43,7 @@ public function login(Request $request)
         $admin = Admin::where('name', $credentials['username'])->first();
 
         if (!$admin) {
-            Log::message('Admin not found', ['username' => $credentials['username']]);
+            // Log::message('Admin not found', ['username' => $credentials['username']]);
             return response()->json([
                 'success' => false,
                 'status' => 404,
@@ -53,7 +53,7 @@ public function login(Request $request)
         }
 
         if (!Hash::check($credentials['password'], $admin->password)) {
-            Log::message('Incorrect password', ['username' => $credentials['username']]);
+            // Log::message('Incorrect password', ['username' => $credentials['username']]);
             return response()->json([
                 'success' => false,
                 'status' => 401,
@@ -78,7 +78,7 @@ public function login(Request $request)
         });
 
         if ($existingToken) {
-            Log::message('User already logged in from another location', ['user_id' => $admin->id]);
+            // Log::message('User already logged in from another location', ['user_id' => $admin->id]);
             return response()->json([
                 'success' => false,
                 'status' => 403,

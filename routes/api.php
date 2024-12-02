@@ -1,8 +1,10 @@
 <?php
 
+use App\Http\Controllers\PasswordController;
 use App\Http\Controllers\QuestionController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\CandidateController;
+use App\Http\Controllers\CandidateQuestionController;
 use App\Http\Controllers\ExamContentController;
 use App\Http\Controllers\ExamController;
 use App\Http\Controllers\TopicStructureController;
@@ -17,6 +19,8 @@ use App\Http\Controllers\ListeningController;
 use App\Http\Controllers\ListeningQuestionController;
 use App\Http\Controllers\ReadingController;
 use App\Http\Controllers\ReadingQuestionController;
+use App\Http\Controllers\CustomBroadcastController;
+use App\Http\Controllers\RoomStatusController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -43,6 +47,7 @@ Route::prefix('admin')->group(function () {
         Route::get('/get-all-with-status-true', [ExamController::class, 'getAllWithStatusTrue']);
         Route::get('/exam-with-exam-subject', [ExamController::class, 'getALLExamsWithExamSubjects']);
         Route::get('/exam-subjects-with-content/{exam_id}', [ExamController::class, 'getExamSubjectsWithContent']);
+        Route::get('/exam-with-exam-subject/{id}', [ExamController::class, 'getALLExamsWithExamSubjectsById']);
     });
     //Quản lý môn thi
     Route::prefix('exam-subjects')->group(function () {
@@ -98,6 +103,7 @@ Route::prefix('admin')->group(function () {
     Route::resource('exam-room', ExamRoomController::class);
     Route::prefix('exam-room')->group(function () {
         Route::get('/detail/{id}', [ExamRoomController::class, 'showDetail']);
+        Route::get('/data-select-update/{exam_room_id}/{exam_subject_id}', [ExamRoomController::class, 'dataSelectUpdate']); // Thêm route này
     });
     Route::resource('lecturer', LecturersController::class);
     // ca thi
@@ -105,7 +111,7 @@ Route::prefix('admin')->group(function () {
 
     Route::prefix('questions')->group(function () {
         //get data
-        Route::get('/', [QuestionController::class, 'index']);
+        Route::get('/exam-content/{id}', [QuestionController::class, 'index']);
         Route::get('/{id}', [QuestionController::class, 'show']);
         Route::get('/{id}/versions', [QuestionController::class, 'versions']);
 
@@ -133,7 +139,11 @@ Route::prefix('admin')->group(function () {
         Route::get('/exam-room/{exam_room_id}', [CandidateController::class, 'countCandidateForExamRoom']);
         Route::get('/exam-room/candidate-in-exam-room/{exam_room_id}', [CandidateController::class, 'CandidateInExamRoom']);
     });
+    Route::post('active/toggle', [CandidateController::class, 'toggleActiveStatus']);
 
+    Route::prefix('/password')->group(function () {
+        Route::post('/actionExport', [PasswordController::class, 'actionExport']);
+    });
     Route::prefix('readings')->group(function () {
         //get data
         Route::get('/', [ReadingController::class, 'index']);
@@ -217,3 +227,40 @@ Route::prefix('admin')->group(function () {
         });
     });
 });
+
+Route::prefix('client')->group(function () {
+    Route::post('/login', [CandidateController::class, 'login']);
+
+    Route::post('/exam', [CandidateQuestionController::class, 'exam']);
+
+    Route::get('/info/{id}', [CandidateController::class, 'info']);
+});
+
+
+Route::prefix('exam')->group(function () {
+    Route::post('/submit', [CandidateQuestionController::class, 'update']);
+
+    Route::post('/finish', [CandidateQuestionController::class, 'finish']);
+
+    Route::post('/update-status/{id}', [CandidateQuestionController::class, 'updateStatus']);
+
+    Route::get('/scoreboard/{id}', [CandidateController::class, 'info']);
+
+    Route::get('/history/{id}', [CandidateController::class, 'info']);
+
+    Route::get('/result/{idcode}', [CandidateController::class, 'info']);
+});
+
+Route::post('/custom-broadcasting/auth-client', [CustomBroadcastController::class, 'authenticateClient']);
+Route::post('/custom-broadcasting/auth-admin', [CustomBroadcastController::class, 'authenticateAdmin']);
+
+Route::prefix('/room-status')->group(function () {
+    // Lấy danh sách phòng thi
+    Route::get('/rooms', [RoomStatusController::class, 'index']);
+
+    // Lấy danh sách sinh viên trong phòng
+    Route::get('/rooms/{roomId}/students', [RoomStatusController::class, 'getStudents']);
+});
+
+Route::put('/candidate/{candidate}/update-status/{status}', [CandidateController::class, 'updateStatus']);
+Route::put('/candidate/{candidate}/finish', [CandidateController::class, 'finish']);
