@@ -18,6 +18,7 @@ use App\Exports\CandidatesExport;
 use App\Imports\CandidatesImport;
 use App\Models\Password;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Str;
@@ -188,6 +189,7 @@ class CandidateController extends Controller
             $exam = Exam::query()->select('id')
                 ->orderBy('created_at', 'desc')
                 ->first();
+                Log::debug('Storing token in Redis', ['token' => $exam]);
             if (!$exam) {
                 return response()->json([
                     'success' => false,
