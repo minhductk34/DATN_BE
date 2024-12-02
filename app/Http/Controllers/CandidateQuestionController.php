@@ -49,9 +49,10 @@ class CandidateQuestionController extends Controller
                     // Lấy thông tin câu hỏi với version mới nhất
                     $questions = Question::query()
                         ->join('question_versions', 'questions.id', '=', 'question_versions.question_id')
+                        ->join('exam_contents', 'exam_contents.id', '=', 'questions.exam_content_id')
                         ->where('questions.id', $value->question_id)
                         ->orderByDesc('question_versions.version')  // Sắp xếp theo version giảm dần
-                        ->select('question_versions.*', 'questions.exam_content_id')
+                        ->select('question_versions.*', 'questions.exam_content_id', 'exam_contents.url_listening', 'exam_contents.description')
                         ->first();  // Lấy câu hỏi đầu tiên (mới nhất)
 
                     $mapping = [
@@ -68,7 +69,7 @@ class CandidateQuestionController extends Controller
                 }
 
                 // Chuyển mảng finalResult thành collection và nhóm theo exam_content_id
-                $finalResult = collect($finalResult)->groupBy('exam_content_id');
+                $finalResult = collect($finalResult)->groupBy(groupBy: 'exam_content_id');
 
                 foreach ($finalResult as $examContentId => $levels) {
                     foreach ($finalResult[$examContentId] as $key => $question) {
@@ -76,6 +77,9 @@ class CandidateQuestionController extends Controller
                         $result[$examContentId][$key]['id'] = $question['question_id'];
                         $result[$examContentId][$key]['title'] = $question['title'];
                         $result[$examContentId][$key]['image_title'] = $question['image_title'];
+                        $result[$examContentId][$key]['examContentId'] = $examContentId;
+                        $result[$examContentId][$key]['url_listening'] = $finalResult[$examContentId][$key]['url_listening'];
+                            $result[$examContentId][$key]['description'] = $finalResult[$examContentId][$key]['description'];
 
                         $result[$examContentId][$key]['answer'] = [
                             'temp' =>  $finalResult[$examContentId][$key]['stemp'],
@@ -87,7 +91,7 @@ class CandidateQuestionController extends Controller
                             'img_wrong2' => $question['image_F2'],
                             'wrong3' => $question['answer_F3'],
                             'img_wrong3' => $question['image_F3'],
-                            'id_pass' => $finalResult[$examContentId][$key]['id_pass']
+                            'id_pass' => $finalResult[$examContentId][$key]['id_pass'],
                         ];
                     }
                 }
@@ -126,7 +130,6 @@ class CandidateQuestionController extends Controller
                     $questions = Question::query()
                         ->join('question_versions', 'questions.id', '=', 'question_versions.question_id')
                         ->where('questions.exam_content_id', $requirement['exam_content_id'])
-                        ->where('question_versions.level', $requirement['level'])
                         ->orderByDesc('question_versions.version')
                         ->limit($requirement['quantity'])
                         ->select('question_versions.*')
@@ -335,6 +338,9 @@ class CandidateQuestionController extends Controller
         return response()->json(['message' => 'Record not found', 'success' => false], 404);
     }
 
+    public function scoreboard($id) {
+
+    }
     /**
      * Remove the specified resource from storage.
      */
