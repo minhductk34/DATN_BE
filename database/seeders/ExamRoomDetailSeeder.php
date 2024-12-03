@@ -25,6 +25,7 @@ class ExamRoomDetailSeeder extends Seeder
                 'exam_session_id'=>$faker->numberBetween(1,6),
                 'exam_date'=>now(),
                 'exam_end'=>now()->addDay(),
+                'create_by'=>$i,
                 'created_at' => now(),
                 'updated_at' => now(),
                 'deleted_at' => null,

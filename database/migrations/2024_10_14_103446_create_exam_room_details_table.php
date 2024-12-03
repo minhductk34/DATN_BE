@@ -19,8 +19,9 @@ return new class extends Migration
             $table->foreign('exam_subject_id')->references('id')->on('exam_subjects')->cascadeOnDelete()->cascadeOnUpdate();
             $table->unsignedBigInteger('exam_session_id');
             $table->foreign('exam_session_id')->references('id')->on('exam_sessions')->cascadeOnDelete()->cascadeOnUpdate();
-            $table->dateTime('exam_date');
-            $table->dateTime('exam_end');
+            $table->string('create_by')->nullable();
+            $table->dateTime('exam_date')->nullable();
+            $table->dateTime('exam_end')->nullable();
             $table->timestamps();
             $table->softDeletes();
         });
