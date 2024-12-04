@@ -55,8 +55,8 @@ class CandidateController extends Controller
                 ], 404);
             }
 
-         
-                    $decryptedPassword = Crypt::decrypt($admin->password); 
+
+                    $decryptedPassword = Crypt::decrypt($admin->password);
                     if ($credentials['password'] !== $decryptedPassword) {
                         return response()->json([
                             'success' => false,
@@ -65,7 +65,7 @@ class CandidateController extends Controller
                             'message' => 'Mật khẩu không chính xác.'
                         ], 401);
                     }
- 
+
 
             if (!$this->checkRedisConnection()) {
                 return response()->json([
@@ -184,6 +184,7 @@ class CandidateController extends Controller
                 'address' => 'required|string|max:255',
                 'password' => 'required|string|min:8',
                 'email' => 'required|string|email|max:255|unique:candidates',
+                'create_by' => 'nullable|string',
             ], $this->validationMessages());
 
             $exam = Exam::query()->select('id')
@@ -225,6 +226,7 @@ class CandidateController extends Controller
                 'address' => $validated['address'],
                 'email' => $validated['email'],
                 'status' => true,
+                'create_by' => $validated['create_by'] ?? null,
             ]);
             Password::create([
                 'idcode' => $candidate->idcode,
@@ -396,24 +398,22 @@ class CandidateController extends Controller
      */
     public function update($id, Request $request)
     {
-
         try {
             $candidate = Candidate::query()
-                ->where('Idcode', $id)
+                ->where('idcode', $id)
                 ->first();
 
-            // Validate dữ liệu từ request
             $validated = $request->validate([
-                'Idcode' => "sometimes|required|string|max:255|unique:candidates,Idcode,{$candidate->Idcode}",
-                'exam_id' => 'sometimes|required|integer',
-                'Fullname' => 'sometimes|required|string|max:255',
-                'Image' => 'sometimes|nullable|string',
-                'DOB' => 'sometimes|required|date',
-                'Address' => 'sometimes|required|string|max:255',
-                'Examination_room' => 'sometimes|required|string|max:255',
-                'Password' => 'sometimes|required|string|min:8',
-                'Email' => "sometimes|required|string|email|max:255|unique:candidates,Email,{$candidate->Idcode}",
-                'Status' => 'sometimes|required|string|max:50',
+                'idcode' => "sometimes|required|string|max:255|unique:candidates,idcode,{$candidate->idcode}",
+                'exam_id' => 'sometimes|required|string',
+                'exam_room_id' => 'sometimes|required|exists:exam_rooms,id',
+                'name' => 'sometimes|required|string|max:255',
+                'image' => 'sometimes|nullable|string',
+                'dob' => 'sometimes|required|date',
+                'address' => 'sometimes|nullable|string|max:255',
+                'email' => "sometimes|required|string|email|max:255|unique:candidates,email,{$candidate->idcode}",
+                'status' => 'sometimes|required|boolean',
+                'create_by' => 'sometimes|nullable|string',
             ], $this->validationMessages());
 
             $candidate->update($validated);
@@ -581,20 +581,18 @@ class CandidateController extends Controller
     protected function validationMessages()
     {
         return [
-            'Idcode.required' => 'Mã ID là bắt buộc.',
-            'Idcode.unique' => 'Mã ID đã tồn tại.',
+            'idcode.required' => 'Mã ID là bắt buộc.',
+            'idcode.unique' => 'Mã ID đã tồn tại.',
             'exam_id.required' => 'Mã kỳ thi là bắt buộc.',
-            'exam_id.exists' => 'Mã kỳ thi không tồn tại.',
-            'Fullname.required' => 'Họ tên là bắt buộc.',
-            'DOB.required' => 'Ngày sinh là bắt buộc.',
-            'Address.required' => 'Địa chỉ là bắt buộc.',
-            'Examination_room.required' => 'Phòng thi là bắt buộc.',
-            'Password.required' => 'Mật khẩu là bắt buộc.',
-            'Password.min' => 'Mật khẩu phải có ít nhất 8 ký tự.',
-            'Email.required' => 'Email là bắt buộc.',
-            'Email.email' => 'Email không hợp lệ.',
-            'Email.unique' => 'Email đã tồn tại.',
-            'Status.required' => 'Trạng thái là bắt buộc.',
+            'exam_room_id.required' => 'Mã phòng thi là bắt buộc.',
+            'exam_room_id.exists' => 'Phòng thi không tồn tại.',
+            'name.required' => 'Họ tên là bắt buộc.',
+            'dob.required' => 'Ngày sinh là bắt buộc.',
+            'email.required' => 'Email là bắt buộc.',
+            'email.email' => 'Email không hợp lệ.',
+            'email.unique' => 'Email đã tồn tại.',
+            'status.required' => 'Trạng thái là bắt buộc.',
+            'status.boolean' => 'Trạng thái phải là true hoặc false.',
         ];
     }
 
