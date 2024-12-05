@@ -175,6 +175,7 @@ class CandidateController extends Controller
      */
     public function store(Request $request)
     {
+
         try {
             $validated = $request->validate([
                 'idcode' => 'required|string|max:255|unique:candidates',
