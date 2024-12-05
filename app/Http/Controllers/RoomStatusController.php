@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Models\Candidate;
 use App\Models\Exam_room;
+use Illuminate\Support\Facades\Storage;
 
 class RoomStatusController extends Controller
 {
@@ -41,7 +42,7 @@ class RoomStatusController extends Controller
                 return [
                     'id' => $student->idcode,
                     'studentName' => $student->name,
-                    'image' => $student->image,
+                    'image' => Storage::url($student->image),
                     'studentStatus' => $student->status,
                 ];
             });
