@@ -446,35 +446,26 @@ class CandidateController extends Controller
     /**
      * Import danh sách ứng viên từ file Excel.
      */
-    public function importExcel(Request $request)
-    {
-        // Validate file upload
+    public function importExcel(Request $request) {
         $request->validate([
-            'file' => 'required|mimes:xlsx,xls'
+            'file' => 'required|file|mimes:xls,xlsx',
         ], [
-            'file.required' => 'Hãy chọn một file để tải lên.',
-            'file.mimes' => 'File không đúng định dạng (.xlsx, .xls).',
+            'file.required' => 'Vui lòng chọn file',
+            'file.file' => 'File không hợp lệ',
+            'file.mimes' => 'File phải có định dạng xls hoặc xlsx'
         ]);
 
         try {
             Excel::import(new CandidatesImport, $request->file('file'));
-            return $this->jsonResponse(true, null, 'Nhập dữ liệu thành công.');
-        } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
-            $failures = $e->failures();
-            $errorMessages = [];
-
-            foreach ($failures as $failure) {
-                $errorMessages[] = [
-                    'row' => $failure->row(),
-                    'attribute' => $failure->attribute(),
-                    'errors' => $failure->errors(),
-                    'values' => $failure->values(),
-                ];
-            }
-
-            return $this->jsonResponse(false, $errorMessages, 'Có lỗi xảy ra khi nhập dữ liệu.', 422);
+            return response()->json([
+                'success' => true,
+                'message' => 'Import thành công'
+            ]);
         } catch (\Exception $e) {
-            return $this->jsonResponse(false, null, 'Đã xảy ra lỗi khi nhập dữ liệu: ' . $e->getMessage(), 500);
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 422);
         }
     }
 
