@@ -150,12 +150,13 @@ class QuestionController extends Controller
     {
         try {
             $request->validate([
-                'file' => 'required|file|mimes:xlsx,xls'
+                'file' => 'required|file|mimes:xlsx,xls',
+                'exam_content_id' => 'required|exists:exam_contents,id'
             ]);
 
             DB::beginTransaction();
 
-            $import = new QuestionsImport();
+            $import = new QuestionsImport($request->exam_content_id);
             Excel::import($import, $request->file('file'));
 
             DB::commit();

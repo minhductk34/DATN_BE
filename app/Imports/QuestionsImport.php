@@ -6,21 +6,32 @@ use App\Models\Question;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithValidation;
+use Illuminate\Support\Str;
 
 class QuestionsImport implements ToModel, WithHeadingRow, WithValidation
 {
+    protected $exam_content_id;
+
+    public function __construct($exam_content_id)
+    {
+        $this->exam_content_id = $exam_content_id;
+    }
+
     public function model(array $row)
     {
+        // Tạo UUID cho ID câu hỏi
+        $questionId = (string) Str::uuid();
+
         $question = Question::create([
-            'id' => $row['ma_cau_hoi'],
-            'exam_content_id' => $row['ma_noi_dung'],
+            'id' => $questionId,
+            'exam_content_id' => $this->exam_content_id,
             'status' => true
         ]);
 
         $version = $question->version()->create([
             'title' => $row['noi_dung_cau_hoi'],
             'question_id' => $question->id,
-            'level' => $row['muc_do'],
+            'level' => strtolower($row['muc_do']),
             'answer_P' => $row['dap_an_dung'],
             'answer_F1' => $row['dap_an_sai_1'],
             'answer_F2' => $row['dap_an_sai_2'],
@@ -39,10 +50,8 @@ class QuestionsImport implements ToModel, WithHeadingRow, WithValidation
     public function rules(): array
     {
         return [
-            '*.ma_cau_hoi' => ['required', 'unique:questions,id'],
-            '*.ma_noi_dung' => 'required|exists:exam_contents,id',
             '*.noi_dung_cau_hoi' => 'required',
-            '*.muc_do' => 'required|in:easy,medium,hard',
+            '*.muc_do' => 'required|in:easy,medium,hard,EASY,MEDIUM,HARD',
             '*.dap_an_dung' => 'required',
             '*.dap_an_sai_1' => 'required',
             '*.dap_an_sai_2' => 'required',
@@ -53,10 +62,6 @@ class QuestionsImport implements ToModel, WithHeadingRow, WithValidation
     public function customValidationMessages()
     {
         return [
-            '*.ma_cau_hoi.required' => 'Mã câu hỏi không được để trống',
-            '*.ma_cau_hoi.unique' => 'Mã câu hỏi :input đã tồn tại trong hệ thống',
-            '*.ma_noi_dung.required' => 'Mã nội dung không được để trống',
-            '*.ma_noi_dung.exists' => 'Mã nội dung không tồn tại trong hệ thống',
             '*.noi_dung_cau_hoi.required' => 'Nội dung câu hỏi không được để trống',
             '*.muc_do.required' => 'Mức độ không được để trống',
             '*.muc_do.in' => 'Mức độ phải là: easy, medium hoặc hard',

@@ -179,7 +179,7 @@ class CandidateController extends Controller
             $validated = $request->validate([
                 'idcode' => 'required|string|max:255|unique:candidates',
                 'name' => 'required|string|max:255',
-                'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+                'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
                 'dob' => 'required|date',
                 'address' => 'required|string|max:255',
                 'password' => 'required|string|min:8',
