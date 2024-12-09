@@ -267,5 +267,4 @@ Route::prefix('/room-status')->group(function () {
     Route::get('/rooms/{roomId}/students', [RoomStatusController::class, 'getStudents']);
 });
 
-Route::put('/candidate/{candidate}/update-status/{status}', [CandidateController::class, 'updateStatus']);
-Route::put('/candidate/{candidate}/finish', [CandidateController::class, 'finish']);
+Route::post('/candidate/{candidate}/finish', [CandidateController::class, 'finish']);

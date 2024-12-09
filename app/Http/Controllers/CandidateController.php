@@ -672,21 +672,8 @@ class CandidateController extends Controller
         }
     }
 
-    public function updateStatus(Candidate $candidate, $status)
-    {
-        $candidate->update(['status' => $status]);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Cập nhật trạng thái thành công.',
-            'data' => [],
-        ]);
-    }
-
     public function finish(Candidate $candidate)
     {
-        $candidate->update(['status' => 2]);
-
         broadcast(new StudentSubmitted($candidate->exam_room_id, $candidate))->toOthers();
 
         return response()->json([

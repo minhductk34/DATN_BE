@@ -250,14 +250,19 @@ class ExamController extends Controller
     public function getALLExamsWithExamSubjectsById($id)
     {
         try {
-            $exams = Exam::query()->where('id','=',$id)->with('exam_subjects')->has('exam_subjects')->get();
+            $currentDateTime = now();
+
+            $exams = Exam::query()->where('id','=',$id)
+                ->where('time_start', '<=', $currentDateTime)
+                ->where('time_end', '>', $currentDateTime)
+                ->with('exam_subjects')->has('exam_subjects')->get();
 
             if ($exams->isEmpty()) {
                 return response()->json([
                     'success' => false,
                     'status' => "404",
                     'data' => [],
-                    'message' => 'Cấu trúc không tìm thấy'
+                    'message' => 'Không tìm thấy kỳ thi phù hợp'
                 ], 404);
             }
 
