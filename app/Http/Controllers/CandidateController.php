@@ -190,7 +190,7 @@ class CandidateController extends Controller
             $exam = Exam::query()->select('id')
                 ->orderBy('created_at', 'desc')
                 ->first();
-                Log::debug('Storing token in Redis', ['token' => $exam]);
+            Log::debug('Storing token in Redis', ['token' => $exam]);
             if (!$exam) {
                 return response()->json([
                     'success' => false,
@@ -203,10 +203,27 @@ class CandidateController extends Controller
             $examRoom = Exam_room::withCount('candidates')
                 ->where('exam_id', $exam->id)
                 ->having('candidates_count', '<', 35)
+                ->orderBy('created_at', 'desc')
                 ->first();
+
             if (!$examRoom) {
-                $ExamRoomController = new ExamRoomController();
-                $examRoom = $ExamRoomController->createRoom('Phòng tự sinh', $exam->id);
+                $lastRoom = Exam_room::where('exam_id', $exam->id)
+                    ->where('name', 'like', 'Phòng %')
+                    ->orderBy('name', 'desc')
+                    ->first();
+
+                if ($lastRoom) {
+                    $lastRoomNumber = intval(substr($lastRoom->name, 6));
+                    $newRoomNumber = $lastRoomNumber + 1;
+                } else {
+                    $newRoomNumber = 1;
+                }
+
+                $newRoomName = 'Phòng ' . $newRoomNumber;
+                $examRoom = Exam_room::create([
+                    'exam_id' => $exam->id,
+                    'name' => $newRoomName,
+                ]);
             }
 
             if ($request->hasFile('image')) {

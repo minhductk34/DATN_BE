@@ -17,8 +17,24 @@ class ExamController extends Controller
      */
     public function index()
     {
-        $exams = Exam::all();
-        return response()->json($exams);
+        try {
+            $exams = Exam::all();
+            return response()->json([
+                'success' => true,
+                'status' => '200',
+                'data' => $exams,
+                'message' => 'Data retrieved successfully'
+            ], 200);
+        }catch (\Exception $e){
+            return response()->json([
+                'success' => false,
+                'status' => "500",
+                'data' => [],
+                'error' => $e->getMessage(),
+                'message' => 'Internal server error while processing your request'
+            ], 500);
+        }
+
     }
     public function getAllWithStatusTrue()
     {
