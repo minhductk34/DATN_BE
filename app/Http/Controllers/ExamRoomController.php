@@ -367,4 +367,37 @@ class ExamRoomController extends Controller
             ], 500);
         }
     }
+    public function getExamRoomsByExam($examId) {
+        try {
+            $examRooms = Exam_room::query()
+                ->where('exam_id', $examId)
+                ->withCount('candidates')
+                ->get();
+
+            if ($examRooms->isEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'status' => '404',
+                    'data' => [],
+                    'message' => 'Không tìm thấy phòng thi cho kỳ thi này',
+                ], 404);
+            }
+
+            return response()->json([
+                'success' => true,
+                'status' => '200',
+                'data' => $examRooms,
+                'message' => '',
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'status' => '500',
+                'data' => [],
+                'message' => 'Đã xảy ra lỗi',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
 }

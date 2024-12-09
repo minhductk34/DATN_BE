@@ -19,7 +19,7 @@ class ExamContentController extends Controller
                     'success' => false,
                     'status' => 400,
                     'data' => [],
-                    'message' => 'Invalid exam_content_id',
+                    'message' => 'ID nội dung bài kiểm tra không hợp lệ',
                 ], 400);
             }
 
@@ -30,7 +30,7 @@ class ExamContentController extends Controller
                     'success' => false,
                     'status' => 404,
                     'data' => [],
-                    'message' => 'No content found for the given content_id',
+                    'message' => 'Không tìm thấy nội dung với ID đã cho',
                 ], 404);
             }
 
@@ -60,7 +60,7 @@ class ExamContentController extends Controller
                 'success' => false,
                 'status' => 500,
                 'data' => [],
-                'message' => 'An unexpected error occurred: ' . $e->getMessage(),
+                'message' => 'Đã xảy ra lỗi bất ngờ: ' . $e->getMessage(),
             ], 500);
         }
     }
@@ -73,7 +73,7 @@ class ExamContentController extends Controller
                     'success' => false,
                     'status' => 400,
                     'data' => [],
-                    'message' => 'Invalid exam_subject_id',
+                    'message' => 'ID môn thi không hợp lệ',
                 ], 400);
             }
 
@@ -87,7 +87,7 @@ class ExamContentController extends Controller
                     'success' => false,
                     'status' => 404,
                     'data' => [],
-                    'message' => 'No content found for the given exam_subject_id',
+                    'message' => 'Không tìm thấy nội dung với ID môn thi đã cho',
                 ], 404);
             }
 
@@ -102,7 +102,7 @@ class ExamContentController extends Controller
                 'success' => false,
                 'status' => 500,
                 'data' => [],
-                'message' => 'An unexpected error occurred: ' . $e->getMessage(),
+                'message' => 'Đã xảy ra lỗi bất ngờ: ' . $e->getMessage(),
             ], 500);
         }
     }
@@ -111,37 +111,44 @@ class ExamContentController extends Controller
     {
         try {
             $validatedData = $request->validate([
-                'id' => 'required|string',
+                'id' => [
+                    'required',
+                    'string',
+                    'max:255',
+                    'regex:/^(BD_|BN_|NP_)/',
+                ],
                 'exam_subject_id' => 'required|string',
-                'title' => 'required|string|max:255',
+                'title' => 'required|string',
                 'url_listening' => 'nullable|string',
                 'description' => 'nullable|string',
             ]);
-
+//            return $validatedData;
             $examContent = Exam_content::create($validatedData);
 
             return response()->json([
                 'success' => true,
                 'status' => 201,
                 'data' => $examContent,
-                'message' => 'Create exam content successfully'
+                'message' => 'Tạo nội dung kỳ thi thành công.'
             ], 201);
         } catch (ValidationException $e) {
             return response()->json([
                 'success' => false,
                 'status' => 422,
                 'data' => null,
-                'message' => $e->getMessage()
+                'message' => 'Dữ liệu không hợp lệ.',
+                'errors' => $e->errors(),
             ], 422);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'status' => 500,
                 'data' => null,
-                'message' => $e->getMessage()
+                'message' => 'Đã xảy ra lỗi trong quá trình tạo nội dung kỳ thi. Vui lòng thử lại.',
             ], 500);
         }
     }
+
 
     public function show($id)
     {
@@ -151,7 +158,7 @@ class ExamContentController extends Controller
                     'success' => false,
                     'status' => 400,
                     'data' => [],
-                    'message' => 'Invalid exam_content_id',
+                    'message' => 'ID nội dung bài kiểm tra không hợp lệ',
                 ], 400);
             }
 
@@ -164,7 +171,7 @@ class ExamContentController extends Controller
                     'success' => false,
                     'status' => 404,
                     'data' => [],
-                    'message' => 'No content found for the given exam_content_id',
+                    'message' => 'Không tìm thấy nội dung với ID bài kiểm tra đã cho',
                 ], 404);
             }
 
@@ -179,7 +186,7 @@ class ExamContentController extends Controller
                 'success' => false,
                 'status' => 500,
                 'data' => [],
-                'message' => 'An unexpected error occurred: ' . $e->getMessage(),
+                'message' => 'Đã xảy ra lỗi bất ngờ: ' . $e->getMessage(),
             ], 500);
         }
     }
@@ -188,7 +195,14 @@ class ExamContentController extends Controller
     {
         try {
             $validatedData = $request->validate([
-                'title' => 'required|string|max:255',
+                'id' => [
+                    'required',
+                    'string',
+                    'max:255',
+                    'regex:/^(BD_|BN_|NP_)/',
+                ],
+                'exam_subject_id' => 'required|string',
+                'title' => 'required|string',
                 'url_listening' => 'nullable|string',
                 'description' => 'nullable|string',
             ]);
@@ -200,7 +214,7 @@ class ExamContentController extends Controller
                     'success' => false,
                     'status' => 404,
                     'data' => [],
-                    'message' => 'No content found for the given exam_content_id'
+                    'message' => 'Không tìm thấy nội dung cho mã exam_content_id đã cung cấp.'
                 ], 404);
             }
 
@@ -210,14 +224,15 @@ class ExamContentController extends Controller
                 'success' => true,
                 'status' => 200,
                 'data' => $examContent,
-                'message' => 'Update exam content successfully'
+                'message' => 'Cập nhật nội dung kỳ thi thành công.'
             ], 200);
         } catch (ValidationException $e) {
             return response()->json([
                 'success' => false,
                 'status' => 422,
                 'data' => null,
-                'message' => $e->getMessage()
+                'message' => 'Dữ liệu không hợp lệ.',
+                'errors' => $e->errors()
             ], 422);
         } catch (Exception $e) {
             return response()->json([
@@ -239,7 +254,7 @@ class ExamContentController extends Controller
                     'success' => false,
                     'status' => 404,
                     'data' => null,
-                    'message' => 'No content found for the given exam_content_id'
+                    'message' => 'Không tìm thấy nội dung với ID bài kiểm tra đã cho',
                 ], 404);
             }
 
@@ -250,14 +265,14 @@ class ExamContentController extends Controller
                 'success' => true,
                 'status' => 200,
                 'data' => $examContent->status,
-                'message' => 'Update status exam content successfully'
+                'message' => 'Cập nhật trạng thái bài kiểm tra thành công',
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'status' => 500,
                 'data' => null,
-                'message' => $e->getMessage()
+                'message' => 'Đã xảy ra lỗi: ' . $e->getMessage(),
             ], 500);
         }
     }

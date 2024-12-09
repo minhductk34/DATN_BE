@@ -26,14 +26,14 @@ class ExamController extends Controller
             $exams = Exam::query()
                 ->select('id','name','time_start','time_end')
 //                ->where('status', '=', 1)
-                ->where('deleted_at',null)
+//                ->where('deleted_at',null)
                 ->orderBy('created_at', 'desc')
                 ->get();
             return response()->json([
                 'success' => true,
                 'status' => '200',
                 'data' => $exams,
-                'message' => 'Data retrieved successfully'
+                'message' => 'Dữ liệu đã được lấy thành công'
             ], 200);
         }catch (\Exception $e){
             return response()->json([
@@ -41,7 +41,7 @@ class ExamController extends Controller
                 'status' => "500",
                 'data' => [],
                 'error' => $e->getMessage(),
-                'message' => 'Internal server error while processing your request'
+                'message' => 'Lỗi máy chủ nội bộ khi xử lý yêu cầu của bạn'
             ], 500);
         }
     }
@@ -58,18 +58,22 @@ class ExamController extends Controller
             'time_end' => 'required|date|after_or_equal:TimeStart',
 
         ]);
-
+        if (strtotime($validated['time_start']) > strtotime($validated['time_end'])) {
+            return response()->json([
+                'message' => 'Thời gian bắt đầu phải nhỏ hơn hoặc bằng thời gian kết thúc.'
+            ], 422);
+        }
         $exam = Exam::create($validated);
         if ($exam) {
             return response()->json([
                 'success' => true,
                 'status' => '201',
                 'data' => $exam,
-                'message' => 'Create exam successfully.',
+                'message' => 'Tạo kỳ thi thành công.',
             ], 201);
         } else {
             return response()->json([
-                'message' => 'Failed to create exam. Please try again.'
+                'message' => 'Tạo kỳ thi thất bại. Vui lòng thử lại.'
             ], 500);
         }
     }
@@ -90,17 +94,25 @@ class ExamController extends Controller
      */
     public function update(Request $request, $id)
     {
-        // Validate the request
+
         $validated = $request->validate([
             'name' => 'sometimes|string|max:255',
             'time_start' => 'sometimes|date',
-            'time_end' => 'sometimes|date|after_or_equal:time_start',
-
+            'time_end' => 'sometimes|date',
         ]);
 
+
+        if (!empty($validated['time_start']) && !empty($validated['time_end'])
+            && strtotime($validated['time_start']) > strtotime($validated['time_end'])) {
+            return response()->json([
+                'message' => 'Thời gian bắt đầu phải nhỏ hơn hoặc bằng thời gian kết thúc.'
+            ], 422);
+        }
+
         $exam = Exam::findOrFail($id);
+
         if (empty($validated)) {
-            return response()->json(['message' => 'No valid data provided for update.'], 400);
+            return response()->json(['message' => 'Không có dữ liệu hợp lệ để cập nhật.'], 400);
         }
 
         $updated = $exam->update($validated);
@@ -110,11 +122,10 @@ class ExamController extends Controller
                 'success' => true,
                 'status' => '201',
                 'data' => $exam,
-                'message' => 'Update exam successfully.',
-            ],200);
+                'message' => 'Cập nhật kỳ thi thành công.',
+            ], 200);
         } else {
-
-            return response()->json(['message' => 'Failed to update exam. Please try again.'], 500);
+            return response()->json(['message' => 'Cập nhật kỳ thi thất bại. Vui lòng thử lại.'], 500);
         }
     }
 
@@ -129,10 +140,10 @@ class ExamController extends Controller
 
         if ($exam->delete()) {
 
-            return response()->json(['message' => 'Exam deleted successfully.','success' => true,], 200, );
+            return response()->json(['message' => 'Đã xóa bài kiểm tra thành công.','success' => true,], 200, );
         } else {
 
-            return response()->json(['message' => 'Failed to delete exam. Please try again.'], 500);
+            return response()->json(['message' => 'Không xóa được bài kiểm tra. Vui lòng thử lại.'], 500);
         }
     }
 
@@ -145,9 +156,9 @@ class ExamController extends Controller
         $exam = Exam::withTrashed()->findOrFail($id);
         if ($exam->trashed()) {
             $exam->restore();
-            return response()->json(['message' => 'Exam restored successfully.']);
+            return response()->json(['message' => 'Đã khôi phục kỳ thi thành công.']);
         }
-        return response()->json(['message' => 'Exam is not deleted.'], 400);
+        return response()->json(['message' => 'Bài kiểm tra không bị xóa.'], 400);
     }
     public function getDataShow()
     {
@@ -182,7 +193,7 @@ class ExamController extends Controller
                     'success' => false,
                     'status' => "404",
                     'data' => [],
-                    'message' => 'Structure not found'
+                    'message' => 'Cấu trúc không tìm thấy'
                 ], 404);
             }
 
@@ -190,7 +201,7 @@ class ExamController extends Controller
                 'success' => true,
                 'status' => '200',
                 'data' => $exams,
-                'message' => 'Data retrieved successfully'
+                'message' => 'Dữ liệu đã được lấy thành công'
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
@@ -198,7 +209,7 @@ class ExamController extends Controller
                 'status' => "500",
                 'data' => [],
                 'error' => $e->getMessage(),
-                'message' => 'Internal server error while processing your request'
+                'message' => 'Lỗi máy chủ nội bộ khi xử lý yêu cầu của bạn'
             ], 500);
         }
     }
@@ -215,7 +226,7 @@ class ExamController extends Controller
                     'success' => false,
                     'status' => "404",
                     'data' => [],
-                    'message' => 'Structure not found'
+                    'message' => 'Cấu trúc không tìm thấy'
                 ], 404);
             }
 
@@ -223,7 +234,7 @@ class ExamController extends Controller
                 'success' => true,
                 'status' => '200',
                 'data' => $examSubjects,
-                'message' => 'Data retrieved successfully'
+                'message' => 'Dữ liệu đã được lấy thành công'
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
@@ -231,7 +242,7 @@ class ExamController extends Controller
                 'status' => "500",
                 'data' => [],
                 'error' => $e->getMessage(),
-                'message' => 'Internal server error while processing your request'
+                'message' => 'Lỗi máy chủ nội bộ khi xử lý yêu cầu của bạn'
             ], 500);
         }
     }
@@ -259,7 +270,7 @@ class ExamController extends Controller
                 'success' => true,
                 'status' => '200',
                 'data' => $exams,
-                'message' => 'Data retrieved successfully'
+                'message' => 'Dữ liệu đã được lấy thành công'
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
@@ -267,7 +278,7 @@ class ExamController extends Controller
                 'status' => "500",
                 'data' => [],
                 'error' => $e->getMessage(),
-                'message' => 'Internal server error while processing your request'
+                'message' => 'Lỗi máy chủ nội bộ khi xử lý yêu cầu của bạn'
             ], 500);
         }
     }
@@ -281,14 +292,14 @@ class ExamController extends Controller
                     'success' => false,
                     'status' => "404",
                     'data' => [],
-                    'message' => 'Structure not found'
+                    'message' => 'Cấu trúc không tìm thấy'
                 ], 404);
             }
             return response()->json([
                 'success' => true,
                 'status' => '200',
                 'data' => $exam_rooms,
-                'message' => 'Data retrieved successfully'
+                'message' => 'Dữ liệu đã được lấy thành công'
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
@@ -296,7 +307,7 @@ class ExamController extends Controller
                 'status' => "500",
                 'data' => [],
                 'error' => $e->getMessage(),
-                'message' => 'Internal server error while processing your request'
+                'message' => 'Lỗi máy chủ nội bộ khi xử lý yêu cầu của bạn'
             ], 500);
         }
     }

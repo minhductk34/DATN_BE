@@ -59,7 +59,8 @@ Route::prefix('admin')->group(function () {
         Route::delete('/{id}', [ExamSubjectController::class, 'destroy']);
         Route::put('/restore/{id}', [ExamSubjectController::class, 'restore']);
         Route::put('/update-status/{id}', [ExamSubjectController::class, 'updateStatus']);
-        Route::post('/import', [ExamSubjectController::class, 'importExcel']);
+        Route::post('/export-excel', [ExamSubjectController::class, 'exportExcel']);
+        Route::post('/import-excel', [ExamSubjectController::class, 'importExcel']);
     });
     Route::prefix('exam-content')->group(function () {
         //get data
@@ -124,6 +125,10 @@ Route::prefix('admin')->group(function () {
 
         //delete data
         Route::delete('/{id}', [QuestionController::class, 'destroy']);
+
+        //excel
+        Route::post('/export-excel', [QuestionController::class, 'exportExcel']);
+        Route::post('/import-excel', [QuestionController::class, 'importExcel']);
     });
 
     Route::prefix('candidate')->group(function () {
@@ -232,6 +237,8 @@ Route::prefix('client')->group(function () {
     Route::post('/exam', [CandidateQuestionController::class, 'exam']);
 
     Route::get('/info/{id}', [CandidateController::class, 'info']);
+
+    Route::get('api/client/scoreboard/{id}',[CandidateQuestionController::class, 'scoreboard']);
 });
 
 

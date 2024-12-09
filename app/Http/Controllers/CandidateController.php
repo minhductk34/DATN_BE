@@ -179,7 +179,7 @@ class CandidateController extends Controller
             $validated = $request->validate([
                 'idcode' => 'required|string|max:255|unique:candidates',
                 'name' => 'required|string|max:255',
-                'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+                'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
                 'dob' => 'required|date',
                 'address' => 'required|string|max:255',
                 'password' => 'required|string|min:8',
@@ -190,7 +190,7 @@ class CandidateController extends Controller
             $exam = Exam::query()->select('id')
                 ->orderBy('created_at', 'desc')
                 ->first();
-                Log::debug('Storing token in Redis', ['token' => $exam]);
+            Log::debug('Storing token in Redis', ['token' => $exam]);
             if (!$exam) {
                 return response()->json([
                     'success' => false,
@@ -203,10 +203,27 @@ class CandidateController extends Controller
             $examRoom = Exam_room::withCount('candidates')
                 ->where('exam_id', $exam->id)
                 ->having('candidates_count', '<', 35)
+                ->orderBy('created_at', 'desc')
                 ->first();
+
             if (!$examRoom) {
-                $ExamRoomController = new ExamRoomController();
-                $examRoom = $ExamRoomController->createRoom('Phòng tự sinh', $exam->id);
+                $lastRoom = Exam_room::where('exam_id', $exam->id)
+                    ->where('name', 'like', 'Phòng %')
+                    ->orderBy('name', 'desc')
+                    ->first();
+
+                if ($lastRoom) {
+                    $lastRoomNumber = intval(substr($lastRoom->name, 6));
+                    $newRoomNumber = $lastRoomNumber + 1;
+                } else {
+                    $newRoomNumber = 1;
+                }
+
+                $newRoomName = 'Phòng ' . $newRoomNumber;
+                $examRoom = Exam_room::create([
+                    'exam_id' => $exam->id,
+                    'name' => $newRoomName,
+                ]);
             }
 
             if ($request->hasFile('image')) {
@@ -446,35 +463,26 @@ class CandidateController extends Controller
     /**
      * Import danh sách ứng viên từ file Excel.
      */
-    public function importExcel(Request $request)
-    {
-        // Validate file upload
+    public function importExcel(Request $request) {
         $request->validate([
-            'file' => 'required|mimes:xlsx,xls'
+            'file' => 'required|file|mimes:xls,xlsx',
         ], [
-            'file.required' => 'Hãy chọn một file để tải lên.',
-            'file.mimes' => 'File không đúng định dạng (.xlsx, .xls).',
+            'file.required' => 'Vui lòng chọn file',
+            'file.file' => 'File không hợp lệ',
+            'file.mimes' => 'File phải có định dạng xls hoặc xlsx'
         ]);
 
         try {
             Excel::import(new CandidatesImport, $request->file('file'));
-            return $this->jsonResponse(true, null, 'Nhập dữ liệu thành công.');
-        } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
-            $failures = $e->failures();
-            $errorMessages = [];
-
-            foreach ($failures as $failure) {
-                $errorMessages[] = [
-                    'row' => $failure->row(),
-                    'attribute' => $failure->attribute(),
-                    'errors' => $failure->errors(),
-                    'values' => $failure->values(),
-                ];
-            }
-
-            return $this->jsonResponse(false, $errorMessages, 'Có lỗi xảy ra khi nhập dữ liệu.', 422);
+            return response()->json([
+                'success' => true,
+                'message' => 'Import thành công'
+            ]);
         } catch (\Exception $e) {
-            return $this->jsonResponse(false, null, 'Đã xảy ra lỗi khi nhập dữ liệu: ' . $e->getMessage(), 500);
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 422);
         }
     }
 
