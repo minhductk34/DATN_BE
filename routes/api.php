@@ -1,7 +1,6 @@
 <?php
 
 use App\Http\Controllers\PasswordController;
-use App\Http\Controllers\PointController;
 use App\Http\Controllers\QuestionController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\CandidateController;
@@ -63,8 +62,6 @@ Route::prefix('admin')->group(function () {
         Route::post('/export-excel', [ExamSubjectController::class, 'exportExcel']);
         Route::post('/import-excel', [ExamSubjectController::class, 'importExcel']);
     });
-
-    //Exam content
     Route::prefix('exam-content')->group(function () {
         //get data
         Route::get('exam-subject/{id}', [ExamContentController::class, 'getContentByExam'])->name('exam-content-byExamSubject_id');
@@ -105,14 +102,7 @@ Route::prefix('admin')->group(function () {
     Route::resource('exam-room', ExamRoomController::class);
     Route::prefix('exam-room')->group(function () {
         Route::get('/detail/{id}', [ExamRoomController::class, 'showDetail']);
-        Route::get('/data-select-update/{exam_room_id}/{exam_subject_id}', [ExamRoomController::class, 'dataSelectUpdate']);
-        Route::get('/by-exam/{examId}', [ExamRoomController::class, 'getExamRoomsByExam']);
-    });
-    Route::prefix('points')->group(function() {
-        Route::get('/student/{idcode}/exam/{examId}',[PointController::class, 'getStudentPointsByExam']);
-
-        Route::get('/student/{idcode}', [\App\Http\Controllers\PointController::class, 'getStudentPoints']);
-        Route::post('/', [\App\Http\Controllers\PointController::class, 'store']);
+        Route::get('/data-select-update/{exam_room_id}/{exam_subject_id}', [ExamRoomController::class, 'dataSelectUpdate']); // Thêm route này
     });
     Route::resource('lecturer', LecturersController::class);
     // ca thi
@@ -247,6 +237,8 @@ Route::prefix('client')->group(function () {
     Route::post('/exam', [CandidateQuestionController::class, 'exam']);
 
     Route::get('/info/{id}', [CandidateController::class, 'info']);
+
+    Route::get('api/client/scoreboard/{id}',[CandidateQuestionController::class, 'scoreboard']);
 });
 
 
