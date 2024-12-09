@@ -125,7 +125,7 @@ class PasswordController extends Controller
                 'status' => "500",
                 'data' => [],
                 'error' => $e->getMessage(),
-                'message' => 'Internal server error while processing your request',
+                'message' => 'Lỗi máy chủ nội bộ khi xử lý yêu cầu của bạn',
             ], 500);
         }
     }

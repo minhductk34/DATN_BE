@@ -10,6 +10,7 @@ use App\Models\Exam_subject_detail;
 use App\Models\Point;
 use App\Models\Question;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class CandidateQuestionController extends Controller
 {
@@ -339,8 +340,22 @@ class CandidateQuestionController extends Controller
     }
 
     public function scoreboard($id) {
-
-    }
+        $results = DB::table('points')
+            ->join('exam_subjects', 'exam_subjects.id', '=', 'points.exam_subject_id')
+            ->join('exams', 'exams.id', '=', 'exam_subjects.exam_id')
+            ->where('points.exam_id', $id) // Bổ sung điều kiện `WHERE` theo `$id` được truyền vào
+            ->select(
+                'exams.id as exam_id',
+                'exams.name as exam_name',
+                'exam_subjects.id as subject_id',
+                'exam_subjects.name as subject_name',
+                'points.point',
+                DB::raw('CASE WHEN points.point >= 5 THEN "Đạt" ELSE "Không đạt" END as status')
+            )
+            ->get();
+    
+        return response()->json($results);
+    }    
     /**
      * Remove the specified resource from storage.
      */

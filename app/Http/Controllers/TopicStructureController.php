@@ -35,7 +35,7 @@ class TopicStructureController extends Controller
 
                 if (!$topicStructure) {
                     return response()->json([
-                        'error' => 'Topic structure not found for the given exam_subject_id.',
+                        'error' => 'Không tìm thấy cấu trúc chủ đề cho exam_subject_id đã cho.',
                         'data' => $validated['subject']
                     ], 404);
                 }
@@ -73,7 +73,7 @@ class TopicStructureController extends Controller
                         ->where('title', $value['title'])
                         ->where('exam_subject_id', $validated['subject'])
                         ->first();
-                
+
                     Exam_structure::create([
                         'exam_content_id' => $content->id,
                         'exam_subject_id' => $validated['subject'],
@@ -104,7 +104,7 @@ class TopicStructureController extends Controller
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json(['errors' => $e->errors()], 422);
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Failed to process topic structure: ' . $e->getMessage()], 500);
+            return response()->json(['error' => 'Không xử lý được cấu trúc chủ đề: ' . $e->getMessage()], 500);
         }
     }
 
@@ -122,7 +122,7 @@ class TopicStructureController extends Controller
             $topicStructure = Exam_structure::findOrFail($id);
 
             if (empty($validated)) {
-                return response()->json(['message' => 'No valid data provided for update.'], 400);
+                return response()->json(['message' => 'Không có dữ liệu hợp lệ được cung cấp để cập nhật.'], 400);
             }
 
             // Update the topic structure
@@ -132,9 +132,9 @@ class TopicStructureController extends Controller
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json(['errors' => $e->errors()], 422);
         } catch (ModelNotFoundException $e) {
-            return response()->json(['error' => 'Topic structure not found.'], 404);
+            return response()->json(['error' => 'Không tìm thấy cấu trúc chủ đề.'], 404);
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Failed to update topic structure: ' . $e->getMessage()], 500);
+            return response()->json(['error' => 'Không cập nhật được cấu trúc chủ đề: ' . $e->getMessage()], 500);
         }
     }
 
@@ -146,7 +146,7 @@ class TopicStructureController extends Controller
                 'success' => false,
                 'status' => "400",
                 'data' => [],
-                'message' => 'Invalid Exam Subject ID provided'
+                'message' => 'Mã số môn thi không hợp lệ đã cung cấp'
             ], 400);
         }
 
@@ -155,25 +155,25 @@ class TopicStructureController extends Controller
             $query = "
             WITH FilteredQuestions AS (
     -- Lấy câu hỏi duy nhất với phiên bản mới nhất
-    SELECT 
+    SELECT
         qs.exam_content_id,
         COUNT(DISTINCT qs.id) AS question_count -- Đếm số lượng câu hỏi duy nhất
-    FROM 
+    FROM
         questions qs
-    LEFT JOIN question_versions qsv 
+    LEFT JOIN question_versions qsv
         ON qsv.question_id = qs.id
     LEFT JOIN (
-        SELECT 
-            question_id, 
+        SELECT
+            question_id,
             MAX(version) AS latest_version
-        FROM 
+        FROM
             question_versions
-        GROUP BY 
+        GROUP BY
             question_id
-    ) latest_qsv 
+    ) latest_qsv
         ON latest_qsv.question_id = qsv.question_id
         AND qsv.version = latest_qsv.latest_version
-    GROUP BY 
+    GROUP BY
         qs.exam_content_id
 )
 SELECT
@@ -183,15 +183,15 @@ SELECT
     -- Số lượng câu hỏi cần thiết từ exam_structures
     COALESCE(MAX(CASE WHEN ts.exam_content_id = ec.id THEN ts.quantity ELSE 0 END), 0) AS quantity
 FROM exam_contents ec
-LEFT JOIN exam_structures ts 
+LEFT JOIN exam_structures ts
     ON ts.exam_subject_id = ec.exam_subject_id
-LEFT JOIN FilteredQuestions fq 
-    ON fq.exam_content_id = ec.id 
+LEFT JOIN FilteredQuestions fq
+    ON fq.exam_content_id = ec.id
 WHERE (ts.exam_subject_id = ? OR (ts.exam_subject_id IS NULL AND ec.exam_subject_id = ?))
-GROUP BY 
-    ec.title, 
+GROUP BY
+    ec.title,
     fq.question_count
-ORDER BY 
+ORDER BY
     ec.title;
         ";
 
@@ -204,7 +204,7 @@ ORDER BY
                     'success' => false,
                     'status' => "404",
                     'data' => [],
-                    'message' => 'Structure not found'
+                        'message' => 'Cấu trúc không tìm thấy'
                 ], 404);
             }
 
@@ -213,7 +213,7 @@ ORDER BY
                 'success' => true,
                 'status' => "200",
                 'data' => $result,
-                'message' => 'Data retrieved successfully'
+                'message' => 'Dữ liệu đã được lấy thành công'
             ], 200);
         } catch (\Exception $e) {
             // Xử lý lỗi khi thực thi câu truy vấn
@@ -222,7 +222,7 @@ ORDER BY
                 'status' => "500",
                 'data' => [],
                 'error' => $e->getMessage(),
-                'message' => 'Internal server error while processing your request'
+                'message' => 'Lỗi máy chủ nội bộ khi xử lý yêu cầu của bạn'
             ], 500);
         }
     }
@@ -243,7 +243,7 @@ ORDER BY
                 'message' => 'Structure not found'
             ], 404);
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Failed to retrieve topic structure: ' . $e->getMessage()], 500);
+            return response()->json(['error' => 'Không thể lấy được cấu trúc chủ đề: ' . $e->getMessage()], 500);
         }
     }
 
@@ -262,7 +262,7 @@ ORDER BY
                     'success' => false,
                     'status' => "404",
                     'data' => $query->toSql(),
-                    'message' => 'Structure not found'
+                    'message' => 'Cấu trúc không tìm thấy'
                 ], 404);
             }
 
@@ -277,7 +277,7 @@ ORDER BY
                 'success' => false,
                 'status' => "500",
                 'data' => [],
-                'message' => 'Failed to retrieve topic structures: ' . $e->getMessage()
+                'message' => 'Không thể truy xuất cấu trúc chủ đề: ' . $e->getMessage()
             ], 500);
         }
     }
