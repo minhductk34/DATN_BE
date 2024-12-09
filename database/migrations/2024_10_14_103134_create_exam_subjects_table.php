@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('exam_id');
             $table->foreign('exam_id')->references('id')->on('exams')->cascadeOnDelete()->cascadeOnUpdate();
             $table->string('name');
+            $table->string('create_by')->nullable();
             $table->boolean('status')->default(true);
             $table->timestamps();
             $table->softDeletes();

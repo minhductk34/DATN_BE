@@ -61,7 +61,7 @@ class ExamSubjectDetailsController extends Controller
                     'success' => false,
                     'status' => "404",
                     'data' => [],
-                    'message' => 'No exam subject details found for this exam_subject_id.'
+                    'message' => 'Không tìm thấy thông tin chi tiết về môn thi cho exam_subject_id này.'
                 ], 404);
             }
 
@@ -72,7 +72,7 @@ class ExamSubjectDetailsController extends Controller
                 'message' => ''
             ], 200);
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Failed to retrieve exam subject details: ' . $e->getMessage()], 500);
+            return response()->json(['error' => 'Không thể truy xuất thông tin chi tiết về môn thi: ' . $e->getMessage()], 500);
         }
     }
 

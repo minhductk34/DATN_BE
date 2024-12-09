@@ -25,7 +25,7 @@ class AdminController extends Controller
 public function login(Request $request)
 {
     try {
-        Log::debug('Login request received', ['request' => $request->all()]);
+        Log::debug('Đã nhận được yêu cầu đăng nhập', ['request' => $request->all()]);
 
         $credentials = $request->only('username', 'password');
 
@@ -39,7 +39,7 @@ public function login(Request $request)
             ], 400);
         }
 
-        Log::debug('Searching for admin', ['username' => $credentials['username']]);
+        Log::debug('Tìm kiếm quản trị viên', ['username' => $credentials['username']]);
         $admin = Admin::where('name', $credentials['username'])->first();
 
         if (!$admin) {
@@ -63,7 +63,7 @@ public function login(Request $request)
         }
 
         if (!$this->checkRedisConnection()) {
-            Log::error('Redis connection failed');
+            Log::error('Kết nối Redis không thành công');
             return response()->json([
                 'success' => false,
                 'status' => 503,
@@ -72,7 +72,7 @@ public function login(Request $request)
             ], 503);
         }
 
-        Log::debug('Checking existing token in Redis');
+        Log::debug('Kiểm tra mã thông báo hiện có trong Redis');
         $existingToken = $this->retryRedisOperation(function () use ($admin) {
             return Redis::hget('auth:' . $admin->id, 'token');
         });
@@ -96,7 +96,7 @@ public function login(Request $request)
             'expires_at' => $expiresAt,
         ];
 
-        Log::debug('Storing token in Redis', ['token' => $token, 'ttl' => $ttl]);
+        Log::debug('Lưu trữ token trong Redis', ['token' => $token, 'ttl' => $ttl]);
         $this->retryRedisOperation(function () use ($token, $tokenData, $admin, $ttl) {
             Redis::hmset('tokens:' . $token, $tokenData);
             Redis::hmset('auth:' . $admin->id, ['token' => $token, 'expires_at' => $ttl]);
@@ -109,7 +109,7 @@ public function login(Request $request)
             'username' => $admin->name,
         ];
 
-        Log::info('User logged in successfully', ['user_id' => $admin->id]);
+        Log::info('Người dùng đã đăng nhập thành công', ['user_id' => $admin->id]);
         return response()->json([
             'success' => true,
             'status' => 200,
@@ -141,7 +141,7 @@ private function checkRedisConnection()
         Redis::ping();
         return true;
     } catch (\Exception $e) {
-    
+
         return false;
     }
 }
@@ -157,9 +157,9 @@ private function retryRedisOperation(callable $operation, $maxRetries = 3)
             return $operation();
         } catch (\Exception $e) {
             $attempts++;
-            
+
             if ($attempts >= $maxRetries) {
-              
+
                 throw $e;
             }
             // Đợi một thời gian ngắn trước khi thử lại (200ms)

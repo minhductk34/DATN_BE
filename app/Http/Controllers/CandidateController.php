@@ -44,7 +44,7 @@ class CandidateController extends Controller
             }
 
             $admin = Password::query()->with('candidate')->where('idcode', $credentials['username'])->first();
-//            return $admin;
+
             if (!$admin) {
 
                 return response()->json([
@@ -55,17 +55,17 @@ class CandidateController extends Controller
                 ], 404);
             }
 
-//           return 123;
-            $decryptedPassword = Crypt::decrypt($admin->password);
 
-            if ($credentials['password'] !== $decryptedPassword) {
-                return response()->json([
-                    'success' => false,
-                    'status' => 401,
-                    'data' => [],
-                    'message' => 'Mật khẩu không chính xác.'
-                ], 401);
-            }
+                    $decryptedPassword = Crypt::decrypt($admin->password);
+                    if ($credentials['password'] !== $decryptedPassword) {
+                        return response()->json([
+                            'success' => false,
+                            'status' => 401,
+                            'data' => [],
+                            'message' => 'Mật khẩu không chính xác.'
+                        ], 401);
+                    }
+
 
             if (!$this->checkRedisConnection()) {
                 return response()->json([
@@ -98,7 +98,7 @@ class CandidateController extends Controller
 
             $tokenData = [
                 'id_code' => $admin->idcode,
-                'id_exam' => $admin->candidate->exam_id,
+                'id_exam'=>$admin->candidate->exam_id,
                 'expires_at' => $expiresAt,
             ];
 
@@ -111,7 +111,7 @@ class CandidateController extends Controller
 
             $data = [
                 'idcode' => $admin->idcode,
-                'id_exam' => $admin->candidate->exam_id,
+                'id_exam'=>$admin->candidate->exam_id,
             ];
 
             return response()->json([
@@ -175,12 +175,11 @@ class CandidateController extends Controller
      */
     public function store(Request $request)
     {
-
         try {
             $validated = $request->validate([
                 'idcode' => 'required|string|max:255|unique:candidates',
                 'name' => 'required|string|max:255',
-                'image' => 'image|mimes:jpeg,png,jpg,gif|max:204|nullable',
+                'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
                 'dob' => 'required|date',
                 'address' => 'required|string|max:255',
                 'password' => 'required|string|min:8',
@@ -190,7 +189,7 @@ class CandidateController extends Controller
             $exam = Exam::query()->select('id')
                 ->orderBy('created_at', 'desc')
                 ->first();
-            Log::debug('Storing token in Redis', ['token' => $exam]);
+                Log::debug('Storing token in Redis', ['token' => $exam]);
             if (!$exam) {
                 return response()->json([
                     'success' => false,
@@ -209,13 +208,13 @@ class CandidateController extends Controller
                 $examRoom = $ExamRoomController->createRoom('Phòng tự sinh', $exam->id);
             }
 
-//            if ($request->hasFile('image')) {
-//                $imagePath = $request->file('image')->store('img/candidate');
-//                $imagePath = str_replace('public/', 'storage/', $imagePath);
-//            } else {
-//              $imagePath = 'default/user.png';
-//            }
-            $imagePath = 'default/user.png';
+            if ($request->hasFile('image')) {
+                $imagePath = $request->file('image')->store('img/candidate');
+                $imagePath = str_replace('public/', 'storage/', $imagePath);
+            } else {
+                $imagePath = 'default/user.png';
+            }
+
             $candidate = Candidate::create([
                 'idcode' => $validated['idcode'],
                 'exam_id' => $exam->id,
@@ -295,7 +294,7 @@ class CandidateController extends Controller
                 ->with('exam_subject')
                 ->get();
 
-            $exam_subject = Exam_subject::query()->where('exam_id', $candidate->exam_id)->get();
+            $exam_subject = Exam_subject::query()->where('exam_id',$candidate->exam_id)->get();
 
             return response()->json([
                 'success' => true,
@@ -317,7 +316,6 @@ class CandidateController extends Controller
             ], 500);
         }
     }
-
     public function toggleActiveStatus(Request $request)
     {
         try {
@@ -364,8 +362,7 @@ class CandidateController extends Controller
         }
     }
 
-    public function info($id)
-    {
+    public function info($id){
         try {
             $candidate = Candidate::query()->find($id);
             if (!$candidate) {
@@ -578,7 +575,6 @@ class CandidateController extends Controller
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
-
     /**
      * Validation messages in Vietnamese.
      */
@@ -630,7 +626,6 @@ class CandidateController extends Controller
             ], 500);
         }
     }
-
     public function CandidateInExamRoom($examRoomId)
     {
         try {

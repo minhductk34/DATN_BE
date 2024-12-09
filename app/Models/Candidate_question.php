@@ -16,7 +16,6 @@ class Candidate_question extends Model
         'subject_id',
         'numerical_order',
         'answer_P',
-        'answer_Pi',
         'answer_Temp',
     ];
 

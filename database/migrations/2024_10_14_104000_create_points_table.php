@@ -19,8 +19,6 @@ return new class extends Migration
             $table->foreign('idcode')->references('idcode')->on('candidates')->cascadeOnDelete()->cascadeOnUpdate();
             $table->float('point', 5, 2);
             $table->integer('number_of_correct_sentences')->default(0);
-            $table->dateTime('time_start');
-            $table->dateTime('time_end');
             $table->timestamps();
             $table->softDeletes();
         });

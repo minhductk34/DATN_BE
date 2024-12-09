@@ -75,7 +75,7 @@ class ExamSubjectController extends Controller
 
             $examSubject = Exam_subject::create($validatedData);
 
-            return $this->jsonResponse(true, $examSubject, 'create exam subject successfully', 201);
+            return $this->jsonResponse(true, $examSubject, 'Tạo đề thi thành công', 201);
         } catch (\Exception $e) {
             return $this->jsonResponse(false, null, $e->getMessage(), 500);
         }
@@ -118,7 +118,7 @@ class ExamSubjectController extends Controller
 
             DB::commit();
 
-            return $this->jsonResponse(true, [], 'import data successfully', 200);
+            return $this->jsonResponse(true, [], 'Nhập dữ liệu thành công', 200);
         } catch (\Exception $e) {
             return $this->jsonResponse(false, null, $e->getMessage(), 500);
         }
@@ -164,7 +164,7 @@ class ExamSubjectController extends Controller
 
             $examSubject->update($validatedData);
 
-            return $this->jsonResponse(true, $examSubject, 'update exam subject successfully', 200);
+            return $this->jsonResponse(true, $examSubject, 'Cập nhật môn thi thành công', 200);
         } catch (\Exception $e) {
             return $this->jsonResponse(false, null, $e->getMessage(), 500);
         }
@@ -203,7 +203,7 @@ class ExamSubjectController extends Controller
 
             $examSubject->save();
 
-            return $this->jsonResponse(true, $examSubject->status, 'update status exam subject successfully', 200);
+            return $this->jsonResponse(true, $examSubject->status, 'Cập nhật trạng thái đề thi thành công', 200);
         } catch (\Exception $e) {
             return $this->jsonResponse(false, null, $e->getMessage(), 500);
         }

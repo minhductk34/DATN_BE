@@ -17,10 +17,10 @@ return new class extends Migration
             $table->foreign('question_id')->references('id')->on('questions')->cascadeOnDelete()->cascadeOnUpdate();
             $table->string('idcode')->nullable();
             $table->foreign('idcode')->references('idcode')->on('candidates')->cascadeOnDelete()->cascadeOnUpdate();
-            $table->integer('numerical_order');
-            $table->string('answer_P');
-            $table->string('answer_Pi');
-            $table->string('answer_Temp');
+            $table->string('subject_id')->nullable();
+            $table->integer('numerical_order')->nullable();
+            $table->string('answer_P')->nullable();
+            $table->string('answer_Temp')->nullable();
             $table->timestamps();
             $table->softDeletes();
         });
