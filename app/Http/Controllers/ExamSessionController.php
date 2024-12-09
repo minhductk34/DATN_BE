@@ -114,8 +114,8 @@ class ExamSessionController extends Controller
         try {
             $validatedData = $request->validate([
                 'name' => 'required|string|max:255',
-                'time_start' => 'required|time',
-                'time_end' => 'required|time',
+                'time_start' => 'required',
+                'time_end' => 'required',
             ]);
             if (strtotime($validatedData['time_start']) > strtotime($validatedData['time_end'])) {
                 return response()->json([
