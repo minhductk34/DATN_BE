@@ -38,7 +38,11 @@ class ExamSessionController extends Controller
                 'time_start' => 'required|date',
                 'time_end' => 'required|date',
             ]);
-
+            if (strtotime($validatedData['time_start']) > strtotime($validatedData['time_end'])) {
+                return response()->json([
+                    'message' => 'Thời gian bắt đầu phải nhỏ hơn hoặc bằng thời gian kết thúc.'
+                ], 422);
+            }
             $examSession = Exam_session::create($validatedData);
 
             return response()->json([
@@ -79,7 +83,7 @@ class ExamSessionController extends Controller
                 'success' => false,
                 'status' => '404',
                 'data' => [],
-                'message' => 'Exam session does not exist',
+                'message' => 'Phiên thi không tồn tại',
             ], 404);
         }
 
@@ -113,7 +117,11 @@ class ExamSessionController extends Controller
                 'time_start' => 'required|date',
                 'time_end' => 'required|date',
             ]);
-
+            if (strtotime($validatedData['time_start']) > strtotime($validatedData['time_end'])) {
+                return response()->json([
+                    'message' => 'Thời gian bắt đầu phải nhỏ hơn hoặc bằng thời gian kết thúc.'
+                ], 422);
+            }
             $examSession->update($validatedData);
 
             return response()->json([
@@ -153,7 +161,7 @@ class ExamSessionController extends Controller
                 'success' => false,
                 'status' => '404',
                 'data' => [],
-                'message' => 'Exam session does not exist',
+                'message' => 'Phiên thi không tồn tại',
             ], 404);
         }
 
@@ -166,4 +174,7 @@ class ExamSessionController extends Controller
             'message' => '',
         ], 200);
     }
+
+
+
 }

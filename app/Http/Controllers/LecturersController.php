@@ -20,7 +20,7 @@ class LecturersController extends Controller
                 'success' => true,
                 'status' => '200',
                 'data' => $lecturers,
-                'message' => 'Candidate created successfully'
+                'message' => 'Thí sinh đã được tạo thành công'
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
@@ -28,7 +28,7 @@ class LecturersController extends Controller
                 'status' => "500",
                 'data' => [],
                 'error' => $e->getMessage(),
-                'message' => 'Internal server error while processing your request'
+                'message' => 'Lỗi máy chủ nội bộ khi xử lý yêu cầu của bạn'
             ], 500);
         }
     }
@@ -51,14 +51,14 @@ class LecturersController extends Controller
                 'success' => true,
                 'status' => '200',
                 'data' => $lecturer,
-                'message' => 'Lecturer created successfully!'
+                'message' => 'Đã tạo giảng viên thành công!'
             ], 201);
         } catch (ValidationException $e) {
             return response()->json([
                 'success' => false,
                 'status' => '422',
                 'data' => [],
-                'message' => 'Validation error',
+                'message' => 'Lỗi xác thực',
                 'error' => $e->errors()
             ], 422);
         } catch (\Exception $e) {
@@ -67,7 +67,7 @@ class LecturersController extends Controller
                 'status' => "500",
                 'data' => [],
                 'error' => $e->getMessage(),
-                'message' => 'Internal server error while processing your request'
+                'message' => 'Lỗi máy chủ nội bộ khi xử lý yêu cầu của bạn'
             ], 500);
         }
     }
@@ -94,7 +94,7 @@ class LecturersController extends Controller
                 'success' => true,
                 'status' => '200',
                 'data' => $lecturer,
-                'message' => 'Candidate show successfully'
+                'message' => 'Thí sinh đã trình bày thành công'
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
@@ -102,7 +102,7 @@ class LecturersController extends Controller
                 'status' => "500",
                 'data' => [],
                 'error' => $e->getMessage(),
-                'message' => 'Internal server error while processing your request'
+                'message' => 'Lỗi máy chủ nội bộ khi xử lý yêu cầu của bạn'
             ], 500);
         }
     }
@@ -136,7 +136,7 @@ class LecturersController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Lecturer updated successfully!',
+                'message' => 'Giảng viên đã cập nhật thành công!',
                 'data' => $lecturer,
                 'error' => ''
             ], 200);
@@ -154,7 +154,7 @@ class LecturersController extends Controller
                 'status' => "500",
                 'data' => [],
                 'error' => $e->getMessage(),
-                'message' => 'Internal server error while processing your request'
+                'message' => 'Lỗi máy chủ nội bộ khi xử lý yêu cầu của bạn'
             ], 500);
         }
     }
@@ -181,7 +181,7 @@ class LecturersController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Lecturer deleted successfully!',
+                'message' => 'Giảng viên đã bị xóa thành công!',
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
@@ -189,7 +189,7 @@ class LecturersController extends Controller
                 'status' => "500",
                 'data' => [],
                 'error' => $e->getMessage(),
-                'message' => 'Internal server error while processing your request'
+                'message' => 'Lỗi máy chủ nội bộ khi xử lý yêu cầu của bạn'
             ], 500);
         }
     }

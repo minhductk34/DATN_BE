@@ -63,6 +63,8 @@ Route::prefix('admin')->group(function () {
         Route::post('/export-excel', [ExamSubjectController::class, 'exportExcel']);
         Route::post('/import-excel', [ExamSubjectController::class, 'importExcel']);
     });
+
+    //Exam content
     Route::prefix('exam-content')->group(function () {
         //get data
         Route::get('exam-subject/{id}', [ExamContentController::class, 'getContentByExam'])->name('exam-content-byExamSubject_id');
