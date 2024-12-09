@@ -7,6 +7,7 @@ use App\Models\Exam;
 use App\Models\Exam_room;
 use App\Models\Exam_subject;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Facades\Excel;
 //use App\Imports\ExamsImport;
@@ -282,6 +283,58 @@ class ExamController extends Controller
             ], 500);
         }
     }
+
+    public function getALLExamsSubjectsById($id, $idcode)
+{
+    try {
+        $exams = DB::table('exams')
+    ->join('exam_subjects', 'exam_subjects.exam_id', '=', 'exams.id')
+    ->leftJoin('exam_subject_details', 'exam_subject_details.exam_subject_id', '=', 'exam_subjects.id')
+    ->leftJoin('candidates', 'candidates.exam_id', '=', 'exams.id')
+    ->leftJoin('exam_room_details', 'exam_room_details.exam_room_id', '=', 'candidates.exam_room_id')
+    ->leftJoin('exam_sessions', 'exam_sessions.id', '=', 'exam_room_details.exam_session_id')
+    ->where('exams.id', '=', $id) // Sử dụng tham số $id
+    ->where('candidates.idcode', '=', $idcode) // Sử dụng tham số $idcode
+    ->whereColumn('exam_subjects.id', '=', 'exam_room_details.exam_subject_id') // Điều kiện lọc phòng thi theo môn thi
+    ->select(
+        'exam_subjects.id', 
+        'exam_subjects.name', 
+        'exam_room_details.exam_date', 
+        'exam_room_details.exam_end', 
+        'exam_sessions.time_start', 
+        'exam_sessions.time_end'
+    )
+    ->get();
+
+
+        // Kiểm tra nếu không có kỳ thi nào được tìm thấy
+        if ($exams->isEmpty()) {
+            return response()->json([
+                'success' => false,
+                'status' => "404",
+                'data' => [],
+                'message' => 'Không tìm thấy kỳ thi phù hợp'
+            ], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'status' => '200',
+            'data' => $exams,
+            'message' => 'Dữ liệu đã được lấy thành công'
+        ], 200);
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'status' => "500",
+            'data' => [],
+            'error' => $e->getMessage(),
+            'message' => 'Lỗi máy chủ nội bộ khi xử lý yêu cầu của bạn'
+        ], 500);
+    }
+}
+
 
     public function getExamRoomsInExams($examId)
     {

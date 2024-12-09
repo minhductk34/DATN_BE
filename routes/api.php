@@ -48,6 +48,7 @@ Route::prefix('admin')->group(function () {
         Route::get('/exam-with-exam-subject', [ExamController::class, 'getALLExamsWithExamSubjects']);
         Route::get('/exam-subjects-with-content/{exam_id}', [ExamController::class, 'getExamSubjectsWithContent']);
         Route::get('/exam-with-exam-subject/{id}', [ExamController::class, 'getALLExamsWithExamSubjectsById']);
+        Route::get('/exam-with-subject/{id}/{idcode}', [ExamController::class, 'getALLExamsSubjectsById']);
     });
     //Quản lý môn thi
     Route::prefix('exam-subjects')->group(function () {
