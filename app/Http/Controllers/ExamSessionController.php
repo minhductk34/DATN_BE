@@ -110,8 +110,8 @@ class ExamSessionController extends Controller
         try {
             $validatedData = $request->validate([
                 'name' => 'required|string|max:255',
-                'time_start' => 'required|date',
-                'time_end' => 'required|date',
+                'time_start' => 'required|time',
+                'time_end' => 'required|time',
             ]);
 
             $examSession->update($validatedData);
