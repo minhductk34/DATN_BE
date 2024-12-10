@@ -288,23 +288,24 @@ class ExamController extends Controller
 {
     try {
         $exams = DB::table('exams')
-    ->join('exam_subjects', 'exam_subjects.exam_id', '=', 'exams.id')
-    ->leftJoin('exam_subject_details', 'exam_subject_details.exam_subject_id', '=', 'exam_subjects.id')
-    ->leftJoin('candidates', 'candidates.exam_id', '=', 'exams.id')
-    ->leftJoin('exam_room_details', 'exam_room_details.exam_room_id', '=', 'candidates.exam_room_id')
-    ->leftJoin('exam_sessions', 'exam_sessions.id', '=', 'exam_room_details.exam_session_id')
-    ->where('exams.id', '=', $id) // Sử dụng tham số $id
-    ->where('candidates.idcode', '=', $idcode) // Sử dụng tham số $idcode
-    ->whereColumn('exam_subjects.id', '=', 'exam_room_details.exam_subject_id') // Điều kiện lọc phòng thi theo môn thi
-    ->select(
-        'exam_subjects.id', 
-        'exam_subjects.name', 
-        'exam_room_details.exam_date', 
-        'exam_room_details.exam_end', 
-        'exam_sessions.time_start', 
-        'exam_sessions.time_end'
-    )
-    ->get();
+        ->join('exam_subjects', 'exam_subjects.exam_id', '=', 'exams.id')
+        ->leftJoin('exam_subject_details', 'exam_subject_details.exam_subject_id', '=', 'exam_subjects.id')
+        ->leftJoin('candidates', 'candidates.exam_id', '=', 'exams.id')
+        ->leftJoin('exam_room_details', 'exam_room_details.exam_room_id', '=', 'candidates.exam_room_id')
+        ->leftJoin('exam_sessions', 'exam_sessions.id', '=', 'exam_room_details.exam_session_id')
+        ->where('exams.id', '=', $id) 
+        ->where('candidates.idcode', '=', $idcode) 
+        ->whereColumn('exam_subjects.id', '=', 'exam_room_details.exam_subject_id') 
+        ->select(
+            'exam_subjects.id',
+            'exam_subjects.name',
+            DB::raw('MAX(exam_room_details.exam_date) AS exam_date'),
+            DB::raw('MAX(exam_room_details.exam_end) AS exam_end'),
+            DB::raw('MAX(exam_sessions.time_start) AS time_start'),
+            DB::raw('MAX(exam_sessions.time_end) AS time_end')
+        )
+        ->groupBy('exam_subjects.id', 'exam_subjects.name') 
+        ->get();    
 
 
         // Kiểm tra nếu không có kỳ thi nào được tìm thấy

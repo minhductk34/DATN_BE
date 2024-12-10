@@ -32,7 +32,7 @@ class CandidateQuestionController extends Controller
         $exam_subject_detail = Exam_subject_detail::query()->where('exam_subject_id', '=', $validated['id_subject'])->first();
 
         // Kiểm tra xem câu hỏi đã tồn tại trong bảng Candidate_question chưa
-        $questionCandidate = Candidate_question::query()->where('idCode', $validated['idCode'])->get();
+        $questionCandidate = Candidate_question::query()->where('subject_id',$validated['id_subject'])->where('idCode', $validated['idCode'])->get();
 
         // Nếu có kết quả, trả về dữ liệu
         if ($questionCandidate->isNotEmpty()) {
