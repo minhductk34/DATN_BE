@@ -18,7 +18,7 @@ class CandidatesImport implements ToModel, WithHeadingRow, WithValidation
     public function model(array $row)
     {
         try {
-            // Tương tự như phần store của CandidateController
+            // Tìm kỳ thi mới nhất
             $exam = Exam::query()->select('id')
                 ->orderBy('created_at', 'desc')
                 ->first();
@@ -34,16 +34,19 @@ class CandidatesImport implements ToModel, WithHeadingRow, WithValidation
                 ->first();
 
             if (!$examRoom) {
-                // Tự tạo phòng mới nếu không có phòng trống
-                $ExamRoomController = new ExamRoomController();
-                $examRoom = $ExamRoomController->createRoom('Phòng tự sinh', $exam->id);
+                $lastRoom = Exam_room::where('exam_id', $exam->id)
+                    ->orderBy('name', 'desc')
+                    ->first();
+
+                $roomNumber = $lastRoom ? intval(substr($lastRoom->name, 6)) + 1 : 1;
+                $examRoom = Exam_room::create([
+                    'exam_id' => $exam->id,
+                    'name' => 'Phòng ' . $roomNumber
+                ]);
             }
 
-            // Tạo mật khẩu ngẫu nhiên như phần thêm mới
+            // Tạo mật khẩu ngẫu nhiên
             $password = Str::random(8);
-
-            // Xử lý ngày sinh từ Excel - format dd-mm-yyyy
-            $dob = date('Y-m-d', strtotime($row['ngay_sinh']));
 
             // Tạo candidate mới
             $candidate = Candidate::create([
@@ -51,7 +54,7 @@ class CandidatesImport implements ToModel, WithHeadingRow, WithValidation
                 'exam_id' => $exam->id,
                 'exam_room_id' => $examRoom->id,
                 'name' => $row['ten'],
-                'dob' => $dob,
+                'dob' => \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($row['ngay_sinh']),
                 'address' => $row['dia_chi'],
                 'email' => $row['email'],
                 'image' => 'default/user.png',
@@ -72,32 +75,28 @@ class CandidatesImport implements ToModel, WithHeadingRow, WithValidation
         }
     }
 
-// Map tên cột từ Excel sang tên field
-    public function map($row): array
-    {
-        return [
-            'ma_thi_sinh' => $row['Ma thi sinh'],
-            'ten' => $row['Ten'],
-            'ngay_sinh' => $row['Ngay sinh'],
-            'dia_chi' => $row['Dia chi'],
-            'email' => $row['Email']
-        ];
-    }
-
-// Validate dữ liệu import
     public function rules(): array
     {
         return [
-            'ma_thi_sinh' => 'required|unique:candidates,idcode',
-            'ten' => 'required',
-            'ngay_sinh' => 'required|date_format:d-m-Y',
-            'dia_chi' => 'required',
-            'email' => 'required|email|unique:candidates,email'
+            '*.ma_thi_sinh' => 'required|unique:candidates,idcode',
+            '*.ten' => 'required',
+            '*.ngay_sinh' => 'required',
+            '*.dia_chi' => 'required',
+            '*.email' => 'required|email|unique:candidates,email'
         ];
     }
 
-    public function headingRow(): int
+    public function customValidationMessages()
     {
-        return 1; // Returns first row as the header row
+        return [
+            '*.ma_thi_sinh.required' => 'Mã thí sinh là bắt buộc',
+            '*.ma_thi_sinh.unique' => 'Mã thí sinh đã tồn tại',
+            '*.ten.required' => 'Tên thí sinh là bắt buộc',
+            '*.ngay_sinh.required' => 'Ngày sinh là bắt buộc',
+            '*.dia_chi.required' => 'Địa chỉ là bắt buộc',
+            '*.email.required' => 'Email là bắt buộc',
+            '*.email.email' => 'Email không đúng định dạng',
+            '*.email.unique' => 'Email đã tồn tại'
+        ];
     }
 }

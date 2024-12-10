@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\Candidate;
+use App\Models\Exam;
 use App\Models\Exam_room;
 use Illuminate\Support\Facades\Storage;
 use App\Models\Point;
@@ -14,12 +15,15 @@ class RoomStatusController extends Controller
     {
         $currentDateTime = now();
 
+        $latestExamId = Exam::orderBy('created_at', 'desc')->value('id');
+
+        if (!$latestExamId) {
+            return response()->json(['message' => 'No exams found'], 404);
+        }
+
         $rooms = Exam_room::with(['detail.exam_subject', 'candidates'])
             ->select('id', 'name', 'exam_id')
-            ->whereHas('detail', function ($query) use ($currentDateTime) {
-                $query->where('exam_date', '<=', $currentDateTime)
-                    ->where('exam_end', '>', $currentDateTime);
-            })
+            ->where('exam_id', $latestExamId)
             ->get()
             ->map(function ($room) {
                 return [

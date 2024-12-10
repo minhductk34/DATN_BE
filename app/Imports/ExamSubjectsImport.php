@@ -30,4 +30,14 @@ class ExamSubjectsImport implements ToModel, WithHeadingRow, WithValidation
     {
         return 1;
     }
+    public function customValidationMessages()
+    {
+        return [
+            'ma_mon_thi.required' => 'Mã môn thi không được để trống',
+            'ma_mon_thi.unique' => 'Mã môn thi đã tồn tại trong hệ thống',
+            'ten_mon_thi.required' => 'Tên môn thi không được để trống',
+            'ma_ky_thi.required' => 'Mã kỳ thi không được để trống',
+            'ma_ky_thi.exists' => 'Mã kỳ thi không tồn tại trong hệ thống'
+        ];
+    }
 }

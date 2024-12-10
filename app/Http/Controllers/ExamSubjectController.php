@@ -2,14 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\ExamSubjectsExport;
 use App\Http\Requests\ExamSubject\StoreExamSubjectRequest;
 use App\Http\Requests\ExamSubject\UpdateExamSubjectRequest;
+use App\Imports\ExamSubjectsImport;
 use App\Models\Exam_subject;
 use App\Models\ExamSubject;
 use Illuminate\Http\Request;
 use App\Imports\ExamSubjectImport;
 use Illuminate\Support\Facades\DB;
-
+use Maatwebsite\Excel\Facades\Excel;
 class ExamSubjectController extends Controller
 {
     /**
@@ -86,41 +88,23 @@ class ExamSubjectController extends Controller
      */
     public function importExcel(Request $request)
     {
-        $request->validate(
-            [
-                'file' => 'required|mimes:xlsx,xls',
-            ],
-            [
-                'file.required' => 'Hãy chọn một file để tải lên',
-                'file.mimes' => 'File không đúng định dạng ( .xlsx, .xls )',
-            ]
-        );
+        $request->validate([
+            'file' => 'required|file|mimes:xls,xlsx'
+        ]);
 
         try {
-            DB::beginTransaction();
+            Excel::import(new ExamSubjectsImport(), $request->file('file'));
 
-            $import = new ExamSubjectImport();
-            $import->import($request->file('file'));
+            return response()->json([
+                'success' => true,
+                'message' => 'Import thành công'
+            ]);
 
-            if (count($import->failures()) > 0) {
-                $failures = $import->failures();
-
-                foreach ($failures as $failure) {
-                    $errorMessages[] = [
-                        'row' => $failure->row(),
-                        'errors' => $failure->errors(),
-                    ];
-                }
-
-                DB::rollBack();
-                return $this->jsonResponse(false, null, $errorMessages, 422);
-            }
-
-            DB::commit();
-
-            return $this->jsonResponse(true, [], 'Nhập dữ liệu thành công', 200);
         } catch (\Exception $e) {
-            return $this->jsonResponse(false, null, $e->getMessage(), 500);
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 500);
         }
     }
 
@@ -242,5 +226,36 @@ class ExamSubjectController extends Controller
             'data' => $data,
             'message' => $message
         ], $statusCode);
+    }
+    public function exportExcel(Request $request)
+    {
+        try {
+            $action = $request->input('action', null);
+            $id = $request->input('id', null);
+
+            if ($action === 'exam' && !empty($id)) {
+                $data = DB::table('exam_subjects')
+                    ->select('id', 'exam_id', 'name', 'status')
+                    ->where('exam_id', $id)
+                    ->orderBy('id')
+                    ->get();
+            } else {
+                $data = DB::table('exam_subjects')
+                    ->select('id', 'exam_id', 'name', 'status')
+                    ->orderBy('exam_id')
+                    ->orderBy('id')
+                    ->get();
+            }
+
+            $fileName = 'danh_sach_mon_thi_' . now()->format('Y_m_d_H_i_s') . '.xlsx';
+
+            return Excel::download(new ExamSubjectsExport($data), $fileName);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 500);
+        }
     }
 }
