@@ -239,7 +239,7 @@ Route::prefix('client')->group(function () {
 
     Route::get('/info/{id}', [CandidateController::class, 'info']);
 
-    Route::get('api/client/scoreboard/{id}',[CandidateQuestionController::class, 'scoreboard']);
+    Route::get('api/client/scoreboard/{id}', [CandidateQuestionController::class, 'scoreboard']);
 });
 
 
@@ -269,3 +269,5 @@ Route::prefix('/room-status')->group(function () {
 });
 
 Route::post('/candidate/{candidate}/finish', [CandidateController::class, 'finish']);
+Route::get('/candidate/{candidate}/check-status', [CandidateController::class, 'checkExamStatus']);
+Route::post('/candidate/{candidate}/update-status', [CandidateController::class, 'updateExamStatus']);
