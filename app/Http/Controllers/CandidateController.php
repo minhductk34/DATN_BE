@@ -56,15 +56,15 @@ class CandidateController extends Controller
             }
 
 
-                    $decryptedPassword = Crypt::decrypt($admin->password);
-                    if ($credentials['password'] !== $decryptedPassword) {
-                        return response()->json([
-                            'success' => false,
-                            'status' => 401,
-                            'data' => [],
-                            'message' => 'Mật khẩu không chính xác.'
-                        ], 401);
-                    }
+            $decryptedPassword = Crypt::decrypt($admin->password);
+            if ($credentials['password'] !== $decryptedPassword) {
+                return response()->json([
+                    'success' => false,
+                    'status' => 401,
+                    'data' => [],
+                    'message' => 'Mật khẩu không chính xác.'
+                ], 401);
+            }
 
 
             if (!$this->checkRedisConnection()) {
@@ -98,7 +98,7 @@ class CandidateController extends Controller
 
             $tokenData = [
                 'id_code' => $admin->idcode,
-                'id_exam'=>$admin->candidate->exam_id,
+                'id_exam' => $admin->candidate->exam_id,
                 'expires_at' => $expiresAt,
             ];
 
@@ -111,7 +111,7 @@ class CandidateController extends Controller
 
             $data = [
                 'idcode' => $admin->idcode,
-                'id_exam'=>$admin->candidate->exam_id,
+                'id_exam' => $admin->candidate->exam_id,
             ];
 
             return response()->json([
@@ -247,7 +247,8 @@ class CandidateController extends Controller
             ]);
             Password::create([
                 'idcode' => $candidate->idcode,
-                'password' => Crypt::encrypt($validated['password'])]);
+                'password' => Crypt::encrypt($validated['password'])
+            ]);
             $data = [
                 'idcode' => $validated['idcode'],
                 'exam_id' => $exam->id,
@@ -313,7 +314,7 @@ class CandidateController extends Controller
                 ->with('exam_subject')
                 ->get();
 
-            $exam_subject = Exam_subject::query()->where('exam_id',$candidate->exam_id)->get();
+            $exam_subject = Exam_subject::query()->where('exam_id', $candidate->exam_id)->get();
 
             return response()->json([
                 'success' => true,
@@ -365,7 +366,6 @@ class CandidateController extends Controller
                 'message' => 'Cập nhật trạng thái thành công',
                 'data' => $active
             ]);
-
         } catch (ValidationException $e) {
             return response()->json([
                 'success' => false,
@@ -381,7 +381,8 @@ class CandidateController extends Controller
         }
     }
 
-    public function info($id){
+    public function info($id)
+    {
         try {
             $candidate = Candidate::query()->find($id);
             if (!$candidate) {
@@ -463,7 +464,8 @@ class CandidateController extends Controller
     /**
      * Import danh sách ứng viên từ file Excel.
      */
-    public function importExcel(Request $request) {
+    public function importExcel(Request $request)
+    {
         $request->validate([
             'file' => 'required|file|mimes:xls,xlsx',
         ], [
@@ -674,6 +676,10 @@ class CandidateController extends Controller
 
     public function finish(Candidate $candidate)
     {
+        $candidate->update([
+            'is_completed' => 2
+        ]);
+
         broadcast(new StudentSubmitted($candidate->exam_room_id, $candidate))->toOthers();
 
         return response()->json([
@@ -681,5 +687,31 @@ class CandidateController extends Controller
             'message' => 'Cập nhật trạng thái thành công.',
             'data' => [],
         ]);
+    }
+
+    public function checkExamStatus(Candidate $candidate)
+    {
+        $examStatus = $candidate->is_completed;
+
+        if ($examStatus == 1) {
+            return response()->json([
+                'success' => true,
+                'has_incomplete_exam' => true,
+                'subject_id' => $candidate->exam_room->detail->exam_subject_id,
+            ]);
+        }
+
+        return response()->json([
+            'has_incomplete_exam' => false
+        ]);
+    }
+
+    public function updateExamStatus(Candidate $candidate)
+    {
+        $candidate->update([
+            'is_completed' => 1
+        ]);
+
+        return response()->json(['success' => true]);
     }
 }
