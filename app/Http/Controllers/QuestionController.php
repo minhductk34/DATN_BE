@@ -2,25 +2,27 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\ExportQuestions;
 use App\Http\Requests\ImportExelRequest;
 use App\Http\Requests\Questions\StoreQuestionRequest;
 use App\Http\Requests\Questions\UpdateQuestionRequest;
+use App\Imports\ImportQuestions;
 use App\Imports\QuestionImport;
+use App\Imports\QuestionsImport;
 use App\Imports\QuestionUpdate;
 use App\Models\Exam;
 use App\Models\Exam_content;
 use App\Models\Exam_subject;
-use App\Models\ExamContent;
-use App\Models\ExamSubject;
 use App\Models\Question;
 use App\Models\Question_version;
-use App\Models\QuestionVersion;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use App\Http\Controllers\ExamController;
 use App\Http\Controllers\ExamSubjectController;
 use App\Http\Controllers\ExamContentController;
+use Maatwebsite\Excel\Facades\Excel;
+use Nette\Schema\ValidationException;
 
 class QuestionController extends Controller
 {
@@ -28,7 +30,7 @@ class QuestionController extends Controller
     public function index($id,Request $request)
     {
         try {
-        
+
             if (!$id) {
                 return $this->jsonResponse(false, null, 'Hãy chọn nội dung thi', 400);
             }
@@ -107,40 +109,82 @@ class QuestionController extends Controller
         }
     }
 
-    // Thêm câu hỏi bằng exel
-    public function importExcel(ImportExelRequest $request)
+    public function exportExcel(Request $request)
     {
         try {
+            $exam_content_id = $request->input('exam_content_id');
+
+            // Lấy câu hỏi theo exam_content_id
+            $questions = Question::query()
+                ->join('question_versions', function ($join) {
+                    $join->on('questions.id', '=', 'question_versions.question_id')
+                        ->on('questions.current_version_id', '=', 'question_versions.id');
+                })
+                ->where('questions.exam_content_id', $exam_content_id)
+                ->select(
+                    'questions.id',
+                    'questions.exam_content_id',
+                    'question_versions.title',
+                    'question_versions.level',
+                    'question_versions.answer_P',
+                    'question_versions.answer_F1',
+                    'question_versions.answer_F2',
+                    'question_versions.answer_F3',
+                    'questions.status'
+                )
+                ->get();
+
+            $fileName = 'danh_sach_cau_hoi_' . now()->format('Y_m_d_H_i_s') . '.xlsx';
+
+            return Excel::download(new ExportQuestions($questions), $fileName);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function importExcel(Request $request)
+    {
+        try {
+            $request->validate([
+                'file' => 'required|file|mimes:xlsx,xls',
+                'exam_content_id' => 'required|exists:exam_contents,id'
+            ]);
+
             DB::beginTransaction();
 
-            $import = new QuestionImport();
-            $import->import($request->file('file'));
-
-            if (count($import->failures()) > 0) {
-                $failures = $import->failures();
-
-                foreach ($failures as $failure) {
-                    $errorMessages[] = [
-                        'row' => $failure->row(),
-                        'errors' => $failure->errors(),
-                    ];
-                }
-
-                foreach ($import->imageTmp as $img) {
-                    if (Storage::disk('public')->exists($img)) {
-                        Storage::disk('public')->delete($img);
-                    }
-                }
-
-                DB::rollBack();
-                return $this->jsonResponse(false, null, $errorMessages, 422);
-            }
+            $import = new QuestionsImport($request->exam_content_id);
+            Excel::import($import, $request->file('file'));
 
             DB::commit();
 
-            return $this->jsonResponse(true, [], '', 200);
+            return response()->json([
+                'success' => true,
+                'message' => 'Import thành công'
+            ]);
+
+        } catch (ValidationException $e) {
+            DB::rollBack();
+            $errors = [];
+            foreach ($e->errors() as $field => $messages) {
+                $row = explode('.', $field)[0];
+                $errors[] = "Dòng {$row}: " . implode(', ', $messages);
+            }
+
+            return response()->json([
+                'success' => false,
+                'message' => implode("\n", $errors)
+            ], 422);
+
         } catch (\Exception $e) {
-            return $this->jsonResponse(false, null, $e->getMessage(), 500);
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 500);
         }
     }
 
@@ -208,7 +252,7 @@ class QuestionController extends Controller
                 // Đánh dấu phiên bản cũ là không hoạt động
                 $question->currentVersion->each(function ($version) {
                     $version->update(['is_active' => false]);
-                });                
+                });
 
                 // Tạo phiên bản mới
                 $newVersion = $this->createQuestionVersion(

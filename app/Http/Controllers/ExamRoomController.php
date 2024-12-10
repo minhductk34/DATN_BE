@@ -89,11 +89,11 @@ class ExamRoomController extends Controller
             ], 500);
         }
     }
-    public function createRoom($name,$exam_id)
+    public function createRoom($name, $exam_id)
     {
         try {
 
-            $examRoom = Exam_room::create(['name'=>$name,'exam_id'=>$exam_id]);
+            $examRoom = Exam_room::create(['name' => $name, 'exam_id' => $exam_id]);
 
             return response()->json([
                 'success' => true,
@@ -181,7 +181,7 @@ class ExamRoomController extends Controller
 
             // Lấy chi tiết phòng thi
             $examRoomDetails = Exam_room_detail::with(['exam_subject', 'exam_session'])
-                ->whereHas('exam_subject', function($query) use ($examRoom) {
+                ->whereHas('exam_subject', function ($query) use ($examRoom) {
                     $query->where('exam_id', $examRoom->exam_id);
                 })
                 ->where('exam_room_id', $id)
@@ -219,7 +219,6 @@ class ExamRoomController extends Controller
                 ],
                 'message' => '',
             ], 200);
-
         } catch (QueryException $e) {
             return response()->json([
                 'success' => false,
@@ -250,7 +249,8 @@ class ExamRoomController extends Controller
             $request->validate([
                 'exam_subject_id' => 'required|exists:exam_subjects,id',
                 'exam_session_id' => 'required|exists:exam_sessions,id',
-                'exam_date' => 'required|date'
+                'exam_date' => 'required|date',
+                'exam_end' => 'nullable|date|after:exam_date'
             ]);
 
             // Tìm phòng thi
@@ -264,7 +264,8 @@ class ExamRoomController extends Controller
                 ],
                 [
                     'exam_session_id' => $request->exam_session_id,
-                    'exam_date' => $request->exam_date
+                    'exam_date' => $request->exam_date,
+                    'exam_end' => $request->exam_end ?? null
                 ]
             );
 
@@ -276,7 +277,6 @@ class ExamRoomController extends Controller
                     'exam_room_detail' => $examRoomDetail
                 ]
             ]);
-
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'success' => false,
@@ -338,6 +338,7 @@ class ExamRoomController extends Controller
             ], 500);
         }
     }
+
     public function dataSelectUpdate($exam_room_id, $exam_subject_id)
     {
         try {
@@ -351,8 +352,9 @@ class ExamRoomController extends Controller
             return response()->json([
                 'success' => true,
                 'data' => [
-                    'exam_session' => $exam_session || null,
-                    'exam_date' => $exam_room_detail->exam_date || null,
+                    'exam_session' => $exam_session ?? null,
+                    'exam_date' => $exam_room_detail->exam_date ?? null,
+                    'exam_end' => $exam_room_detail->exam_end ?? null,
                 ]
             ]);
         } catch (\Exception $e) {
@@ -362,6 +364,39 @@ class ExamRoomController extends Controller
                 'data' => [],
                 'message' => 'Đã xảy ra lỗi không xác định',
                 'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+    public function getExamRoomsByExam($examId) {
+        try {
+            $examRooms = Exam_room::query()
+                ->where('exam_id', $examId)
+                ->withCount('candidates')
+                ->get();
+
+            if ($examRooms->isEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'status' => '404',
+                    'data' => [],
+                    'message' => 'Không tìm thấy phòng thi cho kỳ thi này',
+                ], 404);
+            }
+
+            return response()->json([
+                'success' => true,
+                'status' => '200',
+                'data' => $examRooms,
+                'message' => '',
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'status' => '500',
+                'data' => [],
+                'message' => 'Đã xảy ra lỗi',
+                'error' => $e->getMessage(),
             ], 500);
         }
     }

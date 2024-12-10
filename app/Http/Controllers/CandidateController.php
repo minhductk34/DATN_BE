@@ -179,17 +179,18 @@ class CandidateController extends Controller
             $validated = $request->validate([
                 'idcode' => 'required|string|max:255|unique:candidates',
                 'name' => 'required|string|max:255',
-                'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+                'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
                 'dob' => 'required|date',
                 'address' => 'required|string|max:255',
                 'password' => 'required|string|min:8',
                 'email' => 'required|string|email|max:255|unique:candidates',
+                'create_by' => 'nullable|string',
             ], $this->validationMessages());
 
             $exam = Exam::query()->select('id')
                 ->orderBy('created_at', 'desc')
                 ->first();
-                Log::debug('Storing token in Redis', ['token' => $exam]);
+            Log::debug('Storing token in Redis', ['token' => $exam]);
             if (!$exam) {
                 return response()->json([
                     'success' => false,
@@ -202,10 +203,27 @@ class CandidateController extends Controller
             $examRoom = Exam_room::withCount('candidates')
                 ->where('exam_id', $exam->id)
                 ->having('candidates_count', '<', 35)
+                ->orderBy('created_at', 'desc')
                 ->first();
+
             if (!$examRoom) {
-                $ExamRoomController = new ExamRoomController();
-                $examRoom = $ExamRoomController->createRoom('Phòng tự sinh', $exam->id);
+                $lastRoom = Exam_room::where('exam_id', $exam->id)
+                    ->where('name', 'like', 'Phòng %')
+                    ->orderBy('name', 'desc')
+                    ->first();
+
+                if ($lastRoom) {
+                    $lastRoomNumber = intval(substr($lastRoom->name, 6));
+                    $newRoomNumber = $lastRoomNumber + 1;
+                } else {
+                    $newRoomNumber = 1;
+                }
+
+                $newRoomName = 'Phòng ' . $newRoomNumber;
+                $examRoom = Exam_room::create([
+                    'exam_id' => $exam->id,
+                    'name' => $newRoomName,
+                ]);
             }
 
             if ($request->hasFile('image')) {
@@ -225,6 +243,7 @@ class CandidateController extends Controller
                 'address' => $validated['address'],
                 'email' => $validated['email'],
                 'status' => true,
+                'create_by' => $validated['create_by'] ?? null,
             ]);
             Password::create([
                 'idcode' => $candidate->idcode,
@@ -396,24 +415,22 @@ class CandidateController extends Controller
      */
     public function update($id, Request $request)
     {
-
         try {
             $candidate = Candidate::query()
-                ->where('Idcode', $id)
+                ->where('idcode', $id)
                 ->first();
 
-            // Validate dữ liệu từ request
             $validated = $request->validate([
-                'Idcode' => "sometimes|required|string|max:255|unique:candidates,Idcode,{$candidate->Idcode}",
-                'exam_id' => 'sometimes|required|integer',
-                'Fullname' => 'sometimes|required|string|max:255',
-                'Image' => 'sometimes|nullable|string',
-                'DOB' => 'sometimes|required|date',
-                'Address' => 'sometimes|required|string|max:255',
-                'Examination_room' => 'sometimes|required|string|max:255',
-                'Password' => 'sometimes|required|string|min:8',
-                'Email' => "sometimes|required|string|email|max:255|unique:candidates,Email,{$candidate->Idcode}",
-                'Status' => 'sometimes|required|string|max:50',
+                'idcode' => "sometimes|required|string|max:255|unique:candidates,idcode,{$candidate->idcode}",
+                'exam_id' => 'sometimes|required|string',
+                'exam_room_id' => 'sometimes|required|exists:exam_rooms,id',
+                'name' => 'sometimes|required|string|max:255',
+                'image' => 'sometimes|nullable|string',
+                'dob' => 'sometimes|required|date',
+                'address' => 'sometimes|nullable|string|max:255',
+                'email' => "sometimes|required|string|email|max:255|unique:candidates,email,{$candidate->idcode}",
+                'status' => 'sometimes|required|boolean',
+                'create_by' => 'sometimes|nullable|string',
             ], $this->validationMessages());
 
             $candidate->update($validated);
@@ -446,35 +463,26 @@ class CandidateController extends Controller
     /**
      * Import danh sách ứng viên từ file Excel.
      */
-    public function importExcel(Request $request)
-    {
-        // Validate file upload
+    public function importExcel(Request $request) {
         $request->validate([
-            'file' => 'required|mimes:xlsx,xls'
+            'file' => 'required|file|mimes:xls,xlsx',
         ], [
-            'file.required' => 'Hãy chọn một file để tải lên.',
-            'file.mimes' => 'File không đúng định dạng (.xlsx, .xls).',
+            'file.required' => 'Vui lòng chọn file',
+            'file.file' => 'File không hợp lệ',
+            'file.mimes' => 'File phải có định dạng xls hoặc xlsx'
         ]);
 
         try {
             Excel::import(new CandidatesImport, $request->file('file'));
-            return $this->jsonResponse(true, null, 'Nhập dữ liệu thành công.');
-        } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
-            $failures = $e->failures();
-            $errorMessages = [];
-
-            foreach ($failures as $failure) {
-                $errorMessages[] = [
-                    'row' => $failure->row(),
-                    'attribute' => $failure->attribute(),
-                    'errors' => $failure->errors(),
-                    'values' => $failure->values(),
-                ];
-            }
-
-            return $this->jsonResponse(false, $errorMessages, 'Có lỗi xảy ra khi nhập dữ liệu.', 422);
+            return response()->json([
+                'success' => true,
+                'message' => 'Import thành công'
+            ]);
         } catch (\Exception $e) {
-            return $this->jsonResponse(false, null, 'Đã xảy ra lỗi khi nhập dữ liệu: ' . $e->getMessage(), 500);
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 422);
         }
     }
 
@@ -581,20 +589,18 @@ class CandidateController extends Controller
     protected function validationMessages()
     {
         return [
-            'Idcode.required' => 'Mã ID là bắt buộc.',
-            'Idcode.unique' => 'Mã ID đã tồn tại.',
+            'idcode.required' => 'Mã ID là bắt buộc.',
+            'idcode.unique' => 'Mã ID đã tồn tại.',
             'exam_id.required' => 'Mã kỳ thi là bắt buộc.',
-            'exam_id.exists' => 'Mã kỳ thi không tồn tại.',
-            'Fullname.required' => 'Họ tên là bắt buộc.',
-            'DOB.required' => 'Ngày sinh là bắt buộc.',
-            'Address.required' => 'Địa chỉ là bắt buộc.',
-            'Examination_room.required' => 'Phòng thi là bắt buộc.',
-            'Password.required' => 'Mật khẩu là bắt buộc.',
-            'Password.min' => 'Mật khẩu phải có ít nhất 8 ký tự.',
-            'Email.required' => 'Email là bắt buộc.',
-            'Email.email' => 'Email không hợp lệ.',
-            'Email.unique' => 'Email đã tồn tại.',
-            'Status.required' => 'Trạng thái là bắt buộc.',
+            'exam_room_id.required' => 'Mã phòng thi là bắt buộc.',
+            'exam_room_id.exists' => 'Phòng thi không tồn tại.',
+            'name.required' => 'Họ tên là bắt buộc.',
+            'dob.required' => 'Ngày sinh là bắt buộc.',
+            'email.required' => 'Email là bắt buộc.',
+            'email.email' => 'Email không hợp lệ.',
+            'email.unique' => 'Email đã tồn tại.',
+            'status.required' => 'Trạng thái là bắt buộc.',
+            'status.boolean' => 'Trạng thái phải là true hoặc false.',
         ];
     }
 
@@ -666,21 +672,8 @@ class CandidateController extends Controller
         }
     }
 
-    public function updateStatus(Candidate $candidate, $status)
-    {
-        $candidate->update(['status' => $status]);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Cập nhật trạng thái thành công.',
-            'data' => [],
-        ]);
-    }
-
     public function finish(Candidate $candidate)
     {
-        $candidate->update(['status' => 2]);
-
         broadcast(new StudentSubmitted($candidate->exam_room_id, $candidate))->toOthers();
 
         return response()->json([
