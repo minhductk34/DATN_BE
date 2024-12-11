@@ -17,6 +17,8 @@ use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\CandidatesExport;
 use App\Imports\CandidatesImport;
 use App\Models\Candidate_question;
+use App\Models\Exam_room_detail;
+use App\Models\Exam_session;
 use App\Models\Password;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -308,7 +310,7 @@ class CandidateController extends Controller
 
             if ($candidate->image && $candidate->image != 'default/user.png') {
                 $candidate->image = Storage::url($candidate->image);
-            }else{
+            } else {
                 $candidate->image = Storage::url('default/user.png');
             }
 
@@ -696,11 +698,62 @@ class CandidateController extends Controller
     {
         $examStatus = $candidate->is_completed;
         $subject = Candidate_question::query()
-        ->where('idcode', $candidate->idcode)
-        ->select('subject_id')
-        ->latest('subject_id')
-        ->first(); 
-        
+            ->where('idcode', $candidate->idcode)
+            ->select('subject_id')
+            ->latest('subject_id')
+            ->first();
+
+        $room = Exam_room::query()->firstWhere('id', $candidate->exam_room_id);
+
+        $room_detail = Exam_room_detail::query()
+            ->Where('exam_room_id', $room->id)
+            ->Where('exam_subject_id', $subject->subject_id)
+            ->first();
+
+        if ($room_detail->exam_end != null) {
+            $now = time();
+            $examStartTime = strtotime($room_detail->exam_date); 
+            $examEndTime = strtotime($room_detail->exam_end); 
+
+            if ($now < $examStartTime) {
+                $examStatus = 0; 
+            } elseif ($now > $examEndTime) {
+                $examStatus = 0;
+            } else { 
+                $examStatus = $candidate->is_completed;
+            }
+        }
+        if ($room_detail->exam_session_id != null) {
+            $exam_session = Exam_session::query()->firstWhere('id', $room_detail->exam_session_id);
+
+            if ($exam_session) {
+
+                $now = time();
+                $examDate = strtotime($room_detail->exam_date);
+                $today = strtotime(date('Y-m-d'));
+
+                $examStartTime = strtotime($exam_session->time_start);
+                $examEndTime = strtotime($exam_session->time_end);
+
+                if ($today === $examDate) {
+                    if ($examStartTime <= $now && $examEndTime >= $now) {
+                        $examStatus = 1;
+                    } elseif ($now < $examStartTime) {
+                        $examStatus = 0;
+                    } elseif ($now > $examEndTime) {
+                        $examStatus = 0;
+                    }
+                } elseif ($today < $examDate) {
+                    $examStatus = 0;
+                } elseif ($today > $examDate) {
+                    $examStatus = 0;
+                }
+            } else {
+                echo "Không tìm thấy phiên thi.";
+            }
+        }
+
+
         if ($examStatus == 1) {
             return response()->json([
                 'success' => true,
