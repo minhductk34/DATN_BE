@@ -191,13 +191,37 @@ class ExamRoomController extends Controller
             $formattedExamSubjects = [];
             foreach ($examSubjects as $subject) {
                 $isSubjectInRoomDetails = $examRoomDetails->firstWhere('exam_subject_id', $subject->id);
-                $formattedExamSubjects[] = [
-                    'id' => $subject->id,
-                    'name' => $subject->name,
-                    'time_start' => $isSubjectInRoomDetails ? $isSubjectInRoomDetails->exam_session->time_start : null,
-                    'time_end' => $isSubjectInRoomDetails ? $isSubjectInRoomDetails->exam_session->time_end : null,
-                    'exam_date' => $isSubjectInRoomDetails ? $isSubjectInRoomDetails->exam_date : null,
-                ];
+
+                if ($isSubjectInRoomDetails) {
+                    if ($isSubjectInRoomDetails->exam_session_id != null) {
+                        $formattedExamSubjects[] = [
+                            'id' => $subject->id,
+                            'name' => $subject->name,
+                            'time_start' => $isSubjectInRoomDetails->exam_session->time_start ?? null,
+                            'time_end' => $isSubjectInRoomDetails->exam_session->time_end ?? null,
+                            'exam_date' => $isSubjectInRoomDetails->exam_date ?? null,
+                            'exam_end' => null,
+                        ];
+                    } else {
+                        $formattedExamSubjects[] = [
+                            'id' => $subject->id,
+                            'name' => $subject->name,
+                            'time_start' => null,
+                            'time_end' => null,
+                            'exam_date' => $isSubjectInRoomDetails->exam_date ?? null,
+                            'exam_end' => $isSubjectInRoomDetails->exam_end ?? null,
+                        ];
+                    }
+                } else {
+                    $formattedExamSubjects[] = [
+                        'id' => $subject->id,
+                        'name' => $subject->name,
+                        'time_start' => null,
+                        'time_end' => null,
+                        'exam_date' => null,
+                        'exam_end' => null,
+                    ];
+                }
             }
 
             // Lấy danh sách ca thi
@@ -367,7 +391,8 @@ class ExamRoomController extends Controller
             ], 500);
         }
     }
-    public function getExamRoomsByExam($examId) {
+    public function getExamRoomsByExam($examId)
+    {
         try {
             $examRooms = Exam_room::query()
                 ->where('exam_id', $examId)
@@ -389,7 +414,6 @@ class ExamRoomController extends Controller
                 'data' => $examRooms,
                 'message' => '',
             ], 200);
-
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,

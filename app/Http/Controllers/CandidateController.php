@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\CandidatesExport;
 use App\Imports\CandidatesImport;
+use App\Models\Candidate_question;
 use App\Models\Password;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -692,12 +693,17 @@ class CandidateController extends Controller
     public function checkExamStatus(Candidate $candidate)
     {
         $examStatus = $candidate->is_completed;
-
+        $subject = Candidate_question::query()
+        ->where('idcode', $candidate->idcode)
+        ->select('subject_id')
+        ->latest('subject_id')
+        ->first(); 
+        
         if ($examStatus == 1) {
             return response()->json([
                 'success' => true,
                 'has_incomplete_exam' => true,
-                'subject_id' => $candidate->exam_room->detail->exam_subject_id,
+                'subject_id' => $subject->subject_id,
             ]);
         }
 
