@@ -237,6 +237,8 @@ Route::prefix('client')->group(function () {
 
     Route::post('/exam', [CandidateQuestionController::class, 'exam']);
 
+    Route::post('/update_time', [CandidateQuestionController::class, 'update_time']);
+
     Route::get('/info/{id}', [CandidateController::class, 'info']);
 
     Route::get('api/client/scoreboard/{id}', [CandidateQuestionController::class, 'scoreboard']);

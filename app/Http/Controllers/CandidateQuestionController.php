@@ -32,12 +32,12 @@ class CandidateQuestionController extends Controller
         $exam_subject_detail = Exam_subject_detail::query()->where('exam_subject_id', '=', $validated['id_subject'])->first();
 
         // Kiểm tra xem câu hỏi đã tồn tại trong bảng Candidate_question chưa
-        $questionCandidate = Candidate_question::query()->where('subject_id',$validated['id_subject'])->where('idCode', $validated['idCode'])->get();
+        $questionCandidate = Candidate_question::query()->where('subject_id', $validated['id_subject'])->where('idCode', $validated['idCode'])->get();
 
         // Nếu có kết quả, trả về dữ liệu
         if ($questionCandidate->isNotEmpty()) {
-            $point = Point::query()->where('exam_subject_id', '=', $validated['id_subject'])->where('idCode','=', $validated['idCode'])->first();
-            
+            $point = Point::query()->where('exam_subject_id', '=', $validated['id_subject'])->where('idCode', '=', $validated['idCode'])->first();
+
             if ($point) {
                 return response()->json([
                     'message' => 'Exam successfully',
@@ -80,7 +80,7 @@ class CandidateQuestionController extends Controller
                         $result[$examContentId][$key]['image_title'] = $question['image_title'];
                         $result[$examContentId][$key]['examContentId'] = $examContentId;
                         $result[$examContentId][$key]['url_listening'] = $finalResult[$examContentId][$key]['url_listening'];
-                            $result[$examContentId][$key]['description'] = $finalResult[$examContentId][$key]['description'];
+                        $result[$examContentId][$key]['description'] = $finalResult[$examContentId][$key]['description'];
 
                         $result[$examContentId][$key]['answer'] = [
                             'temp' =>  $finalResult[$examContentId][$key]['stemp'],
@@ -96,10 +96,14 @@ class CandidateQuestionController extends Controller
                         ];
                     }
                 }
-
+                $updated = DB::table('time_exam_cadidate')
+                ->where('idcode', $validated['idCode'])
+                ->where('subject_id',  $validated['id_subject'])
+                ->first();
+    
                 // Trả về kết quả đã nhóm
                 $data = [
-                    'time' => $exam_subject_detail->time,
+                    'time' => $updated->time,
                     'question' => $result,
                 ];
 
@@ -215,11 +219,17 @@ class CandidateQuestionController extends Controller
                 ]);
             }
 
+            DB::table('time_exam_cadidate')->insert([
+                'idcode' => $validated['idCode'],
+                'subject_id' => $validated['id_subject'],
+                'time' => $exam_subject_detail->time * 60,
+            ]);
 
             $data = [
                 'time' => $exam_subject_detail->time,
                 'question' => $result,
             ];
+
 
 
             // Trả về dữ liệu ứng viên đã được xử lý
@@ -228,6 +238,35 @@ class CandidateQuestionController extends Controller
                 'data' => $data,
             ], 200);
         }
+    }
+
+    public function update_time(Request $request)
+    {
+        $validated = $request->validate([
+            'id_subject' => 'required',
+            'idcode' => 'required',
+            'time' => 'required'
+        ]);
+
+        // Cập nhật bản ghi theo idcode và subject_id
+        $updated = DB::table('time_exam_cadidate')
+            ->where('idcode', $validated['idcode'])
+            ->where('subject_id',  $validated['id_subject'])
+            ->update(['time' =>  $validated['time']]);
+
+        if ($updated) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Time exam candidate updated successfully.',
+                
+            ]);
+        }
+
+        return response()->json([
+            'success' => false,
+            'message' => 'Time exam candidate not found.',
+            'dataa'=>[$validated['idcode'],$validated['id_subject'],$validated['time']]
+        ]);
     }
 
 
@@ -339,7 +378,8 @@ class CandidateQuestionController extends Controller
         return response()->json(['message' => 'Record not found', 'success' => false], 404);
     }
 
-    public function scoreboard($id) {
+    public function scoreboard($id)
+    {
         $results = DB::table('points')
             ->join('exam_subjects', 'exam_subjects.id', '=', 'points.exam_subject_id')
             ->join('exams', 'exams.id', '=', 'exam_subjects.exam_id')
@@ -353,9 +393,9 @@ class CandidateQuestionController extends Controller
                 DB::raw('CASE WHEN points.point >= 5 THEN "Đạt" ELSE "Không đạt" END as status')
             )
             ->get();
-    
+
         return response()->json($results);
-    }    
+    }
     /**
      * Remove the specified resource from storage.
      */
