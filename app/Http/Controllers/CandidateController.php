@@ -307,6 +307,8 @@ class CandidateController extends Controller
 
             if ($candidate->image && $candidate->image != 'default/user.png') {
                 $candidate->image = Storage::url($candidate->image);
+            }else{
+                $candidate->image = Storage::url('default/user.png');
             }
 
             $actives = Active::query()
