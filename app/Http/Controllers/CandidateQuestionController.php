@@ -11,6 +11,7 @@ use App\Models\Point;
 use App\Models\Question;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class CandidateQuestionController extends Controller
 {
@@ -134,15 +135,19 @@ class CandidateQuestionController extends Controller
                 foreach ($levels as $requirement) {
                     $questions = Question::query()
                         ->join('question_versions', 'questions.id', '=', 'question_versions.question_id')
+                        ->join('exam_contents','exam_contents.id', '=','questions.exam_content_id')
                         ->where('questions.exam_content_id', $requirement['exam_content_id'])
                         ->orderByDesc('question_versions.version')
                         ->limit($requirement['quantity'])
-                        ->select('question_versions.*')
+                        ->select('question_versions.*','exam_contents.url_listening','exam_contents.description' )
                         ->get();
 
                     $finalResult[$examContentId] = array_merge($finalResult[$examContentId], $questions->toArray());
                 }
-
+                Log::error('Export Excel Error:', [
+                    'message' => $finalResult[$examContentId],
+                ]);
+            
                 // Xử lý câu hỏi cho từng câu hỏi trong finalResult
                 foreach ($finalResult[$examContentId] as $key => $question) {
                     $finalResult[$examContentId][$key]['id_pass'] = rand(1, 4);
@@ -158,6 +163,9 @@ class CandidateQuestionController extends Controller
                     $result[$examContentId][$key]['id'] = $question['question_id'];
                     $result[$examContentId][$key]['title'] = $question['title'];
                     $result[$examContentId][$key]['image_title'] = $question['image_title'];
+                    $result[$examContentId][$key]['examContentId'] = $examContentId;
+                    $result[$examContentId][$key]['url_listening'] = $finalResult[$examContentId][$key]['url_listening'];
+                    $result[$examContentId][$key]['description'] = $finalResult[$examContentId][$key]['description'];
 
                     // Lưu đáp án theo mức độ id_pass
                     if ($finalResult[$examContentId][$key]['id_pass'] == 1) {

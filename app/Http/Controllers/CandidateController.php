@@ -583,7 +583,7 @@ class CandidateController extends Controller
             return Excel::download(new CandidatesExport($data), $fileName);
             //            return response()->json($data);
         } catch (\Exception $e) {
-            \Log::error('Export Excel Error:', [
+            Log::error('Export Excel Error:', [
                 'message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
