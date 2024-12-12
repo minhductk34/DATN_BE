@@ -241,7 +241,8 @@ Route::prefix('client')->group(function () {
 
     Route::get('/info/{id}', [CandidateController::class, 'info']);
 
-    Route::get('api/client/scoreboard/{id}', [CandidateQuestionController::class, 'scoreboard']);
+    Route::get('/scoreboard/{id}', [CandidateQuestionController::class, 'scoreboard']);
+    Route::get('/scoreboard/{id}/{subject}', [CandidateQuestionController::class, 'scoreboardBySubject']);
 });
 
 

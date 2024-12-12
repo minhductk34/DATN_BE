@@ -42,8 +42,9 @@ class CandidateQuestionController extends Controller
             if ($point) {
                 return response()->json([
                     'message' => 'Exam successfully',
+                    'point' => true,
                     'data' => $point,
-                ], 500);
+                ], 200);
             } else {
                 $result = [];
 
@@ -98,10 +99,10 @@ class CandidateQuestionController extends Controller
                     }
                 }
                 $updated = DB::table('time_exam_cadidate')
-                ->where('idcode', $validated['idCode'])
-                ->where('subject_id',  $validated['id_subject'])
-                ->first();
-    
+                    ->where('idcode', $validated['idCode'])
+                    ->where('subject_id',  $validated['id_subject'])
+                    ->first();
+
                 // Trả về kết quả đã nhóm
                 $data = [
                     'time' => $updated->time,
@@ -135,11 +136,11 @@ class CandidateQuestionController extends Controller
                 foreach ($levels as $requirement) {
                     $questions = Question::query()
                         ->join('question_versions', 'questions.id', '=', 'question_versions.question_id')
-                        ->join('exam_contents','exam_contents.id', '=','questions.exam_content_id')
+                        ->join('exam_contents', 'exam_contents.id', '=', 'questions.exam_content_id')
                         ->where('questions.exam_content_id', $requirement['exam_content_id'])
                         ->orderByDesc('question_versions.version')
                         ->limit($requirement['quantity'])
-                        ->select('question_versions.*','exam_contents.url_listening','exam_contents.description' )
+                        ->select('question_versions.*', 'exam_contents.url_listening', 'exam_contents.description')
                         ->get();
 
                     $finalResult[$examContentId] = array_merge($finalResult[$examContentId], $questions->toArray());
@@ -147,7 +148,7 @@ class CandidateQuestionController extends Controller
                 Log::error('Export Excel Error:', [
                     'message' => $finalResult[$examContentId],
                 ]);
-            
+
                 // Xử lý câu hỏi cho từng câu hỏi trong finalResult
                 foreach ($finalResult[$examContentId] as $key => $question) {
                     $finalResult[$examContentId][$key]['id_pass'] = rand(1, 4);
@@ -166,6 +167,7 @@ class CandidateQuestionController extends Controller
                     $result[$examContentId][$key]['examContentId'] = $examContentId;
                     $result[$examContentId][$key]['url_listening'] = $finalResult[$examContentId][$key]['url_listening'];
                     $result[$examContentId][$key]['description'] = $finalResult[$examContentId][$key]['description'];
+                   
 
                     // Lưu đáp án theo mức độ id_pass
                     if ($finalResult[$examContentId][$key]['id_pass'] == 1) {
@@ -213,6 +215,7 @@ class CandidateQuestionController extends Controller
                             'img_correct' => $question['image_P'],
                         ];
                     }
+                    $result[$examContentId][$key]['answer']['id_pass'] = $finalResult[$examContentId][$key]['id_pass'];
                 }
             }
 
@@ -266,14 +269,14 @@ class CandidateQuestionController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Time exam candidate updated successfully.',
-                
+
             ]);
         }
 
         return response()->json([
             'success' => false,
             'message' => 'Time exam candidate not found.',
-            'dataa'=>[$validated['idcode'],$validated['id_subject'],$validated['time']]
+            'dataa' => [$validated['idcode'], $validated['id_subject'], $validated['time']]
         ]);
     }
 
@@ -355,6 +358,11 @@ class CandidateQuestionController extends Controller
 
         ]);
 
+        $updated = DB::table('time_exam_cadidate')
+            ->where('idcode', $validated['idCode'])
+            ->where('subject_id',  $validated['subject_id'])
+            ->update(['time' =>  0]);
+
         $exam_subject_detail = Candidate_question::query()
             ->where('idcode', $validated['idCode'])
             ->where('subject_id', $validated['subject_id'])
@@ -391,7 +399,7 @@ class CandidateQuestionController extends Controller
         $results = DB::table('points')
             ->join('exam_subjects', 'exam_subjects.id', '=', 'points.exam_subject_id')
             ->join('exams', 'exams.id', '=', 'exam_subjects.exam_id')
-            ->where('points.exam_id', $id) // Bổ sung điều kiện `WHERE` theo `$id` được truyền vào
+            ->where('points.idCode', $id)
             ->select(
                 'exams.id as exam_id',
                 'exams.name as exam_name',
@@ -402,8 +410,48 @@ class CandidateQuestionController extends Controller
             )
             ->get();
 
-        return response()->json($results);
+        return  response()->json([
+            'success' => true,
+            'status' => '200',
+            'data' => $results,
+            'message' => 'Data retrieved successfully'
+        ], 200);
     }
+    public function scoreboardBySubject($id, $subject)
+    {
+        $results = DB::table('points')
+            ->join('exam_subjects', 'exam_subjects.id', '=', 'points.exam_subject_id')
+            ->join('exams', 'exams.id', '=', 'exam_subjects.exam_id')
+            ->where('points.idCode', $id)
+            ->where('points.exam_subject_id', $subject)
+            ->select(
+                'exams.id as exam_id',
+                'exams.name as exam_name',
+                'exam_subjects.id as subject_id',
+                'exam_subjects.name as subject_name',
+                'points.point',
+                DB::raw('CASE WHEN points.point >= 5 THEN "Đạt" ELSE "Không đạt" END as status')
+            )
+            ->get();
+
+        // Kiểm tra dữ liệu
+        if ($results->isEmpty()) {
+            return response()->json([
+                'success' => false,
+                'status' => '404',
+                'data' => [],
+                'message' => 'Không tìm thấy dữ liệu',
+            ], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'status' => '200',
+            'data' => $results,
+            'message' => 'Lấy dữ liệu thành công',
+        ], 200);
+    }
+
     /**
      * Remove the specified resource from storage.
      */
