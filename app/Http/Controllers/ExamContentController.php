@@ -292,26 +292,15 @@ class ExamContentController extends Controller
             $import = new ExamContentImport();
             $import->import($request->file('file'));
 
-            if (count($import->failures()) > 0) {
-                $failures = $import->failures();
-                $errorMessages = [];
-
-                foreach ($failures as $failure) {
-                    $errorMessages[] = [
-                        'row' => $failure->row(),
-                        'attribute' => $failure->attribute(),
-                        'errors' => $failure->errors(),
-                        'values' => $failure->values(),
-                    ];
-                }
-
-                DB::rollBack();
+            if ($import->failures()->isNotEmpty()) {
+                $errors = $import->getFailures();
+                $errorMessage = implode("\n", $errors);
 
                 return response()->json([
                     'success' => false,
                     'status' => 422,
-                    'data' => $errorMessages,
-                    'message' => 'Có lỗi xảy ra trong quá trình nhập dữ liệu. Vui lòng kiểm tra lại file và thử lại.',
+                    'data' => [],
+                    'message' => $errorMessage,
                 ], 422);
             }
 
@@ -323,6 +312,7 @@ class ExamContentController extends Controller
                 'data' => [],
                 'message' => 'Nhập dữ liệu thành công.',
             ], 200);
+
         } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
             DB::rollBack();
 
@@ -336,14 +326,17 @@ class ExamContentController extends Controller
                     'errors' => $failure->errors(),
                     'values' => $failure->values(),
                 ];
+                $error = implode(', ', $failure->errors());
+                $message = "Dòng {$failure->row()}: {$error}";
             }
 
             return response()->json([
                 'success' => false,
                 'status' => 422,
                 'data' => $errorMessages,
-                'message' => 'Có lỗi xảy ra trong quá trình nhập dữ liệu. Vui lòng kiểm tra lại file và thử lại.',
+                'message' => $message,
             ], 422);
+
         } catch (\Exception $e) {
             DB::rollBack();
 
@@ -351,7 +344,7 @@ class ExamContentController extends Controller
                 'success' => false,
                 'status' => 500,
                 'data' => [],
-                'message' => 'Đã xảy ra lỗi, vui lòng thử lại sau.',
+                'message' => $e->getMessage(),
             ], 500);
         }
     }
