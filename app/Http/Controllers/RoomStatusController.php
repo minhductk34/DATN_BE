@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Candidate;
 use App\Models\Exam;
 use App\Models\Exam_room;
+use App\Models\Exam_room_detail;
 use Illuminate\Support\Facades\Storage;
 use App\Models\Point;
 
@@ -13,42 +14,41 @@ class RoomStatusController extends Controller
 {
     public function index()
     {
-        $currentDateTime = now();
-
         $latestExamId = Exam::orderBy('created_at', 'desc')->value('id');
 
         if (!$latestExamId) {
             return response()->json(['message' => 'No exams found'], 404);
         }
 
-        $rooms = Exam_room::with(['detail.exam_subject', 'candidates'])
-            ->select('id', 'name', 'exam_id')
-            ->where('exam_id', $latestExamId)
+        $details = Exam_room_detail::with(['exam_subject', 'exam_room.candidates'])
+            ->whereHas('exam_room', function ($query) use ($latestExamId) {
+                $query->where('exam_id', $latestExamId);
+            })
             ->get()
-            ->map(function ($room) {
+            ->map(function ($detail) {
                 return [
-                    'id' => $room->id,
-                    'room' => $room->name,
-                    'subject' => $room->detail?->exam_subject?->name,
-                    'totalStudent' => $room->candidates->count(),
+                    'id' => $detail->id,
+                    'room' => $detail->exam_room->name,
+                    'roomId' => $detail->exam_room->id,
+                    'subject' => $detail->exam_subject?->name,
+                    'subjectId' => $detail->exam_subject?->id,
+                    'totalStudent' => $detail->exam_room->candidates->count(),
                 ];
             });
 
-        return response()->json($rooms);
+        return response()->json($details);
     }
 
     // Chi tiết sinh viên trong phòng thi
-    public function getStudents($roomId)
+    public function getStudents($roomId, $subjectId)
     {
-        $examRoom = Exam_room::with('detail.exam_subject')->find($roomId);
-
         $students = Candidate::where('exam_room_id', $roomId)
             ->select('idcode', 'name', 'image', 'status')
             ->whereStatus(1)
             ->get()
-            ->map(function ($student) use ($examRoom) {
+            ->map(function ($student) use ($subjectId) {
                 $hasPoint = Point::where('idcode', $student->idcode)
-                    ->where('exam_subject_id', $examRoom->detail->exam_subject->id)
+                    ->where('exam_subject_id', $subjectId)
                     ->exists();
 
                 return [

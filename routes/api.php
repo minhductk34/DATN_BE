@@ -268,7 +268,7 @@ Route::prefix('/room-status')->group(function () {
     Route::get('/rooms', [RoomStatusController::class, 'index']);
 
     // Lấy danh sách sinh viên trong phòng
-    Route::get('/rooms/{roomId}/students', [RoomStatusController::class, 'getStudents']);
+    Route::get('/rooms/{roomId}/{subjectId}/students', [RoomStatusController::class, 'getStudents']);
 });
 
 Route::post('/candidate/{candidate}/finish', [CandidateController::class, 'finish']);
