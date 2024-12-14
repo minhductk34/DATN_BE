@@ -40,6 +40,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 Route::prefix('admin')->group(function () {
 
     Route::post('/login', [AdminController::class, 'login']);
+    Route::post('/logout', [AdminController::class, 'logout']);
     //kỳ thi
     Route::prefix('/exam')->group(function () {
         Route::resource('/', ExamController::class);
