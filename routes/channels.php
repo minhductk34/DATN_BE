@@ -17,7 +17,7 @@ Broadcast::channel('App.Models.User.{id}', function ($user, $id) {
     return (int) $user->id === (int) $id;
 });
 
-Broadcast::channel('presence-room.{roomId}', function ($user, $roomId) {
+Broadcast::channel('presence-room.{roomId}.{subjectId}', function ($user, $roomId, $subjectId) {
     $id = $user->idcode ?: $user->id;
     
     return ['id' =>  $id, 'name' => $user->name];

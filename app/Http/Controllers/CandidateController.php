@@ -679,13 +679,13 @@ class CandidateController extends Controller
         }
     }
 
-    public function finish(Candidate $candidate)
+    public function finish(Candidate $candidate, Request $request)
     {
         $candidate->update([
             'is_completed' => 2
         ]);
 
-        broadcast(new StudentSubmitted($candidate->exam_room_id, $candidate))->toOthers();
+        broadcast(new StudentSubmitted($candidate->exam_room_id, $candidate, $request->subjectId))->toOthers();
 
         return response()->json([
             'success' => true,

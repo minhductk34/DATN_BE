@@ -15,17 +15,19 @@ class StudentSubmitted implements ShouldBroadcast
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
     public $roomId;
+    public $subjectId;
     public $student;
 
-    public function __construct($roomId, $student)
+    public function __construct($roomId, $student, $subjectId)
     {
         $this->roomId = $roomId;
         $this->student = $student;
+        $this->subjectId = $subjectId;
     }
 
     public function broadcastOn()
     {
-        return new PresenceChannel('presence-room.' . $this->roomId);
+        return new PresenceChannel('presence-room.' . $this->roomId . '.' . $this->subjectId);
     }
 
     public function broadcastAs()
