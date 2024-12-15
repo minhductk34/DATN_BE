@@ -22,6 +22,8 @@ use App\Http\Controllers\ReadingQuestionController;
 use App\Http\Controllers\CustomBroadcastController;
 use App\Http\Controllers\PointController;
 use App\Http\Controllers\RoomStatusController;
+use App\Models\Candidate;
+
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -235,7 +237,13 @@ Route::prefix('admin')->group(function () {
     });
 
     Route::prefix('points')->group(function () {
-        Route::get('student/{idcode}/exam/{examId}', [PointController::class, 'getStudentPointsByExam']);      
+        Route::get('student/{idcode}/exam/{examId}', [PointController::class, 'getStudentPointsByExam']);       
+    });
+
+    Route::prefix('reports')->group(function () {
+        Route::get('byExam/{id}',[CandidateController::class, 'reportByIdExam']);
+        Route::get('bySubject/{id}/subject/{subject_id}',[CandidateController::class, 'reportByIdSubject']);
+        Route::get('byRoom/{id}/room/{room_id}',[CandidateController::class, 'reportByIdRoom']);
     });
 });
 
