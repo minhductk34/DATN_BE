@@ -20,6 +20,7 @@ use App\Http\Controllers\ListeningQuestionController;
 use App\Http\Controllers\ReadingController;
 use App\Http\Controllers\ReadingQuestionController;
 use App\Http\Controllers\CustomBroadcastController;
+use App\Http\Controllers\PointController;
 use App\Http\Controllers\RoomStatusController;
 /*
 |--------------------------------------------------------------------------
@@ -105,6 +106,7 @@ Route::prefix('admin')->group(function () {
     Route::prefix('exam-room')->group(function () {
         Route::get('/detail/{id}', [ExamRoomController::class, 'showDetail']);
         Route::get('/data-select-update/{exam_room_id}/{exam_subject_id}', [ExamRoomController::class, 'dataSelectUpdate']); // Thêm route này
+        Route::get('/by-exam/{id}', [ExamRoomController::class, 'show']);
     });
     Route::resource('lecturer', LecturersController::class);
     // ca thi
@@ -230,6 +232,10 @@ Route::prefix('admin')->group(function () {
             Route::get('manageQuestions', [QuestionController::class, 'dataOptions']);
             Route::post('manageQuestions/{examId}/{examSubjectId}', [QuestionController::class, 'dataQuestion']);
         });
+    });
+
+    Route::prefix('points')->group(function () {
+        Route::get('student/{idcode}/exam/{examId}', [PointController::class, 'getStudentPointsByExam']);      
     });
 });
 
