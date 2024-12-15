@@ -135,7 +135,46 @@ class CandidateController extends Controller
             ], 500);
         }
     }
+    public function logout(Request $request) {
+        try {
+            $authorization = str_replace('Bearer ', '', $request->header('Authorization'));
 
+            try {
+                $tokenData = json_decode($authorization, true);
+                $token = $tokenData['token'] ?? null;
+            } catch (\Exception $e) {
+                $token = $authorization;
+            }
+
+            if (!$token) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Token không hợp lệ.'
+                ], 400);
+            }
+
+            $tokenInfo = Redis::hgetall('tokens:' . $token);
+
+            if (!empty($tokenInfo)) {
+                $idCode = $tokenInfo['id_code'];
+
+                Redis::del('tokens:' . $token);
+                Redis::del('auth:' . $idCode);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Đăng xuất thành công'
+            ], 200);
+
+        } catch (\Exception $e) {
+            Log::error('Logout error:', ['error' => $e->getMessage()]);
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
     private function checkRedisConnection()
     {
         try {
@@ -781,30 +820,30 @@ class CandidateController extends Controller
         $query = '
         WITH StudentAvgPoints AS (
             -- Tính điểm trung bình của mỗi thí sinh, thay thế NULL bằng 0 nếu thí sinh không có điểm cho môn thi
-            SELECT 
+            SELECT
                 candidates.idcode,
                 candidates.exam_id, -- Lấy exam_id từ bảng candidates
                 AVG(IFNULL(points.point, 0)) AS avg_point -- Tính điểm trung bình của thí sinh, nếu không có điểm thì trả về 0
-            FROM 
+            FROM
                 candidates
-            LEFT JOIN 
+            LEFT JOIN
                 exam_subjects ON exam_subjects.exam_id = candidates.exam_id -- Nối với môn thi theo exam_id
-            LEFT JOIN 
+            LEFT JOIN
                 points ON points.idcode = candidates.idcode AND points.exam_subject_id = exam_subjects.id -- Nối với bảng điểm, nếu không có điểm thì sẽ được tính là 0
-            GROUP BY 
+            GROUP BY
                 candidates.idcode, candidates.exam_id -- Nhóm theo idcode và exam_id
         ),
         RankedPoints AS (
             -- Xếp hạng thí sinh theo điểm trung bình
-            SELECT 
+            SELECT
                 idcode,
                 exam_id,
                 avg_point,
                 RANK() OVER (PARTITION BY exam_id ORDER BY avg_point DESC) AS rank_position
-            FROM 
+            FROM
                 StudentAvgPoints
         )
-        SELECT 
+        SELECT
             exams.id,
             exams.name,
             exams.time_start,
@@ -830,28 +869,28 @@ class CandidateController extends Controller
             -- Lấy top 3 thí sinh có điểm cao nhất, lấy tên thí sinh thay vì idcode
             GROUP_CONCAT(
                 DISTINCT
-                CASE 
-                    WHEN RankedPoints.rank_position <= 3 THEN CONCAT(candidates.name, " - ", RankedPoints.avg_point) 
-                    ELSE NULL 
+                CASE
+                    WHEN RankedPoints.rank_position <= 3 THEN CONCAT(candidates.name, " - ", RankedPoints.avg_point)
+                    ELSE NULL
                 END
                 ORDER BY RankedPoints.avg_point DESC
                 SEPARATOR ", "
             ) AS top_3_scores
-        FROM 
+        FROM
             exams
-        LEFT JOIN 
+        LEFT JOIN
             candidates ON candidates.exam_id = exams.id
-        LEFT JOIN 
+        LEFT JOIN
             points ON points.idcode = candidates.idcode
-        LEFT JOIN 
+        LEFT JOIN
             exam_subjects ON exam_subjects.exam_id = exams.id
-        LEFT JOIN 
+        LEFT JOIN
             StudentAvgPoints AS subquery ON subquery.idcode = points.idcode AND subquery.exam_id = exams.id
-        LEFT JOIN 
+        LEFT JOIN
             RankedPoints ON RankedPoints.exam_id = exams.id AND RankedPoints.idcode = points.idcode
-        WHERE 
+        WHERE
             exams.id = :id
-        GROUP BY 
+        GROUP BY
             exams.id, exams.name, exams.time_start, exams.time_end
     ';
 
@@ -865,32 +904,32 @@ class CandidateController extends Controller
         $query = '
         WITH StudentAvgPoints AS (
             -- Tính điểm trung bình của mỗi thí sinh, thay thế NULL bằng 0 nếu thí sinh không có điểm cho môn thi
-            SELECT 
+            SELECT
                 candidates.idcode,
                 candidates.exam_id, -- Lấy exam_id từ bảng candidates
                 AVG(IFNULL(points.point, 0)) AS avg_point -- Tính điểm trung bình của thí sinh, nếu không có điểm thì trả về 0
-            FROM 
+            FROM
                 candidates
-            LEFT JOIN 
+            LEFT JOIN
                 exam_subjects ON exam_subjects.exam_id = candidates.exam_id -- Nối với môn thi theo exam_id
-            LEFT JOIN 
+            LEFT JOIN
                 points ON points.idcode = candidates.idcode AND points.exam_subject_id = exam_subjects.id -- Nối với bảng điểm, nếu không có điểm thì sẽ được tính là 0
-            WHERE 
+            WHERE
                 exam_subjects.id = ? -- Lọc theo môn thi cụ thể (exam_subject_id)
-            GROUP BY 
+            GROUP BY
                 candidates.idcode, candidates.exam_id -- Nhóm theo idcode và exam_id
         ),
         RankedPoints AS (
             -- Xếp hạng thí sinh theo điểm trung bình
-            SELECT 
+            SELECT
                 idcode,
                 exam_id,
                 avg_point,
                 RANK() OVER (PARTITION BY exam_id ORDER BY avg_point DESC) AS rank_position
-            FROM 
+            FROM
                 StudentAvgPoints
         )
-        SELECT 
+        SELECT
             exams.id,
             exams.name,
             exams.time_start,
@@ -899,82 +938,82 @@ class CandidateController extends Controller
             COUNT(DISTINCT points.idcode) AS candidate_join, -- Số thí sinh tham gia thi (có điểm)
             COUNT(DISTINCT candidates.idcode) - COUNT(DISTINCT points.idcode) AS absent_candidate, -- Số thí sinh vắng mặt
             AVG(subquery.avg_point) AS avg_point,
-    
+
             -- Tính số lượng thí sinh trong mỗi nhóm điểm, mỗi thí sinh chỉ được tính một lần
             COUNT(DISTINCT CASE WHEN subquery.avg_point < 3 THEN subquery.idcode ELSE NULL END) AS weak_count,
             COUNT(DISTINCT CASE WHEN subquery.avg_point >= 3 AND subquery.avg_point < 5 THEN subquery.idcode ELSE NULL END) AS weak_2_count,
             COUNT(DISTINCT CASE WHEN subquery.avg_point >= 5 AND subquery.avg_point < 7 THEN subquery.idcode ELSE NULL END) AS average_count,
             COUNT(DISTINCT CASE WHEN subquery.avg_point >= 7 AND subquery.avg_point < 9 THEN subquery.idcode ELSE NULL END) AS good_count,
             COUNT(DISTINCT CASE WHEN subquery.avg_point >= 9 AND subquery.avg_point <= 10 THEN subquery.idcode ELSE NULL END) AS excellent_count,
-    
+
             -- Tính tỷ lệ phần trăm cho mỗi nhóm điểm
             ROUND(COUNT(DISTINCT CASE WHEN subquery.avg_point < 5 THEN subquery.idcode ELSE NULL END) * 100.0 / COUNT(DISTINCT points.idcode), 2) AS weak_percentage,
             ROUND(COUNT(DISTINCT CASE WHEN subquery.avg_point >= 5 AND subquery.avg_point < 7.5 THEN subquery.idcode ELSE NULL END) * 100.0 / COUNT(DISTINCT points.idcode), 2) AS average_percentage,
             ROUND(COUNT(DISTINCT CASE WHEN subquery.avg_point >= 7.5 AND subquery.avg_point < 9 THEN subquery.idcode ELSE NULL END) * 100.0 / COUNT(DISTINCT points.idcode), 2) AS good_percentage,
             ROUND(COUNT(DISTINCT CASE WHEN subquery.avg_point >= 9 AND subquery.avg_point <= 10 THEN subquery.idcode ELSE NULL END) * 100.0 / COUNT(DISTINCT points.idcode), 2) AS excellent_percentage,
-    
+
             -- Lấy top 3 thí sinh có điểm cao nhất, lấy tên thí sinh thay vì idcode
             GROUP_CONCAT(
                 DISTINCT
-                CASE 
-                    WHEN RankedPoints.rank_position <= 3 THEN CONCAT(candidates.name, " - ", RankedPoints.avg_point) 
-                    ELSE NULL 
+                CASE
+                    WHEN RankedPoints.rank_position <= 3 THEN CONCAT(candidates.name, " - ", RankedPoints.avg_point)
+                    ELSE NULL
                 END
                 ORDER BY RankedPoints.avg_point DESC
                 SEPARATOR ", "
             ) AS top_3_scores
-        FROM 
+        FROM
             exams
-        LEFT JOIN 
+        LEFT JOIN
             candidates ON candidates.exam_id = exams.id
-        LEFT JOIN 
+        LEFT JOIN
             points ON points.idcode = candidates.idcode
-        LEFT JOIN 
+        LEFT JOIN
             exam_subjects ON exam_subjects.exam_id = exams.id AND exam_subjects.id = ? -- Lọc theo môn thi cụ thể
-        LEFT JOIN 
+        LEFT JOIN
             StudentAvgPoints AS subquery ON subquery.idcode = points.idcode AND subquery.exam_id = exams.id
-        LEFT JOIN 
+        LEFT JOIN
             RankedPoints ON RankedPoints.exam_id = exams.id AND RankedPoints.idcode = points.idcode
-        WHERE 
+        WHERE
             exams.id = ? -- Lọc theo exam_id cụ thể
-        GROUP BY 
+        GROUP BY
             exams.id, exams.name, exams.time_start, exams.time_end;
         ';
-    
+
         // Truyền tham số vào truy vấn
         $result = DB::select($query, [$subject_id, $subject_id, $id ]);
-    
+
         return $result;
     }
-    
+
     public function reportByIdRoom($id, $room_id) {
         $query = '
         WITH StudentAvgPoints AS (
             -- Tính điểm trung bình của mỗi thí sinh, thay thế NULL bằng 0 nếu thí sinh không có điểm cho môn thi
-            SELECT 
+            SELECT
                 candidates.idcode,
                 candidates.exam_id, -- Lấy exam_id từ bảng candidates
                 AVG(IFNULL(points.point, 0)) AS avg_point -- Tính điểm trung bình của thí sinh, nếu không có điểm thì trả về 0
-            FROM 
+            FROM
                 candidates
-            LEFT JOIN 
+            LEFT JOIN
                 exam_subjects ON exam_subjects.exam_id = candidates.exam_id -- Nối với môn thi theo exam_id
-            LEFT JOIN 
+            LEFT JOIN
                 points ON points.idcode = candidates.idcode AND points.exam_subject_id = exam_subjects.id -- Nối với bảng điểm, nếu không có điểm thì sẽ được tính là 0
-            GROUP BY 
+            GROUP BY
                 candidates.idcode, candidates.exam_id -- Nhóm theo idcode và exam_id
         ),
         RankedPoints AS (
             -- Xếp hạng thí sinh theo điểm trung bình
-            SELECT 
+            SELECT
                 idcode,
                 exam_id,
                 avg_point,
                 RANK() OVER (PARTITION BY exam_id ORDER BY avg_point DESC) AS rank_position
-            FROM 
+            FROM
                 StudentAvgPoints
         )
-        SELECT 
+        SELECT
             exams.id,
             exams.name,
             exams.time_start,
@@ -983,52 +1022,52 @@ class CandidateController extends Controller
             COUNT(DISTINCT points.idcode) AS candidate_join, -- Số thí sinh tham gia thi (có điểm)
             COUNT(DISTINCT candidates.idcode) - COUNT(DISTINCT points.idcode) AS absent_candidate, -- Số thí sinh vắng mặt
             AVG(subquery.avg_point) AS avg_point,
-    
+
             -- Tính số lượng thí sinh trong mỗi nhóm điểm, mỗi thí sinh chỉ được tính một lần
             COUNT(DISTINCT CASE WHEN subquery.avg_point < 3 THEN subquery.idcode ELSE NULL END) AS weak_count,
             COUNT(DISTINCT CASE WHEN subquery.avg_point >= 3 AND subquery.avg_point < 5 THEN subquery.idcode ELSE NULL END) AS weak_2_count,
             COUNT(DISTINCT CASE WHEN subquery.avg_point >= 5 AND subquery.avg_point < 7 THEN subquery.idcode ELSE NULL END) AS average_count,
             COUNT(DISTINCT CASE WHEN subquery.avg_point >= 7 AND subquery.avg_point < 9 THEN subquery.idcode ELSE NULL END) AS good_count,
             COUNT(DISTINCT CASE WHEN subquery.avg_point >= 9 AND subquery.avg_point <= 10 THEN subquery.idcode ELSE NULL END) AS excellent_count,
-    
+
             -- Tính tỷ lệ phần trăm cho mỗi nhóm điểm
             ROUND(COUNT(DISTINCT CASE WHEN subquery.avg_point < 5 THEN subquery.idcode ELSE NULL END) * 100.0 / COUNT(DISTINCT points.idcode), 2) AS weak_percentage,
             ROUND(COUNT(DISTINCT CASE WHEN subquery.avg_point >= 5 AND subquery.avg_point < 7.5 THEN subquery.idcode ELSE NULL END) * 100.0 / COUNT(DISTINCT points.idcode), 2) AS average_percentage,
             ROUND(COUNT(DISTINCT CASE WHEN subquery.avg_point >= 7.5 AND subquery.avg_point < 9 THEN subquery.idcode ELSE NULL END) * 100.0 / COUNT(DISTINCT points.idcode), 2) AS good_percentage,
             ROUND(COUNT(DISTINCT CASE WHEN subquery.avg_point >= 9 AND subquery.avg_point <= 10 THEN subquery.idcode ELSE NULL END) * 100.0 / COUNT(DISTINCT points.idcode), 2) AS excellent_percentage,
-    
+
             -- Lấy top 3 thí sinh có điểm cao nhất, lấy tên thí sinh thay vì idcode
             GROUP_CONCAT(
                 DISTINCT
-                CASE 
-                    WHEN RankedPoints.rank_position <= 3 THEN CONCAT(candidates.name, " - ", RankedPoints.avg_point) 
-                    ELSE NULL 
+                CASE
+                    WHEN RankedPoints.rank_position <= 3 THEN CONCAT(candidates.name, " - ", RankedPoints.avg_point)
+                    ELSE NULL
                 END
                 ORDER BY RankedPoints.avg_point DESC
                 SEPARATOR ", "
             ) AS top_3_scores
-        FROM 
+        FROM
             exams
-        LEFT JOIN 
+        LEFT JOIN
             candidates ON candidates.exam_id = exams.id
-        LEFT JOIN 
+        LEFT JOIN
             points ON points.idcode = candidates.idcode
-        LEFT JOIN 
+        LEFT JOIN
             exam_subjects ON exam_subjects.exam_id = exams.id
-        LEFT JOIN 
+        LEFT JOIN
             StudentAvgPoints AS subquery ON subquery.idcode = points.idcode AND subquery.exam_id = exams.id
-        LEFT JOIN 
+        LEFT JOIN
             RankedPoints ON RankedPoints.exam_id = exams.id AND RankedPoints.idcode = points.idcode
-        WHERE 
+        WHERE
             exams.id = ? AND candidates.exam_room_id = ? -- Lọc theo exam_id và phòng thi
-        GROUP BY 
+        GROUP BY
             exams.id, exams.name, exams.time_start, exams.time_end
         ';
-    
+
         // Truyền tham số vào truy vấn
         $result = DB::select($query, [$id, $room_id]);
-    
+
         return $result;
     }
-    
+
 }

@@ -237,7 +237,7 @@ Route::prefix('admin')->group(function () {
     });
 
     Route::middleware('checkToken')->prefix('points')->group(function () {
-        Route::get('student/{idcode}/exam/{examId}', [PointController::class, 'getStudentPointsByExam']);       
+        Route::get('student/{idcode}/exam/{examId}', [PointController::class, 'getStudentPointsByExam']);
     });
 
     Route::middleware('checkToken')->prefix('reports')->group(function () {
@@ -246,9 +246,9 @@ Route::prefix('admin')->group(function () {
         Route::get('byRoom/{id}/room/{room_id}',[CandidateController::class, 'reportByIdRoom']);
     });
 });
-
+Route::post('/client/login', [CandidateController::class, 'login']);
+Route::post('/client/logout', [CandidateController::class, 'logout']);
 Route::middleware('checkToken')->prefix('client')->group(function () {
-    Route::post('/login', [CandidateController::class, 'login']);
 
     Route::post('/exam', [CandidateQuestionController::class, 'exam']);
 

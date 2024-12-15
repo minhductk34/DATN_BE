@@ -136,8 +136,8 @@ class AdminController extends Controller
         try {
             Log::debug('Đã nhận được yêu cầu logout', ['request' => $request->all()]);
 
-            // Kiểm tra nếu có token trong header
-            $token = $request->bearerToken();
+            $token = str_replace('Bearer ', '', $request->header('Authorization'));
+
             if (!$token) {
                 return response()->json([
                     'success' => false,
@@ -147,7 +147,11 @@ class AdminController extends Controller
                 ], 400);
             }
 
-            // Kiểm tra kết nối Redis
+            if(is_string($token) && str_contains($token, 'token')) {
+                $tokenData = json_decode($token, true);
+                $token = $tokenData['token'] ?? null;
+            }
+
             if (!$this->checkRedisConnection()) {
                 Log::error('Kết nối Redis không thành công');
                 return response()->json([
@@ -157,7 +161,6 @@ class AdminController extends Controller
                     'message' => 'Không thể kết nối đến hệ thống lưu trữ, vui lòng thử lại sau.'
                 ], 503);
             }
-
 
             Log::debug('Truy vấn token trong Redis', ['token' => $token]);
             $tokenData = $this->retryRedisOperation(function () use ($token) {
@@ -175,24 +178,14 @@ class AdminController extends Controller
             }
 
             Log::debug('Xoá token khỏi Redis', ['token' => $token, 'token_data' => $tokenData]);
-            $userId = $tokenData['user_id'];
-            // Xoá token khỏi Redis
-            $deletedTokens = $this->retryRedisOperation(function () use ($token, $userId) {
-                $result1 = Redis::del('tokens:' . $token);
-                $result2 = Redis::del('auth:' . $userId);
-                Log::debug('Kết quả xoá token từ Redis', ['tokens_result' => $result1, 'auth_result' => $result2]);
-                return [$result1, $result2];
-            });
+            $userId = $tokenData['user_id'] ?? null;
 
-
-            $deletedTokenData = Redis::hgetall('tokens:' . $token);
-            Log::debug('Kiểm tra lại token sau khi xoá', ['token' => $token, 'deleted_token_data' => $deletedTokenData]);
-
-
-            if (!$deletedTokenData) {
-                Log::info('Người dùng đã logout thành công và token đã được xoá khỏi Redis', ['token' => $token]);
-            } else {
-                Log::warning('Token vẫn còn tồn tại trong Redis sau khi logout', ['token' => $token]);
+            if ($userId) {
+                $this->retryRedisOperation(function () use ($token, $userId) {
+                    Redis::del('tokens:' . $token);
+                    Redis::del('auth:' . $userId);
+                    return true;
+                });
             }
 
             return response()->json([
@@ -204,7 +197,6 @@ class AdminController extends Controller
 
         } catch (\Exception $e) {
             Log::error('Lỗi khi thực hiện logout', ['error' => $e->getMessage()]);
-
             return response()->json([
                 'success' => false,
                 'status' => 500,
