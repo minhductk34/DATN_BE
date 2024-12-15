@@ -45,7 +45,7 @@ Route::prefix('admin')->group(function () {
     Route::post('/login', [AdminController::class, 'login']);
     Route::post('/logout', [AdminController::class, 'logout']);
     //kỳ thi
-    Route::prefix('/exam')->group(function () {
+    Route::middleware('checkToken')->prefix('/exam')->group(function () {
         Route::resource('/', ExamController::class);
         Route::get('/exam-rooms-in-exams/{id}', [ExamController::class, 'getExamRoomsInExams']);
         Route::get('/get-all-with-status-true', [ExamController::class, 'getAllWithStatusTrue']);
@@ -55,7 +55,7 @@ Route::prefix('admin')->group(function () {
         Route::get('/exam-with-subject/{id}/{idcode}', [ExamController::class, 'getALLExamsSubjectsById']);
     });
     //Quản lý môn thi
-    Route::prefix('exam-subjects')->group(function () {
+    Route::middleware('checkToken')->prefix('exam-subjects')->group(function () {
         Route::get('/exam/{id}', [ExamSubjectController::class, 'getSubjectByExam']);
         Route::post('/', [ExamSubjectController::class, 'store']);
         Route::get('/{id}', [ExamSubjectController::class, 'show']);
@@ -67,7 +67,7 @@ Route::prefix('admin')->group(function () {
         Route::post('/export-excel', [ExamSubjectController::class, 'exportExcel']);
         Route::post('/import-excel', [ExamSubjectController::class, 'importExcel']);
     });
-    Route::prefix('exam-content')->group(function () {
+    Route::middleware('checkToken')->prefix('exam-content')->group(function () {
         //get data
         Route::get('exam-subject/{id}', [ExamContentController::class, 'getContentByExam'])->name('exam-content-byExamSubject_id');
         Route::get('/{id}', [ExamContentController::class, 'show'])->name('exam-content-byid');
@@ -80,7 +80,7 @@ Route::prefix('admin')->group(function () {
         Route::delete('/delete/{id}', [ExamContentController::class, 'destroy']);
     });
     //Exams management
-    Route::prefix('exams-management')->group(function () {
+    Route::middleware('checkToken')->prefix('exams-management')->group(function () {
         Route::get('/', [ExamController::class, 'index']);
         Route::post('/', [ExamController::class, 'store']);
         Route::get('/{id}', [ExamController::class, 'show']);
@@ -89,7 +89,7 @@ Route::prefix('admin')->group(function () {
         Route::put('/restore/{id}', [ExamController::class, 'restore']);
         Route::post('/import', [ExamController::class, 'importExcel']);
     });
-    Route::prefix('topic-structures')->group(function () {
+    Route::middleware('checkToken')->prefix('topic-structures')->group(function () {
         // Tạo mới topic structure
         Route::post('/', [TopicStructureController::class, 'store']);
 
@@ -104,17 +104,17 @@ Route::prefix('admin')->group(function () {
 
         Route::get('/total/{id}', [TopicStructureController::class, 'getTotal']);
     });
-    Route::resource('exam-room', ExamRoomController::class);
-    Route::prefix('exam-room')->group(function () {
+    Route::middleware('checkToken')->resource('exam-room', ExamRoomController::class);
+    Route::middleware('checkToken')->prefix('exam-room')->group(function () {
         Route::get('/detail/{id}', [ExamRoomController::class, 'showDetail']);
         Route::get('/data-select-update/{exam_room_id}/{exam_subject_id}', [ExamRoomController::class, 'dataSelectUpdate']); // Thêm route này
         Route::get('/by-exam/{id}', [ExamRoomController::class, 'show']);
     });
-    Route::resource('lecturer', LecturersController::class);
+    Route::middleware('checkToken')->resource('lecturer', LecturersController::class);
     // ca thi
-    Route::resource('/exam-session', ExamSessionController::class);
+    Route::middleware('checkToken')->resource('/exam-session', ExamSessionController::class);
 
-    Route::prefix('questions')->group(function () {
+    Route::middleware('checkToken')->prefix('questions')->group(function () {
         //get data
         Route::get('/exam-content/{id}', [QuestionController::class, 'index']);
         Route::get('/{id}', [QuestionController::class, 'show']);
@@ -137,7 +137,7 @@ Route::prefix('admin')->group(function () {
         Route::post('/import-excel', [QuestionController::class, 'importExcel']);
     });
 
-    Route::prefix('candidate')->group(function () {
+    Route::middleware('checkToken')->prefix('candidate')->group(function () {
         Route::get('/getAll', [CandidateController::class, 'index']);
         Route::get('/detail-candidate/{id}', [CandidateController::class, 'show']);
         Route::post('/export-excel-password-candidate', [CandidateController::class, 'exportExcel']);
@@ -148,12 +148,12 @@ Route::prefix('admin')->group(function () {
         Route::get('/exam-room/{exam_room_id}', [CandidateController::class, 'countCandidateForExamRoom']);
         Route::get('/exam-room/candidate-in-exam-room/{exam_room_id}', [CandidateController::class, 'CandidateInExamRoom']);
     });
-    Route::post('active/toggle', [CandidateController::class, 'toggleActiveStatus']);
+    Route::middleware('checkToken')->post('active/toggle', [CandidateController::class, 'toggleActiveStatus']);
 
-    Route::prefix('/password')->group(function () {
+    Route::middleware('checkToken')->prefix('/password')->group(function () {
         Route::post('/actionExport', [PasswordController::class, 'actionExport']);
     });
-    Route::prefix('readings')->group(function () {
+    Route::middleware('checkToken')->prefix('readings')->group(function () {
         //get data
         Route::get('/', [ReadingController::class, 'index']);
         Route::get('/{id}', [ReadingController::class, 'show']);
@@ -187,7 +187,7 @@ Route::prefix('admin')->group(function () {
         });
     });
 
-    Route::prefix('listenings')->group(function () {
+    Route::middleware('checkToken')->prefix('listenings')->group(function () {
         //get data
         Route::get('/', [ListeningController::class, 'index']);
         Route::get('/{id}', [ListeningController::class, 'show']);
@@ -220,7 +220,7 @@ Route::prefix('admin')->group(function () {
         });
     });
 
-    Route::prefix('exam-subject-details')->group(function () {
+    Route::middleware('checkToken')->prefix('exam-subject-details')->group(function () {
         Route::get('/', [ExamSubjectDetailsController::class, 'index']);
         Route::get('/{id}', [ExamSubjectDetailsController::class, 'show']);
         Route::get('/exam-subject/{exam_subject_id}', [ExamSubjectDetailsController::class, 'showByExamSubjectId']);
@@ -229,25 +229,25 @@ Route::prefix('admin')->group(function () {
         Route::delete('/{id}', [ExamSubjectDetailsController::class, 'destroy']);
     });
 
-    Route::prefix('client')->group(function () {
+    Route::middleware('checkToken')->prefix('client')->group(function () {
         Route::prefix('questions')->group(function () {
             Route::get('manageQuestions', [QuestionController::class, 'dataOptions']);
             Route::post('manageQuestions/{examId}/{examSubjectId}', [QuestionController::class, 'dataQuestion']);
         });
     });
 
-    Route::prefix('points')->group(function () {
+    Route::middleware('checkToken')->prefix('points')->group(function () {
         Route::get('student/{idcode}/exam/{examId}', [PointController::class, 'getStudentPointsByExam']);       
     });
 
-    Route::prefix('reports')->group(function () {
+    Route::middleware('checkToken')->prefix('reports')->group(function () {
         Route::get('byExam/{id}',[CandidateController::class, 'reportByIdExam']);
         Route::get('bySubject/{id}/subject/{subject_id}',[CandidateController::class, 'reportByIdSubject']);
         Route::get('byRoom/{id}/room/{room_id}',[CandidateController::class, 'reportByIdRoom']);
     });
 });
 
-Route::prefix('client')->group(function () {
+Route::middleware('checkToken')->prefix('client')->group(function () {
     Route::post('/login', [CandidateController::class, 'login']);
 
     Route::post('/exam', [CandidateQuestionController::class, 'exam']);
@@ -261,7 +261,7 @@ Route::prefix('client')->group(function () {
 });
 
 
-Route::prefix('exam')->group(function () {
+Route::middleware('checkToken')->prefix('exam')->group(function () {
     Route::post('/submit', [CandidateQuestionController::class, 'update']);
 
     Route::post('/finish', [CandidateQuestionController::class, 'finish']);
@@ -275,10 +275,10 @@ Route::prefix('exam')->group(function () {
     Route::get('/result/{idcode}', [CandidateController::class, 'info']);
 });
 
-Route::post('/custom-broadcasting/auth-client', [CustomBroadcastController::class, 'authenticateClient']);
-Route::post('/custom-broadcasting/auth-admin', [CustomBroadcastController::class, 'authenticateAdmin']);
+Route::middleware('checkToken')->post('/custom-broadcasting/auth-client', [CustomBroadcastController::class, 'authenticateClient']);
+Route::middleware('checkToken')->post('/custom-broadcasting/auth-admin', [CustomBroadcastController::class, 'authenticateAdmin']);
 
-Route::prefix('/room-status')->group(function () {
+Route::middleware('checkToken')->prefix('/room-status')->group(function () {
     // Lấy danh sách phòng thi
     Route::get('/rooms', [RoomStatusController::class, 'index']);
 
@@ -286,6 +286,6 @@ Route::prefix('/room-status')->group(function () {
     Route::get('/rooms/{roomId}/{subjectId}/students', [RoomStatusController::class, 'getStudents']);
 });
 
-Route::post('/candidate/{candidate}/finish', [CandidateController::class, 'finish']);
-Route::get('/candidate/{candidate}/check-status', [CandidateController::class, 'checkExamStatus']);
-Route::post('/candidate/{candidate}/update-status', [CandidateController::class, 'updateExamStatus']);
+Route::middleware('checkToken')->post('/candidate/{candidate}/finish', [CandidateController::class, 'finish']);
+Route::middleware('checkToken')->get('/candidate/{candidate}/check-status', [CandidateController::class, 'checkExamStatus']);
+Route::middleware('checkToken')->post('/candidate/{candidate}/update-status', [CandidateController::class, 'updateExamStatus']);

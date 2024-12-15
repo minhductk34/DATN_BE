@@ -25,29 +25,8 @@ class CheckToken
             return response()->json([
                 'success' => false,
                 'status' => '401',
-                'message' => 'You are not logged in or the token is not provided.'
+                'message' => 'Bạn đang thiếu token đăng nhập.'
             ], Response::HTTP_UNAUTHORIZED);
-        }
-
-
-        $userId = Redis::hget('tokens:' . $token, 'user_id');
-        $expiresAt = Redis::hget('tokens:' . $token, 'expires_at');
-
-        if (!$userId || !$expiresAt || now()->timestamp > $expiresAt) {
-            return response()->json([
-                'success' => false,
-                'status' => '403',
-                'message' => 'Invalid or expired tokens'
-            ], Response::HTTP_FORBIDDEN);
-        }
-
-        $storedToken = Redis::hget('auth:' . $userId, 'token');
-        if ($storedToken !== $token) {
-            return response()->json([
-                'success' => false,
-                'status' => '403',
-                'message' => 'The login session was canceled because you logged in from elsewhere'
-            ], Response::HTTP_FORBIDDEN);
         }
 
         return $next($request);
