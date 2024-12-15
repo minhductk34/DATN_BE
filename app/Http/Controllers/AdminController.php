@@ -131,78 +131,20 @@ class AdminController extends Controller
         }
     }
 
-    public function logout(Request $request)
-    {
+    public function logout() {
         try {
-            Log::debug('Đã nhận được yêu cầu logout', ['request' => $request->all()]);
-
-            $token = str_replace('Bearer ', '', $request->header('Authorization'));
-
-            if (!$token) {
-                return response()->json([
-                    'success' => false,
-                    'status' => 400,
-                    'data' => [],
-                    'message' => 'Token không hợp lệ.'
-                ], 400);
-            }
-
-            if(is_string($token) && str_contains($token, 'token')) {
-                $tokenData = json_decode($token, true);
-                $token = $tokenData['token'] ?? null;
-            }
-
-            if (!$this->checkRedisConnection()) {
-                Log::error('Kết nối Redis không thành công');
-                return response()->json([
-                    'success' => false,
-                    'status' => 503,
-                    'data' => [],
-                    'message' => 'Không thể kết nối đến hệ thống lưu trữ, vui lòng thử lại sau.'
-                ], 503);
-            }
-
-            Log::debug('Truy vấn token trong Redis', ['token' => $token]);
-            $tokenData = $this->retryRedisOperation(function () use ($token) {
-                return Redis::hgetall('tokens:' . $token);
-            });
-
-            if (!$tokenData) {
-                Log::warning('Token không tồn tại hoặc đã hết hạn', ['token' => $token]);
-                return response()->json([
-                    'success' => false,
-                    'status' => 404,
-                    'data' => [],
-                    'message' => 'Token không hợp lệ hoặc đã hết hạn.'
-                ], 404);
-            }
-
-            Log::debug('Xoá token khỏi Redis', ['token' => $token, 'token_data' => $tokenData]);
-            $userId = $tokenData['user_id'] ?? null;
-
-            if ($userId) {
-                $this->retryRedisOperation(function () use ($token, $userId) {
-                    Redis::del('tokens:' . $token);
-                    Redis::del('auth:' . $userId);
-                    return true;
-                });
-            }
+            Redis::flushall();
 
             return response()->json([
                 'success' => true,
-                'status' => 200,
-                'data' => [],
-                'message' => 'Đăng xuất thành công.'
+                'message' => 'Đăng xuất thành công'
             ], 200);
 
         } catch (\Exception $e) {
-            Log::error('Lỗi khi thực hiện logout', ['error' => $e->getMessage()]);
+            Log::error('Logout error:', ['error' => $e->getMessage()]);
             return response()->json([
                 'success' => false,
-                'status' => 500,
-                'data' => [],
-                'message' => 'Đã có lỗi xảy ra, vui lòng thử lại sau.',
-                'error' => $e->getMessage()
+                'message' => $e->getMessage()
             ], 500);
         }
     }

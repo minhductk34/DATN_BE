@@ -39,6 +39,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
+Route::get('/logout', [AdminController::class, 'logout']);
 
 Route::prefix('admin')->group(function () {
 
@@ -275,10 +276,10 @@ Route::middleware('checkToken')->prefix('exam')->group(function () {
     Route::get('/result/{idcode}', [CandidateController::class, 'info']);
 });
 
-Route::middleware('checkToken')->post('/custom-broadcasting/auth-client', [CustomBroadcastController::class, 'authenticateClient']);
-Route::middleware('checkToken')->post('/custom-broadcasting/auth-admin', [CustomBroadcastController::class, 'authenticateAdmin']);
+Route::post('/custom-broadcasting/auth-client', [CustomBroadcastController::class, 'authenticateClient']);
+Route::post('/custom-broadcasting/auth-admin', [CustomBroadcastController::class, 'authenticateAdmin']);
 
-Route::middleware('checkToken')->prefix('/room-status')->group(function () {
+Route::prefix('/room-status')->group(function () {
     // Lấy danh sách phòng thi
     Route::get('/rooms', [RoomStatusController::class, 'index']);
 
@@ -286,6 +287,6 @@ Route::middleware('checkToken')->prefix('/room-status')->group(function () {
     Route::get('/rooms/{roomId}/{subjectId}/students', [RoomStatusController::class, 'getStudents']);
 });
 
-Route::middleware('checkToken')->post('/candidate/{candidate}/finish', [CandidateController::class, 'finish']);
-Route::middleware('checkToken')->get('/candidate/{candidate}/check-status', [CandidateController::class, 'checkExamStatus']);
-Route::middleware('checkToken')->post('/candidate/{candidate}/update-status', [CandidateController::class, 'updateExamStatus']);
+Route::post('/candidate/{candidate}/finish', [CandidateController::class, 'finish']);
+Route::get('/candidate/{candidate}/check-status', [CandidateController::class, 'checkExamStatus']);
+Route::post('/candidate/{candidate}/update-status', [CandidateController::class, 'updateExamStatus']);
