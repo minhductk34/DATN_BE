@@ -167,7 +167,6 @@ class ExamRoomController extends Controller
     public function showDetail($id)
     {
         try {
-            // Tìm phòng thi và đếm số lượng thí sinh
             $examRoom = Exam_room::withCount('candidates')->find($id);
 
             if (!$examRoom) {
@@ -179,14 +178,12 @@ class ExamRoomController extends Controller
                 ], 404);
             }
 
-            // Lấy chi tiết phòng thi
             $examRoomDetails = Exam_room_detail::with(['exam_subject', 'exam_session'])
                 ->whereHas('exam_subject', function ($query) use ($examRoom) {
                     $query->where('exam_id', $examRoom->exam_id);
                 })
                 ->where('exam_room_id', $id)
                 ->get();
-            // Lấy danh sách môn thi
             $examSubjects = Exam_subject::query()->where('exam_id', $examRoom->exam_id)->get();
             $formattedExamSubjects = [];
             foreach ($examSubjects as $subject) {
@@ -200,7 +197,7 @@ class ExamRoomController extends Controller
                             'time_start' => $isSubjectInRoomDetails->exam_session->time_start ?? null,
                             'time_end' => $isSubjectInRoomDetails->exam_session->time_end ?? null,
                             'exam_date' => $isSubjectInRoomDetails->exam_date ?? null,
-                            'exam_end' => null,
+                            'exam_end' => $isSubjectInRoomDetails->exam_end ?? null,
                         ];
                     } else {
                         $formattedExamSubjects[] = [
@@ -269,28 +266,27 @@ class ExamRoomController extends Controller
     public function update(Request $request, $id)
     {
         try {
-            // Validate input
-            $request->validate([
+            $validatedData = $request->validate([
                 'exam_subject_id' => 'required|exists:exam_subjects,id',
-                'exam_session_id' => 'required|exists:exam_sessions,id',
                 'exam_date' => 'required|date',
-                'exam_end' => 'nullable|date|after:exam_date'
+                'exam_session_id' => 'nullable|exists:exam_sessions,id',
+                'exam_end' => 'nullable|date|after_or_equal:exam_date',
             ]);
 
-            // Tìm phòng thi
             $examRoom = Exam_room::findOrFail($id);
 
-            // Tìm kiếm hoặc thêm mới Exam_room_detail
+            $updateData = [
+                'exam_date' => $validatedData['exam_date'],
+                'exam_session_id' => $validatedData['exam_session_id'] ?? null,
+                'exam_end' => $validatedData['exam_end'] ?? null,
+            ];
+
             $examRoomDetail = Exam_room_detail::updateOrCreate(
                 [
                     'exam_room_id' => $id,
-                    'exam_subject_id' => $request->exam_subject_id
+                    'exam_subject_id' => $validatedData['exam_subject_id']
                 ],
-                [
-                    'exam_session_id' => $request->exam_session_id,
-                    'exam_date' => $request->exam_date,
-                    'exam_end' => $request->exam_end ?? null
-                ]
+                $updateData
             );
 
             return response()->json([
@@ -371,8 +367,7 @@ class ExamRoomController extends Controller
                 ->where('exam_subject_id', $exam_subject_id)
                 ->first();
 
-            $exam_session = $exam_room_detail->exam_session;
-
+            $exam_session = optional($exam_room_detail)->exam_session;
             return response()->json([
                 'success' => true,
                 'data' => [
