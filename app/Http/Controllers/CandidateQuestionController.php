@@ -167,7 +167,7 @@ class CandidateQuestionController extends Controller
                     $result[$examContentId][$key]['examContentId'] = $examContentId;
                     $result[$examContentId][$key]['url_listening'] = $finalResult[$examContentId][$key]['url_listening'];
                     $result[$examContentId][$key]['description'] = $finalResult[$examContentId][$key]['description'];
-                   
+
 
                     // Lưu đáp án theo mức độ id_pass
                     if ($finalResult[$examContentId][$key]['id_pass'] == 1) {
@@ -229,17 +229,31 @@ class CandidateQuestionController extends Controller
                     'answer_P' => $value['answer_P'],
                 ]);
             }
+            $record = DB::table('time_exam_cadidate')
+                ->where('idcode', $validated['idCode'])
+                ->where('subject_id', $validated['id_subject'])
+                ->first();
 
-            DB::table('time_exam_cadidate')->insert([
-                'idcode' => $validated['idCode'],
-                'subject_id' => $validated['id_subject'],
-                'time' => $exam_subject_detail->time * 60,
-            ]);
+            if ($record) {
+                $data = [
+                    'time' => $record->time,
+                    'question' => $result,
+                ];
+            } else {
+                // Nếu không tồn tại, tạo mới bản ghi
+                DB::table('time_exam_cadidate')->insert([
+                    'idcode' => $validated['idCode'],
+                    'subject_id' => $validated['id_subject'],
+                    'time' => $exam_subject_detail->time * 60,
+                ]);
 
-            $data = [
-                'time' => $exam_subject_detail->time,
-                'question' => $result,
-            ];
+                // Lấy và trả về bản ghi vừa được tạo
+                $data = [
+                    'time' => $exam_subject_detail->time,
+                    'question' => $result,
+                ];
+            }
+
 
 
 
